@@ -1,0 +1,22 @@
+{
+    "tasks": [
+		{
+			"label": "ft_irc",
+			"type": "shell",
+			"command": "make",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "ft_irc"
+		}
+	],
+    "version": "2.0.0"
+}

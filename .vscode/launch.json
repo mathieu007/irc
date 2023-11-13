@@ -1,0 +1,16 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "ft_irc",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/ft_irc",
+			"args": ["(1 + 1)"],
+			"environment": [{ "name": "config", "value": "Debug" }],
+			"cwd": "${workspaceFolder}",
+			"preLaunchTask": "ft_irc",
+			"MIMode": "lldb"
+		}
+	]
+}
