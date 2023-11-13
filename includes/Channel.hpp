@@ -11,5 +11,6 @@ class Channel
 {
     private:
         string _name;
-        vector<Client> _clients;
+        vector<Client *> _clients;
+
 };
