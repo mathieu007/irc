@@ -16,4 +16,8 @@ class Server
     string _pass;
     vector<Channel *> _channels;
     // vector<Client *> _clients;
+    Server::Server(string host, string port)
+    {
+
+    }
 };
