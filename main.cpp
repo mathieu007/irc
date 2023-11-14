@@ -67,10 +67,10 @@ int main(int argc, char **argv)
         std::cout << "Client connected" << std::endl;
 
         char buffer[1024];
- 
+        size_t len = 0;
         while ((len = read(newsockfd, buffer, sizeof(buffer) - 1)) > 0)
         {
-            // printf("read buffer: %s\n", buffer);
+            printf("read buffer: %s\n", buffer);
         }
 
         // Send a welcome message to the client
