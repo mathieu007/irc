@@ -10,18 +10,6 @@ void error(const char *msg)
     exit(1);
 }
 
-void send_irc_message(int sockfd, const char *message)
-{
-    std::string irc_message = "001 :" + std::string(message) + "\r\n";
-    write(sockfd, irc_message.c_str(), irc_message.length());
-}
-
-void join_channel(int sockfd, const char *channel)
-{
-    std::string join_message = "JOIN " + std::string(channel) + "\r\n";
-    write(sockfd, join_message.c_str(), join_message.length());
-}
-
 int main(int argc, char **argv)
 {
     if (argc != 2)
@@ -34,7 +22,6 @@ int main(int argc, char **argv)
     int sockfd, newsockfd;
     socklen_t clilen;
     char buffer[256];
-    std::string bufStr = std::string(buffer);
     struct sockaddr_in serv_addr, cli_addr;
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -52,8 +39,6 @@ int main(int argc, char **argv)
     listen(sockfd, 5);
     clilen = sizeof(cli_addr);
 
-
-
     std::cout << "Server listening on port " << port << "..." << std::endl;
 
     while (1)
@@ -65,14 +50,13 @@ int main(int argc, char **argv)
         std::cout << "Client connected" << std::endl;
 
         // Send a welcome message to the client
-        const char *welcome_msg = "Welcome to the Simple IRC Server!\n";
-        send_irc_message(newsockfd, welcome_msg);
+        const char *welcome_msg = "Welcome to the Simple IRC Server!\r\n";
+        write(newsockfd, welcome_msg, strlen(welcome_msg));
 
         while (1)
         {
             bzero(buffer, 256);
             int n = read(newsockfd, buffer, 255);
-
             if (n < 0)
                 error("ERROR reading from socket");
             if (n == 0)
@@ -82,7 +66,8 @@ int main(int argc, char **argv)
                 close(newsockfd);
                 break;
             }
-                // Echo the received message back to the client
+
+            // Echo the received message back to the client
             std::cout << "Received: " << buffer;
             write(newsockfd, buffer, strlen(buffer));
         }
