@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
+#include <fcntl.h>
 
 void error(const char *msg)
 {
@@ -10,16 +11,16 @@ void error(const char *msg)
     exit(1);
 }
 
-void send_irc_message(int sockfd, const char *message)
+void send_irc_message(int sockfd, std::string message)
 {
-    std::string irc_message = "001 :" + std::string(message) + "\r\n";
+    std::string irc_message = "001 :" + message + "\r\n";
     write(sockfd, irc_message.c_str(), irc_message.length());
 }
 
 void join_channel(int sockfd, const char *channel)
 {
     std::string join_message = "JOIN " + std::string(channel) + "\r\n";
-    write(sockfd, join_message.c_str(), join_message.length());
+    write(sockfd, join_message.c_str(), join_message.length());   
 }
 
 int main(int argc, char **argv)
@@ -40,6 +41,9 @@ int main(int argc, char **argv)
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
+    int enable = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+        throw std::runtime_error("Couldn't reuse socket address.");
 
     bzero((char *)&serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -52,8 +56,6 @@ int main(int argc, char **argv)
     listen(sockfd, 5);
     clilen = sizeof(cli_addr);
 
-
-
     std::cout << "Server listening on port " << port << "..." << std::endl;
 
     while (1)
@@ -64,9 +66,17 @@ int main(int argc, char **argv)
 
         std::cout << "Client connected" << std::endl;
 
+        char buffer[1024];
+ 
+        while ((len = read(newsockfd, buffer, sizeof(buffer) - 1)) > 0)
+        {
+            // printf("read buffer: %s\n", buffer);
+        }
+
         // Send a welcome message to the client
-        const char *welcome_msg = "Welcome to the Simple IRC Server!\n";
+        std::string welcome_msg = "Welcome to the Simple IRC Server!\n";
         send_irc_message(newsockfd, welcome_msg);
+
 
         while (1)
         {
