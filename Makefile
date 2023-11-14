@@ -1,4 +1,4 @@
-NAME = ft_irc
+NAME = ircserv
 SRC =	main.cpp 	\
 
 OBJDIR = ./objs
@@ -7,7 +7,7 @@ OBJDEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRC))
 
 CC = c++
 RM = rm -f
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g -I./include
+CPPFLAGS = -Wall -Wextra -Werror -std=c++11 -g -I./include
 
 #Colors:
 GREEN		=	\e[92;5;118m

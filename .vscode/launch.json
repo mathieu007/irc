@@ -5,12 +5,12 @@
 			"name": "ft_irc",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/ft_irc",
-			"args": ["(1 + 1)"],
+			"program": "${workspaceFolder}/ircserv",
+			"args": ["6667",  "123456"],
 			"environment": [{ "name": "config", "value": "Debug" }],
 			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "ft_irc",
-			"MIMode": "lldb"
+			// "MIMode": "lldb"
 		}
 	]
 }
