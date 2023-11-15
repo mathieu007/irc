@@ -3,7 +3,8 @@
         {
             "name": "ft_irc",
             "includePath": [
-                "${workspaceFolder}/includes/"
+                "${workspaceFolder}/include/",
+                "${workspaceFolder}/src/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",

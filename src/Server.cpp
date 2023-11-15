@@ -1,188 +1,235 @@
-// #include "Server.hpp"
+#include "Server.hpp"
 
-// bool end = false;
+Server::Server(char *pass, int port) : _pass(pass), _port(port)
+{
+    this->_hostname = _getHostname();
+    _serv_adrr.sin_family = AF_INET;
+    _serv_adrr.sin_port = htons(this->_port);
+    _serv_adrr.sin_addr.s_addr = INADDR_ANY;
+    _serv_size = sizeof(this->_serv_adrr);
+    _client_size = _serv_size;
+    return;
+}
 
-// Server::Server(char *pass, int port) : _pass(pass), _port(port)
-// {
-//     _tv.tv_sec = 0;
-//     _tv.tv_usec = 0;
-//     _s_addr_in.sin_family = AF_INET;                      // AF_INET == IPv4 domain
-//     _s_addr_in.sin_port = htons(this->_port);             // htons convert the port number
-//     _s_addr_in.sin_addr.s_addr = inet_addr("172.31.200.244"); // Change param with the pc ip address
-//     _cli_size = sizeof(this->_s_addr_in);
-//     return;
-// }
+Server::Server(const Server &serv) : _pass(serv._pass), _port(serv._port), _serv_adrr(serv._serv_adrr), _client_adrr(serv._client_adrr), _client_size(serv._client_size)
+{
+}
 
-// Server::Server(const Server &serv) : _pass(serv._pass), _port(serv._port), _s_addr_in(serv._s_addr_in), _cli_size(serv._cli_size), _tv(serv._tv)
-// {
-//     return;
-// }
+Server::~Server(void)
+{
+    return;
+}
 
-// Server::~Server(void)
-// {
-//     return;
-// }
+Server &Server::operator=(const Server &serv)
+{
+    this->_pass = serv._pass;
+    this->_port = serv._port;
+    this->_hostname = serv._hostname;
+    this->_serv_adrr = serv._serv_adrr;
+    this->_serv_size = serv._serv_size;
+    this->_client_size = serv._client_size;
+    this->_client_adrr = serv._client_adrr;
+    return (*this);
+}
 
-// Server &Server::operator=(const Server &serv)
-// {
-//     this->_pass = serv._pass;
-//     this->_port = serv._port;
-//     this->_tv = serv._tv;
-//     this->_s_addr_in = serv._s_addr_in;
-//     this->_cli_size = serv._cli_size;
-//     return (*this);
-// }
+string Server::_getHostname() const
+{
+    char hostname[256];
 
-// void Server::setSocket(int socket)
-// {
-//     this->_socket = socket;
-// }
+    if (gethostname(hostname, sizeof(hostname)) == 0)
+    {
+        return string(hostname);
+    }
+    else
+    {
+        throw std::runtime_error("Could not get hostname.\n");
+        return NULL;
+    }
+}
 
-// int Server::getPort(void) const
-// {
-//     return (this->_port);
-// }
+void Server::_initServerSocket(void)
+{
+    this->_socket = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM == TCP connection type, IPPROTO_TCP == TCP Protocol // if cannot connect change it to 0
+    if (this->_socket < 0)
+        throw std::runtime_error("Error: Couldn't open server socket.\n");
+    int enable = 1;
+    if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+        throw std::runtime_error("Error: Couldn't reuse socket address.\n");
+    if (bind(this->_socket, (sockaddr *)&(this->_serv_adrr), this->_serv_size) == -1)
+    {        
+        close(this->_socket);
+        throw std::runtime_error("Error: Couldn't bind socket address.\n");
+    }
+    if (listen(this->_socket, SOMAXCONN) == -1)
+        throw std::runtime_error("Error: Cannot listen to socket connection.");
+}
 
-// std::string Server::getPass(void) const
-// {
-//     return (this->_pass);
-// }
+int Server::_setSockAddrStorage()
+{
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+    memset(host, 0, NI_MAXHOST);
+    memset(service, 0, NI_MAXSERV);
+    int result = getnameinfo((struct sockaddr *)&_serv_adrr, sizeof(_serv_adrr),
+                             host, NI_MAXHOST,
+                             service, NI_MAXSERV,
+                             NI_NUMERICHOST | NI_NUMERICSERV);
 
-// int Server::getSocket(void) const
-// {
-//     return (this->_socket);
-// }
+    if (result == 0)
+    {
+        std::cout << "New connection established to Host: " << host << " Port: " << service << std::endl;
+        _sock_host = string(host);
+        _sock_port = string(service);
+        _serv_size = sizeof(_serv_adrr);
+        return 0;
+    }
+    else
+    {
+        std::cerr << "getnameinfo failed: " << gai_strerror(result) << std::endl;
+        return -1;
+    }
+}
 
-// sockaddr_in Server::getSockAddr(void) const
-// {
-//     return (this->_s_addr_in);
-// }
+int Server::acceptClient()
+{
+    int socketClient = accept(_socket, (sockaddr *)&_client_adrr, &_client_size); // accept == accept connexions on a socket
+    if (socketClient < 0)
+    {
+        std::cerr << "Failed to client connection to socket." << std::endl;
+        close(socketClient);
+        close(_socket);
+        return (-1);
+    }
+    if (_setSockAddrStorage() == -1)
+        return -1;    
+    return (socketClient);
+}
 
-// socklen_t Server::getCliSize(void) const
-// {
-//     return (this->_cli_size);
-// }
+bool end = false;
 
+void sigNcHandler(int sig, siginfo_t *info, void *context)
+{
+    (void)info;
+    (void)context;
+    (void)sig;
+    end = true;
+}
 
-// bool Server::initServ(void)
-// {
-//     // Socket creation, binding and listening
-//     //  We gonna use a TCP connection cause its more reliable than UDP
-//     setSocket(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));                                     // SOCK_STREAM == TCP connection type, IPPROTO_TCP == TCP Protocol
-//     if (bind(this->_socket, (sockaddr *)&(this->_s_addr_in), sizeof(this->_s_addr_in)) == -1) // bind == connect a socket to a port number
-//     {
-//         std::cerr << "Cannot bind the socket." << std::endl;
-//         close(this->_socket);
-//         return (false);
-//     }
-//     if (listen(this->_socket, SOMAXCONN) == -1) // listen == wait for connexions
-//     {
-//         std::cerr << "Cannot listen" << std::endl;
-//         return (false);
-//     }
-//     std::cout << "The best IRC server is now open!" << std::endl;
-//     return (true);
-// }
+void setSignal(void)
+{
+    struct sigaction sigNc;
 
-// int Server::acceptClients(char *host, char *service)
-// {
-//     int socketClient = accept(_socket, (sockaddr *)&_s_addr_in, &_cli_size); // accept == accept connexions on a socket
-//     if (socketClient < 0)
-//     {
-//         std::cerr << "Accept failed." << std::endl;
-//         close(socketClient);
-//         close(_socket);
-//         return (-1);
-//     }
-//     if (getnameinfo((sockaddr *)&_s_addr_in, sizeof(_s_addr_in), host, NI_MAXHOST, service, NI_MAXHOST, 0) == 0)
-//         std::cout << "New connection on " << host << " on port " << service << "." << std::endl;
-//     else
-//     {
-//         std::cerr << "Cannot get server info." << std::endl;
-//         return (-1);
-//     }
-//     return (socketClient);
-// }
+    memset(&sigNc, 0, sizeof(sigNc));
+    sigaddset(&sigNc.sa_mask, SIGKILL);
+    sigNc.sa_sigaction = &sigNcHandler;
+    sigaction(SIGINT, &sigNc, NULL);
+}
 
-// void sigNcHandler(int sig, siginfo_t *info, void *context)
-// {
-//     (void)info;
-//     (void)context;
-//     (void)sig;
-//     end = true;
-// }
+void Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
+{
+    Client *client = new Client();
+    client->setSocket(socketClient);
+    client->setHost(_sock_host);
+    clients[socketClient] = client;
+    FD_SET(socketClient, &use);
+}
 
-// void setSignal(void)
-// {
-//     struct sigaction sigNc;
+string Server::readClientMsg(Client *client)
+{
+    std::string msg;
+    char buffer[2048];
 
-//     memset(&sigNc, 0, sizeof(sigNc));
-//     sigaddset(&sigNc.sa_mask, SIGKILL);
-//     sigNc.sa_sigaction = &sigNcHandler;
-//     sigaction(SIGINT, &sigNc, NULL);
-// }
+    while (true) 
+    {
+        int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
+       
+        if (read == -1)
+            std::cerr << "Error reading from client socket." << std::endl;
+        if (read == 0)
+            break;
+        buffer[read] = 0;
+        msg += buffer;
+    }
+    return msg;
+}
 
-// void Server::launchServ(void)
-// {
-//     char host[NI_MAXHOST];
-//     char service[NI_MAXHOST];
+void sendMsg(int socketClient)
+{
+    std::string message = ":user NICK :math\r\n";
+    send(socketClient, message.c_str(), message.size(), 0);
+    std::cout << "sent:       " << message << std::endl;
+    /// USER
+    std::string messageu = "USER math 0 * :Ronnie Reagan\r\n";
+    send(socketClient, message.c_str(), messageu.size(), 0);
+    std::cout << "sent:       " << messageu << std::endl;
+    /// JOIN
+    std::string messagej = ":math JOIN #Twilight_zone \r\n";
+    send(socketClient, messagej.c_str(), messagej.size(), 0);
+    std::cout << "sent:       " << messagej << std::endl;
+}
 
-//     int socketClient;
+int Server::fdsClientMsgLoop()
+{
+    int socketClient = 0;
+    string msg = std::string("");
+    for (int i = 0; i < FD_SETSIZE; i++)
+    {
+        if (FD_ISSET(i, &_reading))
+        {
+            if (i == _socket)
+            {
+                socketClient = acceptClient(); // accept == accept connexions on a socket
+                if (socketClient < 0)
+                    return -1;   
+                addClient(_clients, socketClient, _use);
+            }
+            else
+                msg = readClientMsg(_clients[i]);
+        }
+        _writing = _use;
+        if (FD_ISSET(i, &_writing) && msg.length() > 0)
+            sendMsg(socketClient);
+        // if ()
+        // findCmd(Channels, Users, i, use);
+    }
+    return 1;
+}
 
-//     if (!initServ())
-//         return;
-//     FD_ZERO(&use);
-//     FD_SET(_socket, &use);
-//     setSignal();
-//     while (1)
-//     {
-//         memset(host, 0, NI_MAXHOST);
-//         memset(service, 0, NI_MAXHOST);
+void Server::initServer(void)
+{
+    try {
+        _initServerSocket();
+    }
+    catch (const std::exception &e) 
+    {
+        std::cerr << e.what() << std::endl;
+        return;
+    }
+    FD_ZERO(&_use);
+    FD_SET(_socket, &_use);
+    setSignal();
+    while (1)
+    {       
+        _writing = _use;
+        _reading = _use;
+        struct timeval timeout = {0, 0};
+        if (select(FD_SETSIZE, &_reading, &_writing, NULL, &timeout) == -1)
+        {
+            std::cerr << "select() error" << std::endl;
+            return;
+        }
+        if (end == true)
+            closeServer();
+        if (fdsClientMsgLoop() == -1)
+            return;
+    }    
+    close(_socket);
+}
 
-//         writing = use;
-//         reading = use;
-//         if (select(FD_SETSIZE, &reading, &writing, NULL, &_tv) == -1)
-//         {
-//             std::cerr << "select() error" << std::endl;
-//             return;
-//         }
-//         if (end == true)
-//             closeServ();
-//         for (int i = 0; i < FD_SETSIZE; i++)
-//         {
-//             if (FD_ISSET(i, &reading))
-//             {
-//                 if (i == _socket)
-//                 {
-//                     socketClient = acceptClients(host, service); // accept == accept connexions on a socket
-//                     if (socketClient < 0)
-//                         return;
-//                     FD_SET(socketClient, &use);
-//                 }
-//                 else
-//                     readMessageClient(Users, Users[i], i, use, *this);
-//             }
-//             writing = use;
-//             if (FD_ISSET(i, &writing))
-//                 findCmd(Channels, Users, i, use);
-//         }
-//     }
-//     close(_socket);
-// }
-
-// void Server::closeServ(void)
-// {
-//     for (int i = 0; i < FD_SETSIZE; i++)
-//         if (FD_ISSET(i, &use))
-//             close(i);
-//     exit(1);
-// }
-
-// void Server::findCmd(int index, fd_set &use)
-// {
-//     if (Users[index].getCmd().empty() || Users[index].getEnded() != true)
-//         return;
-//     std::cout << YEL << "Cmd we received: " << Users[index].getCmd() << WHT;
-//     Cmds cmds;
-//     cmds.executeCmd(Users, *this, index, Channels, use);
-// }
+void Server::closeServer(void)
+{
+    for (int i = 0; i < FD_SETSIZE; i++)
+        if (FD_ISSET(i, &_use))
+            close(i);
+    exit(1);
+}
