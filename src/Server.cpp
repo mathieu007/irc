@@ -127,45 +127,45 @@ void setSignal(void)
 
 void Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
 {
+    std::string msg;
+
     Client *client = new Client();
     client->setSocket(socketClient);
     client->setHost(_sock_host);
+
+    // size_t pos = string::npos;
+    // if ((pos = msg.find("PASS ")) != string::npos)
+    //     std::string pass = msg.substr(pos + 5, );
+    // if ()
     clients[socketClient] = client;
+    // msg = readClientMsg(client);
+    
     FD_SET(socketClient, &use);
 }
 
 string Server::readClientMsg(Client *client)
 {
-    std::string msg;
-    char buffer[2048];
+    std::string msg = string("");
+    char buffer[4096];
 
-    while (true) 
-    {
-        int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
-       
-        if (read == -1)
-            std::cerr << "Error reading from client socket." << std::endl;
-        if (read == 0)
-            break;
-        buffer[read] = 0;
-        msg += buffer;
-    }
+    int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
+    if (read == -1)
+        std::cerr << "Error reading from client socket." << std::endl;
+    buffer[read] = 0;
+    msg += buffer;
     return msg;
 }
 
-void sendMsg(int socketClient)
+void sendWelcomeMsg(int socketClient)
 {
-    std::string message = ":user NICK :math\r\n";
+    std::string message;
+
+    message += ":irc 001 ";
+    message += "math ";
+    message += "Welcome to our IRC.\r\n";
+
     send(socketClient, message.c_str(), message.size(), 0);
     std::cout << "sent:       " << message << std::endl;
-    /// USER
-    std::string messageu = "USER math 0 * :Ronnie Reagan\r\n";
-    send(socketClient, message.c_str(), messageu.size(), 0);
-    std::cout << "sent:       " << messageu << std::endl;
-    /// JOIN
-    std::string messagej = ":math JOIN #Twilight_zone \r\n";
-    send(socketClient, messagej.c_str(), messagej.size(), 0);
-    std::cout << "sent:       " << messagej << std::endl;
 }
 
 int Server::fdsClientMsgLoop()
@@ -181,16 +181,15 @@ int Server::fdsClientMsgLoop()
                 socketClient = acceptClient(); // accept == accept connexions on a socket
                 if (socketClient < 0)
                     return -1;   
-                addClient(_clients, socketClient, _use);
+                addClient(_clients, socketClient, _use);                
+                sendWelcomeMsg(socketClient);
             }
             else
                 msg = readClientMsg(_clients[i]);
         }
         _writing = _use;
-        if (FD_ISSET(i, &_writing) && msg.length() > 0)
-            sendMsg(socketClient);
-        // if ()
-        // findCmd(Channels, Users, i, use);
+        if (FD_ISSET(i, &_writing) && msg.length() > 0)  
+            std::cout << msg << std::endl;
     }
     return 1;
 }

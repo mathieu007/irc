@@ -10,6 +10,7 @@ class Client
     private:
         string _nickname;
         string _username;
+        string _pass;
         string _host;
         int _socket;
 
