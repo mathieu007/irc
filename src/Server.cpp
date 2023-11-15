@@ -1,4 +1,5 @@
 #include "Server.hpp"
+// #include "Client.hpp"
 
 Server::Server(char *pass, int port) : _pass(pass), _port(port)
 {
@@ -125,13 +126,14 @@ void setSignal(void)
     sigaction(SIGINT, &sigNc, NULL);
 }
 
-void Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
+Client* Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
 {
     Client *client = new Client();
     client->setSocket(socketClient);
     client->setHost(_sock_host);
     clients[socketClient] = client;
     FD_SET(socketClient, &use);
+	return client;
 }
 
 string Server::readClientMsg(Client *client)
@@ -139,17 +141,19 @@ string Server::readClientMsg(Client *client)
     std::string msg;
     char buffer[2048];
 
-    while (true) 
-    {
+    // while (true) 
+    // {
         int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
        
-        if (read == -1)
+        if (read == -1){
             std::cerr << "Error reading from client socket." << std::endl;
-        if (read == 0)
-            break;
-        buffer[read] = 0;
-        msg += buffer;
-    }
+			exit(1);
+		}
+		if (read == 0)
+			return msg;
+		buffer[read] = 0;
+		msg += buffer;
+    // }
     return msg;
 }
 
@@ -170,7 +174,9 @@ void sendMsg(int socketClient)
 
 int Server::fdsClientMsgLoop()
 {
-    int socketClient = 0;
+	Client *newClient;
+
+	int socketClient = 0;
     string msg = std::string("");
     for (int i = 0; i < FD_SETSIZE; i++)
     {
@@ -179,16 +185,27 @@ int Server::fdsClientMsgLoop()
             if (i == _socket)
             {
                 socketClient = acceptClient(); // accept == accept connexions on a socket
-                if (socketClient < 0)
-                    return -1;   
-                addClient(_clients, socketClient, _use);
-            }
-            else
+				if (socketClient < 0)
+					return -1;   
+                newClient = addClient(_clients, socketClient, _use);
+				std::string welcome_message = ":irc 001 bozo Hello and Welcome to our IRC. To join a channel us /join #<channel name>\r\n";
+				send(socketClient, welcome_message.c_str(), welcome_message.size(), 0);
+
+				// /// JOIN
+				// std::string messagej = ":bozo JOIN #Twilight_zone \r\n";
+				// send(socketClient, messagej.c_str(), messagej.size(), 0);
+				// std::cout << "sent:       " << messagej << std::endl;
+			}
+			else
                 msg = readClientMsg(_clients[i]);
         }
-        _writing = _use;
-        if (FD_ISSET(i, &_writing) && msg.length() > 0)
-            sendMsg(socketClient);
+		_writing = _use;
+		if (FD_ISSET(i, &_writing) && msg.length() > 0){
+			std::cout << msg << std::endl;
+			newClient->addUser(msg);
+			// std::cout << "allo" << std::endl;
+			// sendMsg(socketClient);
+		}
         // if ()
         // findCmd(Channels, Users, i, use);
     }

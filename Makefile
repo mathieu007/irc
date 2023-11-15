@@ -31,6 +31,9 @@ $(OBJDIR)/%.o: %.cpp
 
 -include $(OBJDEPS)
 
+run: all
+	./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
+	
 clean:
 	$(RM) -rf $(OBJDIR)
 	@printf "$(YELLOW)- Objects removed.$(RESET)\n"

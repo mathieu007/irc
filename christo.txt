@@ -1,0 +1,14 @@
+////NICK
+			std::string message = ":user NICK :bozo\r\n";
+			send(newsockfd, message.c_str(), message.size(), 0);
+			std::cout << "sent:       " << message << std::endl;
+
+			///USER
+			std::string messageu = "USER bozo 0 * :Ronnie Reagan\r\n";
+			send(newsockfd, message.c_str(), messageu.size(), 0);
+			std::cout << "sent:       " << messageu << std::endl;
+
+			///JOIN
+			std::string messagej = ":bozo JOIN #Twilight_zone \r\n";
+			send(newsockfd, messagej.c_str(), messagej.size(), 0);
+			std::cout << "sent:       " << messagej << std::endl;

@@ -8,15 +8,22 @@ using std::string;
 class Client 
 {
     private:
-        string _nickname;
-        string _username;
+        string _nickName;
+        string _userName;
         string _host;
         int _socket;
 
-    public:
+	public:
         Client();
+		
         void setHost(string host);
         void setSocket(int socket);
+		void setNickname(std::string ncikName);
+
         string getHost() const;
         int getSocket() const;
+		std::string getNickname() const;
+		std::string getUsername() const;
+
+		void addUser(std::string msg);
 };

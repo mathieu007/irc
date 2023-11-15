@@ -56,7 +56,7 @@ public:
     int acceptClient();
     void initServer(void);
     void closeServer(void);
-    void addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use);
+    Client* addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use);
     int fdsClientMsgLoop();
     string readClientMsg(Client *client);
 };
