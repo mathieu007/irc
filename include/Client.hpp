@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#define MAX_BUFFER_SIZE 8096
 
 using std::string;
 
@@ -12,6 +13,7 @@ class Client
         string _userName;
         string _pass;
         string _host;
+        string _msg;
         int _socket;
 
 	public:
@@ -27,4 +29,6 @@ class Client
 		std::string getUsername() const;
 
 		void addUser(std::string msg);
+        string &getMsg();
+        void setMsg(string msg);
 };

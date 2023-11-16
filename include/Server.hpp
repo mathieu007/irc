@@ -14,14 +14,20 @@
 #include <cstring>
 #include <cctype>
 #include <csignal>
+#include <cerrno>
+#include <fcntl.h>
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "CommandFactory.hpp"
+#include <algorithm>
+#include "String.hpp"
+
 
 class Server
 {
 private:
     std::string _hostname;
+    int _max_fd_set;
     std::string _pass;
     int _port;
     struct sockaddr_in _serv_adrr;
@@ -33,6 +39,7 @@ private:
     string _sock_port;
     string _sock_host;
     int _socket;
+   
 
     /// @brief non blocking io, for monitoring both read and write operations.
     fd_set _use;
@@ -47,6 +54,9 @@ private:
     int _setSockAddrStorage();
     string _getHostname() const;
     void _initServerSocket(void);
+    void _setNonBlocking(int sockfd);
+    string _nonBlockingRecv(int sockfd, char *buffer, int flags);
+    int _selectFdSet();
 
 public:
     Server(char *pass, int port);
@@ -57,7 +67,8 @@ public:
     int acceptClient();
     void initServer(void);
     void closeServer(void);
-    Client* addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use);
-    int fdsClientMsgLoop();
+    void addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use);
+    int fdSetClientMsgLoop(char *buffer);
     string readClientMsg(Client *client);
+    ssize_t nonBlockingSend(Client *client, string &data, int flags);
 };

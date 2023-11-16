@@ -5,6 +5,7 @@ SRC =	main.cpp 	\
 		src/Command.cpp \
 		src/CommandFactory.cpp \
 		src/Nick.cpp \
+		src/String.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
