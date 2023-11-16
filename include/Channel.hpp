@@ -3,6 +3,8 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include "Client.hpp"
+#define MAX_CLIENTS FD_SETSIZE
 
 using std::string;
 using std::vector;
@@ -14,5 +16,9 @@ class Channel
     private:
         string _name;
         vector<Client *> _clients;
-        vector<Client *> _banChannel;
+    public:
+        Channel(string name);
+        ~Channel();
+        bool addClient(Client *client);
+        bool isInChannel(Client *client);
 };

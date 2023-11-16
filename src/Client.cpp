@@ -29,3 +29,13 @@ void Client::setMsg(string msg)
 {
     _msg = msg;
 }
+
+void Client::setPort(string port)
+{
+    _port = port;
+}
+
+void Client::setAddress(string address)
+{
+    _address = address;
+}
