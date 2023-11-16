@@ -23,8 +23,7 @@
 #include "String.hpp"
 
 
-class Server
-{
+class Server {
 private:
     std::string _hostname;
     int _max_fd_set;

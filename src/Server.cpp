@@ -156,7 +156,7 @@ string getWelcomeMsg()
     std::string message;
 
     message += ":irc 001 ";
-    message += "math ";
+    message += "bozo ";
     message += "Welcome to our IRC.\r\n";
     return message;
 }
@@ -282,6 +282,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
         {
+			
 			/////////parse msg
 			std::vector<std::string> _tokens;
 			std::istringstream iss(msg);
@@ -313,7 +314,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
 					}
 				}
 			}
-			// std::cout << "send msg: " << msg << std::endl;
+			std::cout << "send msg: " << msg << std::endl;
             // nonBlockingSend(_clients[i], msg, 0);
         }
             
