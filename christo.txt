@@ -12,3 +12,33 @@
 			std::string messagej = ":bozo JOIN #Twilight_zone \r\n";
 			send(newsockfd, messagej.c_str(), messagej.size(), 0);
 			std::cout << "sent:       " << messagej << std::endl;
+
+
+
+/////////parse msg
+			std::vector<std::string> _tokens;
+			std::istringstream iss(msg);
+			
+			/////////print msg
+			// std::cout << "msg receved:" << msg << std::endl;
+			std::string token;
+			while (std::getline(iss, token, ' ')) {
+				_tokens.push_back(token);
+				// std::cout << "Token: " << token << std::endl;
+			}
+
+			////////////print token
+			for (std::vector<std::string>::iterator it = _tokens.begin(); it != _tokens.end(); ++it) {
+			// 	std::cout << "token:" << *it << std::endl;
+
+				//////is nick find execute
+				if (*it == "NICK"){
+					CommandFactory factory;
+
+					Command *nickCommand = factory.createCommand("NICK");
+					if (nickCommand) {
+						nickCommand->execute(_clients[i], _tokens);
+						// delete nickCommand;
+					}
+				}
+			}

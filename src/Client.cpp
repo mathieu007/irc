@@ -29,6 +29,8 @@ void Client::addUser(std::string msg){
 		send(_socket, channelMessage.c_str(), channelMessage.size(), 0);
 	}
 }
+
+
 Client::Client(){}
 
 

@@ -1,5 +1,5 @@
 #include "Server.hpp"
-// #include "Client.hpp"
+#include "Command.hpp"
 
 Server::Server(char *pass, int port) : _pass(pass), _port(port)
 {
@@ -128,49 +128,64 @@ void setSignal(void)
 
 Client* Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
 {
+    std::string msg;
+
     Client *client = new Client();
     client->setSocket(socketClient);
     client->setHost(_sock_host);
+
+    // size_t pos = string::npos;
+    // if ((pos = msg.find("PASS ")) != string::npos)
+    //     std::string pass = msg.substr(pos + 5, );
+    // if ()
     clients[socketClient] = client;
+    // msg = readClientMsg(client);
+    
     FD_SET(socketClient, &use);
 	return client;
 }
 
 string Server::readClientMsg(Client *client)
 {
-    std::string msg;
-    char buffer[2048];
+    std::string msg = string("");
+    char buffer[4096];
 
-    // while (true) 
-    // {
-        int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
-       
-        if (read == -1){
-            std::cerr << "Error reading from client socket." << std::endl;
-			exit(1);
-		}
-		if (read == 0)
-			return msg;
-		buffer[read] = 0;
-		msg += buffer;
-    // }
+    int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
+    if (read == -1)
+        std::cerr << "Error reading from client socket." << std::endl;
+    buffer[read] = 0;
+    msg += buffer;
     return msg;
 }
 
-void sendMsg(int socketClient)
+void sendWelcomeMsg(int socketClient)
 {
-    std::string message = ":user NICK :math\r\n";
+    std::string message;
+
+    message += ":irc 001 ";
+    message += "math ";
+    message += "Welcome to our IRC.\r\n";
+
     send(socketClient, message.c_str(), message.size(), 0);
     std::cout << "sent:       " << message << std::endl;
-    /// USER
-    std::string messageu = "USER math 0 * :Ronnie Reagan\r\n";
-    send(socketClient, message.c_str(), messageu.size(), 0);
-    std::cout << "sent:       " << messageu << std::endl;
-    /// JOIN
-    std::string messagej = ":math JOIN #Twilight_zone \r\n";
-    send(socketClient, messagej.c_str(), messagej.size(), 0);
-    std::cout << "sent:       " << messagej << std::endl;
 }
+
+// std::string tokenize(const std::string &input)
+// {
+// 	std::string input2 = "Tokenize this string\nbased on spaces or newlines";
+
+// 	// Create an input string stream
+// 	std::istringstream iss(input);
+
+// 	// Tokenize the string
+// 	std::string token;
+// 	while (std::getline(iss, token, ' '))
+// 	{
+// 		std::cout << "Token: " << token << std::endl;
+// 	}
+
+// 	return token;
+// }
 
 int Server::fdsClientMsgLoop()
 {
@@ -201,13 +216,41 @@ int Server::fdsClientMsgLoop()
         }
 		_writing = _use;
 		if (FD_ISSET(i, &_writing) && msg.length() > 0){
-			std::cout << msg << std::endl;
-			newClient->addUser(msg);
-			// std::cout << "allo" << std::endl;
-			// sendMsg(socketClient);
+
+			/////////parse msg
+			std::vector<std::string> _tokens;
+			std::istringstream iss(msg);
+			
+			/////////print msg
+			// std::cout << "msg receved:" << msg << std::endl;
+			std::string token;
+			while (std::getline(iss, token, ' ')) {
+				_tokens.push_back(token);
+				// std::cout << "Token: " << token << std::endl;
+			}
+
+			////////////print token
+			for (std::vector<std::string>::iterator it = _tokens.begin(); it != _tokens.end(); ++it) {
+			// 	std::cout << "token:" << *it << std::endl;
+
+				//////is nick find execute
+				if (*it == "NICK"){
+					CommandFactory factory;
+
+					Command *nickCommand = factory.createCommand("NICK");
+					if (nickCommand) {
+						nickCommand->execute(_clients[i], _tokens);
+						// delete nickCommand;
+					}
+				}
+
+			}
+
+
+
+
+			
 		}
-        // if ()
-        // findCmd(Channels, Users, i, use);
     }
     return 1;
 }

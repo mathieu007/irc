@@ -16,6 +16,7 @@
 #include <csignal>
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "CommandFactory.hpp"
 
 class Server
 {
