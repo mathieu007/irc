@@ -2,6 +2,7 @@
 
 Client::Client()
 {
+    _msg = std::string();
 }
 void Client::setHost(string host)
 {
@@ -18,4 +19,13 @@ string Client::getHost() const
 int Client::getSocket() const
 {
     return _socket;
+}
+string &Client::getMsg()
+{
+    return _msg;
+}
+
+void Client::setMsg(string msg)
+{
+    _msg = msg;
 }

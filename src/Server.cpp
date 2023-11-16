@@ -8,10 +8,11 @@ Server::Server(char *pass, int port) : _pass(pass), _port(port)
     _serv_adrr.sin_addr.s_addr = INADDR_ANY;
     _serv_size = sizeof(this->_serv_adrr);
     _client_size = _serv_size;
+    _max_fd_set = 0;
     return;
 }
 
-Server::Server(const Server &serv) : _pass(serv._pass), _port(serv._port), _serv_adrr(serv._serv_adrr), _client_adrr(serv._client_adrr), _client_size(serv._client_size)
+Server::Server(const Server &serv) : _max_fd_set(serv._max_fd_set), _pass(serv._pass), _port(serv._port), _serv_adrr(serv._serv_adrr), _client_adrr(serv._client_adrr), _client_size(serv._client_size)
 {
 }
 
@@ -56,12 +57,12 @@ void Server::_initServerSocket(void)
     if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
         throw std::runtime_error("Error: Couldn't reuse socket address.\n");
     if (bind(this->_socket, (sockaddr *)&(this->_serv_adrr), this->_serv_size) == -1)
-    {        
+    {
         close(this->_socket);
         throw std::runtime_error("Error: Couldn't bind socket address.\n");
     }
     if (listen(this->_socket, SOMAXCONN) == -1)
-        throw std::runtime_error("Error: Cannot listen to socket connection.");
+        throw std::runtime_error("Error: Cannot listen to socket connection.\n");
 }
 
 int Server::_setSockAddrStorage()
@@ -101,18 +102,18 @@ int Server::acceptClient()
         return (-1);
     }
     if (_setSockAddrStorage() == -1)
-        return -1;    
+        return -1;
     return (socketClient);
 }
 
-bool end = false;
+bool endSignal = false;
 
 void sigNcHandler(int sig, siginfo_t *info, void *context)
 {
     (void)info;
     (void)context;
     (void)sig;
-    end = true;
+    endSignal = true;
 }
 
 void setSignal(void)
@@ -132,14 +133,7 @@ void Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_se
     Client *client = new Client();
     client->setSocket(socketClient);
     client->setHost(_sock_host);
-
-    // size_t pos = string::npos;
-    // if ((pos = msg.find("PASS ")) != string::npos)
-    //     std::string pass = msg.substr(pos + 5, );
-    // if ()
     clients[socketClient] = client;
-    // msg = readClientMsg(client);
-    
     FD_SET(socketClient, &use);
 }
 
@@ -156,22 +150,117 @@ string Server::readClientMsg(Client *client)
     return msg;
 }
 
-void sendWelcomeMsg(int socketClient)
+string getWelcomeMsg()
 {
     std::string message;
 
     message += ":irc 001 ";
     message += "math ";
     message += "Welcome to our IRC.\r\n";
-
-    send(socketClient, message.c_str(), message.size(), 0);
-    std::cout << "sent:       " << message << std::endl;
+    return message;
 }
 
-int Server::fdsClientMsgLoop()
+void Server::_setNonBlocking(int sockfd)
 {
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        perror("fcntl");
+        return;
+    }
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1)
+    {
+        perror("fcntl");
+    }
+}
+
+ssize_t Server::_nonBlockingSend(Client *client, string &data, int flags)
+{
+    ssize_t bytesSent = 0;
+    // if a previous io operation failed or block, we need to get the leftover bytes from the client, it's how non blocking io operations should be done...
+    std::string msg = client->getMsg();
+    msg.append(data);
+    const char *ptr = msg.c_str(); 
+    while (bytesSent < (ssize_t)msg.length())
+    {
+        ptr = ptr + bytesSent;
+        ssize_t result = send(client->getSocket(), ptr, msg.length() - bytesSent, flags);
+        // the data is not sent in one swoop we must handle the data per client, we need to save the left over msg data into user msg
+        if (result > 0)
+            bytesSent += result;
+        else if (result == 0)
+        {
+            client->setMsg(ptr);
+            break;
+        }
+        else
+        {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                client->setMsg(ptr);
+                continue;
+            }
+            else if (errno == EINTR)
+            {
+                // Interrupted by a signal, continue sending ????????????
+                continue;
+            }
+            else
+            {
+                // Error occurred
+                perror("send");
+                break;
+            }
+        }
+    }
+    client->getMsg().clear();
+    return bytesSent;
+}
+
+string Server::_nonBlockingRecv(int sockfd, char *buffer, int flags)
+{
+    std::string msg = std::string();
+    ssize_t bytesRead = 0;
+    while (true)
+    {
+        bytesRead = recv(sockfd, buffer, MAX_BUFFER_SIZE, flags);
+        if (bytesRead > 0)
+        {
+            buffer[bytesRead] = '\0';
+            msg += buffer;
+            return msg;            
+        }
+        // Connection closed by the peer
+        else if (bytesRead == 0)
+            return msg;
+        else
+        {
+            // iff no data available we don't wait and send the msg right away...
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                return msg;
+            }
+            else if (errno == EINTR)
+            {
+                // should we continue ??????????
+                break;
+            }
+            else
+            {
+                // Error occurred
+                perror("recv");
+                break;
+            }
+        }
+    }
+    return msg;
+}
+
+int Server::fdSetClientMsgLoop(char *buffer)
+{
+    std::string msg;
+    
     int socketClient = 0;
-    string msg = std::string("");
     for (int i = 0; i < FD_SETSIZE; i++)
     {
         if (FD_ISSET(i, &_reading))
@@ -180,48 +269,66 @@ int Server::fdsClientMsgLoop()
             {
                 socketClient = acceptClient(); // accept == accept connexions on a socket
                 if (socketClient < 0)
-                    return -1;   
-                addClient(_clients, socketClient, _use);                
-                sendWelcomeMsg(socketClient);
+                    return -1;
+                _setNonBlocking(socketClient);
+                addClient(_clients, socketClient, _use);
+                string welcomeMsg = getWelcomeMsg();
+                _nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
             }
             else
-                msg = readClientMsg(_clients[i]);
+                msg = _nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
         }
         _writing = _use;
-        if (FD_ISSET(i, &_writing) && msg.length() > 0)  
-            std::cout << msg << std::endl;
+        if (FD_ISSET(i, &_writing) && msg.length() > 0)
+        {
+            std::cout << "send msg: " << msg << std::endl;
+            _nonBlockingSend(_clients[i], msg, 0);
+        }
+            
     }
     return 1;
 }
 
+int Server::_selectFdSet()
+{
+    _writing = _use;
+    _reading = _use;
+    struct timeval timeout = {0, 0};
+    int result = select(FD_SETSIZE, &_reading, &_writing, NULL, &timeout);
+    if (result == -1)
+    {
+        std::cerr << "select() error: " << strerror(errno) << std::endl;
+        return -1;
+    }
+    return result;
+}
+
 void Server::initServer(void)
 {
-    try {
+    try
+    {
         _initServerSocket();
     }
-    catch (const std::exception &e) 
+    catch (const std::exception &e)
     {
         std::cerr << e.what() << std::endl;
         return;
     }
     FD_ZERO(&_use);
     FD_SET(_socket, &_use);
+    _setNonBlocking(_socket);
     setSignal();
+    char buffer[MAX_BUFFER_SIZE];
     while (1)
-    {       
-        _writing = _use;
-        _reading = _use;
-        struct timeval timeout = {0, 0};
-        if (select(FD_SETSIZE, &_reading, &_writing, NULL, &timeout) == -1)
-        {
-            std::cerr << "select() error" << std::endl;
+    {
+        if (_selectFdSet() < 0)
             return;
-        }
-        if (end == true)
+        if (endSignal == true)
             closeServer();
-        if (fdsClientMsgLoop() == -1)
+        if (fdSetClientMsgLoop(buffer) == -1)
             return;
-    }    
+        
+    }
     close(_socket);
 }
 

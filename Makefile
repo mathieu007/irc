@@ -2,6 +2,7 @@ NAME = ircserv
 SRC =	main.cpp 	\
 		src/Client.cpp \
 		src/Server.cpp \
+		src/String.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
