@@ -2,6 +2,5 @@
 
 #include "Server.hpp"
 
-bool checkClient(Client *client, Server &server);
-bool sendToClient(Client *client, string &msg);
-size_t nonBlockingSend(Client *client, string &data, int flags);
+ssize_t nonBlockingSend(Client *client, string &data, int flags);
+// std::vector<std::string> tokenMessage(std::string message);

@@ -4,6 +4,7 @@
 Client::Client()
 {
     _msg = std::string();
+	_nickName = "user";
 }
 
 ///////////////// SETTER /////////////////

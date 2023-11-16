@@ -3,6 +3,7 @@
 #include <map>
 #include "Command.hpp"
 #include "Nick.hpp"
+#include "Ping.hpp"
 
 // class Nick;
 
@@ -13,6 +14,9 @@ private:
 
 public:
 	CommandFactory();
-	Command *createCommand(const std::string &commandType);
 	~CommandFactory();
+
+	Command *createCommand(const std::string &commandType);
+	bool tokenMessage(std::string message, Client *client);
+	bool isValid(const std::string &commandType);
 };

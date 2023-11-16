@@ -9,9 +9,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 
-class Nick : public Command {
-private:
-	// std::string _NickMessageToClient;
+class Ping : public Command {
 
 public:
 	void execute(Client *client, std::vector<std::string> tokens);

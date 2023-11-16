@@ -156,7 +156,7 @@ string getWelcomeMsg()
     std::string message;
 
     message += ":irc 001 ";
-    message += "bozo ";
+    message += "user ";
     message += "Welcome to our IRC.\r\n";
     return message;
 }
@@ -173,49 +173,6 @@ void Server::_setNonBlocking(int sockfd)
     {
         perror("fcntl");
     }
-}
-
-ssize_t Server::nonBlockingSend(Client *client, string &data, int flags)
-{
-    ssize_t bytesSent = 0;
-    // if a previous io operation failed or block, we need to get the leftover bytes from the client, it's how non blocking io operations should be done...
-    std::string msg = client->getMsg();
-    msg.append(data);
-    const char *ptr = msg.c_str(); 
-    while (bytesSent < (ssize_t)msg.length())
-    {
-        ptr = ptr + bytesSent;
-        ssize_t result = send(client->getSocket(), ptr, msg.length() - bytesSent, flags);
-        // the data is not sent in one swoop we must handle the data per client, we need to save the left over msg data into user msg
-        if (result > 0)
-            bytesSent += result;
-        else if (result == 0)
-        {
-            client->setMsg(ptr);
-            break;
-        }
-        else
-        {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-            {
-                client->setMsg(ptr);
-                continue;
-            }
-            else if (errno == EINTR)
-            {
-                // Interrupted by a signal, continue sending ????????????
-                continue;
-            }
-            else
-            {
-                // Error occurred
-                perror("send");
-                break;
-            }
-        }
-    }
-    client->getMsg().clear();
-    return bytesSent;
 }
 
 string Server::_nonBlockingRecv(int sockfd, char *buffer, int flags)
@@ -260,8 +217,8 @@ string Server::_nonBlockingRecv(int sockfd, char *buffer, int flags)
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     std::string msg;
-    
-    int socketClient = 0;
+
+	int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
         if (FD_ISSET(i, &_reading))
@@ -274,47 +231,19 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 _setNonBlocking(socketClient);
                 addClient(_clients, socketClient, _use);
                 string welcomeMsg = getWelcomeMsg();
-                nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
-            }
+				nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
+			}
             else
                 msg = _nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
         }
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
         {
+			static CommandFactory factory;
+
+			factory.tokenMessage(msg, _clients[i]);
 			
-			/////////parse msg
-			std::vector<std::string> _tokens;
-			std::istringstream iss(msg);
-
-			/////////print msg
-			// std::cout << "msg receved:" << msg << std::endl;
-			std::string token;
-			while (std::getline(iss, token, ' '))
-			{
-				_tokens.push_back(token);
-				// std::cout << "Token: " << token << std::endl;
-			}
-
-			////////////print token
-			for (std::vector<std::string>::iterator it = _tokens.begin(); it != _tokens.end(); ++it)
-			{
-				// 	std::cout << "token:" << *it << std::endl;
-
-				//////is nick find execute
-				if (*it == "NICK")
-				{
-					CommandFactory factory;
-
-					Command *nickCommand = factory.createCommand("NICK");
-					if (nickCommand)
-					{
-						nickCommand->execute(_clients[i], _tokens);
-						// delete nickCommand;
-					}
-				}
-			}
-			std::cout << "send msg: " << msg << std::endl;
+			// std::cout << "send msg: " << msg << std::endl;
             // nonBlockingSend(_clients[i], msg, 0);
         }
             

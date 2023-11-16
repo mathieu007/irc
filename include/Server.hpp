@@ -69,5 +69,4 @@ public:
     void addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use);
     int fdSetClientMsgLoop(char *buffer);
     string readClientMsg(Client *client);
-    ssize_t nonBlockingSend(Client *client, string &data, int flags);
 };

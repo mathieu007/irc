@@ -1,31 +1,5 @@
 #include "Message.hpp"
 
-bool checkClient(Client *client, Server &server)
-{
-    if (client.getPass() != server.getPass())
-    {
-        sendToClient(client, ":irc You didn't registered a Pass to connect to the server. (use /PASS)\r\n");
-        return (false);
-    }
-    else if (client.getUsername().empty())
-    {
-        sendToClient(client, ":irc You didn't registered a Username. (use /USER)\r\n");
-        return (false);
-    }
-    else if (client.getNickname().empty())
-    {
-        sendToClient(client, ":irc You didn't registered a Nickname. (use /NICK)\r\n");
-        return (false);
-    }
-    return (true);
-}
-
-bool sendToClient(Client *client, string &msg)
-{
-    // send here.
-    return (true);
-}
-
 ssize_t nonBlockingSend(Client *client, string &data, int flags)
 {
 	ssize_t bytesSent = 0;
@@ -68,3 +42,7 @@ ssize_t nonBlockingSend(Client *client, string &data, int flags)
 	client->getMsg().clear();
 	return bytesSent;
 }
+
+// std::vector<std::string> tokenMessage(std::string message){
+
+// }
