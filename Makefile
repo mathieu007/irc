@@ -4,6 +4,7 @@ SRC =	main.cpp 	\
 		src/Server.cpp \
 		src/String.cpp \
 		src/Logger.cpp \
+		src/Message.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

@@ -20,6 +20,7 @@
 #include <algorithm>
 #include "String.hpp"
 #include "Logger.hpp"
+#include "Message.hpp"
 
 class Server
 {
@@ -53,7 +54,6 @@ private:
     string _getHostname() const;
     void _initServerSocket(void);
     void _setNonBlocking(int sockfd);
-    string _nonBlockingRecv(int sockfd, char *buffer, int flags);
     int _selectFdSet();
 
 
@@ -70,7 +70,6 @@ public:
     int addClient(int socketClient, fd_set &use);
     int fdSetClientMsgLoop(char *buffer);
     string readClientMsg(Client *client);
-    ssize_t nonBlockingSend(Client *client, string &data, int flags);
     int getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port);
     int getServerIp(string &ip);
     Client *createOrGetClient(string clientAddress);

@@ -10,7 +10,7 @@ Client::Client()
     this->_reqSize = 0;
     this->_banned = false;
     this->_pass = "";
-    this->_nickname = "";
+    this->_nickName = "";
     this->_username = "";
     this->_msg = "";
 }
@@ -38,6 +38,11 @@ string &Client::getMsg()
     return _msg;
 }
 
+void Client::setNickname(std::string nickName)
+{
+    _nickName = nickName;
+}
+
 void Client::setMsg(string msg)
 {
     _msg = msg;
@@ -52,6 +57,7 @@ void Client::setAddress(string address)
 {
     _address = address;
 }
+
 
 void Client::incrementRequest()
 {

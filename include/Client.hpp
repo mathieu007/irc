@@ -13,7 +13,7 @@ using std::string;
 class Client
 {
 private:
-    string _nickname;
+    string _nickName;
     string _username;
     string _pass;
     string _host;
@@ -34,9 +34,12 @@ public:
     string getHost() const;
     int getSocket() const;
     string &getMsg();
+
+    void setNickname(std::string ncikName);
     void setMsg(string msg);
     void setPort(string port);
     void setAddress(string address);
+
     long getCurTime() const;
     void incrementRequest();
     void incrementReqSize(long reqSize);
