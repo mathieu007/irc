@@ -29,15 +29,24 @@ bool CommandFactory::isValid(const std::string &commandType){
 		return 0;
 }
 
-	bool CommandFactory::tokenMessage(std::string message, Client *client)
-{
+bool CommandFactory::tokenMessage(std::string message, Client *client){
+
 	/////////parse msg
 	(void)client;
 	std::vector<std::string> _tokens;
 	std::istringstream iss(message);
 
-	/////////print msg
-	std::cout << BLUE << "msg receved from client:" << message << RESET << std::endl;
+	// std::vector<std::string> commands;
+	// std::string::size_type j = 0;
+	// for (std::string::size_type i = 0; i < message.length(); ++i) {
+	// 	if (message[i] == '\r' && message[i + 1] == '\n')
+	// 		j++;
+	// 	else
+	// 		commands[j] = commands[j] + message[i];
+	// }
+
+		/////////print msg
+		std::cout << BLUE << "msg receved from client:" << message << RESET << std::endl;
 	std::string token;
 	while (std::getline(iss, token, ' '))
 	{
