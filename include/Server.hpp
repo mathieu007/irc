@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <map>
 #include <iostream>
 #include <string>
@@ -16,11 +17,13 @@
 #include <csignal>
 #include <cerrno>
 #include <fcntl.h>
-#include "Channel.hpp"
 #include <algorithm>
 #include "String.hpp"
 #include "Logger.hpp"
 #include "Message.hpp"
+#include "Channel.hpp"
+
+
 
 class Server {
 private:
@@ -46,8 +49,8 @@ private:
     vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
     // clients banned by ip address without port
     std::map<string, Client *> _bannedClients = std::map<string, Client *>();
-    std::map<string, long> _connectionsAttemps = std::map<string, long>();
-    vector<Channel *> _channels = vector<Channel *>();
+    vector<IChannel *> _channels = vector<IChannel *>();
+    std::map<string,string> _channelKeys = std::map<string,string>();
 
     int _setSockAddrStorage();
     string _getHostname() const;
@@ -62,7 +65,6 @@ public:
     ~Server();
     Server(const Server &serv);
     Server &operator=(const Server &serv);
-    void findCmd(int index, fd_set &use);
     int acceptClient();
     void initServer(void);
     void closeServer(void);
@@ -72,9 +74,11 @@ public:
     int getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port);
     int getServerIp(string &ip);
     Client *createOrGetClient(string clientAddress);
-
-    bool nickNameInUse() const;
-    bool userNameInUse() const;
     bool isAllowedToConnect(string clientAddress);
     bool isAllowedToMakeRequest(Client *client);
+    bool nickNameInUse() const;
+    bool userNameInUse(string &userName);
+    IChannel *isInChannel(Client *client, string &channelName) const;
+    IChannel *addToChannel(Client *client, string &channelName);
+    IChannel *addToChannel(Client *client, string &channelName, string &key);
 };

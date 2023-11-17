@@ -187,7 +187,6 @@ void setSignal(void)
     sigaction(SIGINT, &sigNc, NULL);
 }
 
-
 bool Server::isAllowedToConnect(string clientAddress)
 {
     std::map<string, Client *>::iterator banClient = _bannedClients.find(clientAddress);
@@ -234,17 +233,18 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
+    client->setNickname("guest");
     _clients[socketClient] = client;
     FD_SET(socketClient, &use);
     return 0;
 }
 
-string getWelcomeMsg()
+string getWelcomeMsg(Client *client)
 {
     std::string message;
 
     message += ":irc 001 ";
-    message += "user ";
+    message += client->getNickname() + " ";
     message += "Welcome to our IRC.\r\n";
     return message;
 }
@@ -263,13 +263,13 @@ void Server::_setNonBlocking(int sockfd)
     }
 }
 
-
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     std::string msg;
     int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
+
         bool canMakeRequest = true;
         if (FD_ISSET(i, &_reading))
         {
@@ -277,16 +277,16 @@ int Server::fdSetClientMsgLoop(char *buffer)
             {
                 socketClient = acceptClient();
                 if (socketClient < 0)
-                    return -1;                
+                    return -1;
                 if (addClient(socketClient, _use) == -1)
                     continue;
                 _setNonBlocking(socketClient);
-                string welcomeMsg = getWelcomeMsg();
+                string welcomeMsg = getWelcomeMsg(_clients[socketClient]);
                 nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
             }
             else
             {
-                canMakeRequest =_clients[i]->canMakeRequest();
+                canMakeRequest = _clients[i]->canMakeRequest();
                 if (canMakeRequest)
                     msg = nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
                 else if (_clients[i]->isGoingToGetBanned())
@@ -296,7 +296,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
                     string warning = string("You are now banned from our irc server, you have been warnned!");
                     nonBlockingSend(_clients[i], warning, 0);
                 }
-            }                
+            }
         }
         if (!canMakeRequest)
         {
@@ -308,7 +308,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
         {
-            std::cout << "send msg: " << msg << std::endl;
+            std::cout << msg << std::endl;
             parseExec(_clients[i], msg, *this);
         }
     }
@@ -357,6 +357,37 @@ void Server::initServer(void)
             return;
     }
     close(_socket);
+}
+
+IChannel *Server::isInChannel(Client *client, string &channelName) const
+{
+    return client->isInChanel(channelName);
+}
+
+IChannel *Server::addToChannel(Client *client, string &channelName, string &key)
+{
+    std::map<string, string>::iterator keyChannelName = _channelKeys.find(key);
+    if (keyChannelName != _channelKeys.end() && channelName != keyChannelName->second)
+        return nullptr;
+    return client->addToChanel(channelName);
+}
+
+IChannel *Server::addToChannel(Client *client, string &channelName)
+{
+    return client->addToChanel(channelName);
+}
+
+bool Server::userNameInUse(string &userName)
+{
+    vector<Client *>::const_iterator begin = this->_clients.begin();
+    vector<Client *>::const_iterator end = this->_clients.end();
+    while (begin != end)
+    {
+        if (userName == (*begin)->getUsername())
+            return true;
+        begin++;
+    }
+    return false;
 }
 
 void Server::closeServer(void)

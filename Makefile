@@ -8,7 +8,8 @@ SRC =	main.cpp 	\
 		src/String.cpp \
 		src/Logger.cpp \
 		src/Message.cpp \
-		src/Ping.cpp
+		src/Ping.cpp \
+		src/Channel.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

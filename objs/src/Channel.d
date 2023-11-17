@@ -1,5 +1,5 @@
-objs/src/Command.o: src/Command.cpp include/Command.hpp \
+objs/src/Channel.o: src/Channel.cpp include/Channel.hpp \
  include/Client.hpp include/IChannel.hpp
-include/Command.hpp:
+include/Channel.hpp:
 include/Client.hpp:
 include/IChannel.hpp:

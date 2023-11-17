@@ -4,21 +4,19 @@
 #include <iostream>
 #include <vector>
 #include "Client.hpp"
-#define MAX_CLIENTS FD_SETSIZE
+#include "IChannel.hpp"
 
 using std::string;
 using std::vector;
-
-class Client;
-
-class Channel 
+class Channel : public IChannel
 {
     private:
         string _name;
-        vector<Client *> _clients;
+        vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
     public:
         Channel(string name);
         ~Channel();
+        const string &getChannelName() const;
         bool addClient(Client *client);
         bool isInChannel(Client *client);
 };

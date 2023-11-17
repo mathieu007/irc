@@ -1,14 +1,21 @@
 #pragma once
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ctime>
+
+#define MAX_CLIENTS FD_SETSIZE
 #define MAX_BUFFER_SIZE 8096
 #define MAX_REQ_PER_SEC 4
 #define MAX_REQ_BEFORE_BAN 30
 #define MAX_REQ_SIZE_PER_SEC 8096
 
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <ctime>
+#include "IChannel.hpp"
+#include <vector>
+#include <chrono>
+
 using std::string;
+using std::vector;
 
 class Client
 {
@@ -26,6 +33,7 @@ private:
     int _reqSize;
     string _address;
     string _port;
+    vector<IChannel *> _registeredChannels;
 
 public:
     Client();
@@ -37,6 +45,7 @@ public:
 
     void setNickname(std::string ncikName);
     string getNickname() const;
+    string getUsername() const;
     void setMsg(string msg);
     void setPort(string port);
     void setAddress(string address);
@@ -44,7 +53,7 @@ public:
     long getCurTime() const;
     void incrementRequest();
     void incrementReqSize(long reqSize);
-    bool isInChanel() const;
+
     bool userNameInUse() const;
     bool nickNameInUse() const;
     bool passwordsMatches(string toCompare) const;
@@ -52,4 +61,9 @@ public:
     bool isBannned() const;
     bool canMakeRequest();
     bool isGoingToGetBanned();
+
+    IChannel *addToChanel(string &channelName);
+    bool removeFromChanel();
+    IChannel *isInChanel(string &channelName) const;
+    IChannel *findByName(string &channelName) const;
 };

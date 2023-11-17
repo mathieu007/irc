@@ -1,7 +1,4 @@
-#include <chrono>
 #include "Client.hpp"
-#include "Server.hpp"
-
 
 Client::Client()
 {
@@ -16,41 +13,47 @@ Client::Client()
     this->_msg = "";
 }
 
-
-
 void Client::setHost(string host)
 {
     _host = host;
 }
 
-void Client::setSocket(int socket){
+void Client::setSocket(int socket)
+{
     _socket = socket;
 }
 
-void Client::setNickname(std::string nickName){
-	_nickName = nickName;
-}
-
-	////////////////// GETTER ///////////////
-
-	string Client::getHost() const
+void Client::setNickname(std::string nickName)
 {
-	return _host;
+    _nickName = nickName;
 }
 
-int Client::getSocket() const{
+////////////////// GETTER ///////////////
+
+string Client::getHost() const
+{
+    return _host;
+}
+
+int Client::getSocket() const
+{
     return _socket;
 }
 
-std::string Client::getNickname() const {
-	return _nickName;
+string Client::getNickname() const
+{
+    return _nickName;
+}
+
+string Client::getUsername() const
+{
+    return _username;
 }
 
 string &Client::getMsg()
 {
     return _msg;
 }
-
 
 void Client::setMsg(string msg)
 {
@@ -66,7 +69,6 @@ void Client::setAddress(string address)
 {
     _address = address;
 }
-
 
 void Client::incrementRequest()
 {
@@ -124,4 +126,36 @@ bool Client::isGoingToGetBanned()
         return true;
     }
     return false;
+}
+
+IChannel *Client::addToChanel(string &channelName)
+{
+    IChannel *channel = this->findByName(channelName);
+    if (channel == nullptr)
+        return nullptr;
+    channel->addClient(this);
+    return channel;
+}
+
+IChannel *Client::findByName(string &channelName) const
+{
+    vector<IChannel *>::const_iterator begin = this->_registeredChannels.begin();
+    vector<IChannel *>::const_iterator end = this->_registeredChannels.end();
+    if (channelName.empty())
+        return nullptr;
+    while (begin != end)
+    {
+        if (channelName == (*begin)->getChannelName())
+            return *begin;
+        begin++;
+    }
+    return nullptr;
+}
+
+IChannel *Client::isInChanel(string &channelName) const
+{
+    IChannel *found = this->findByName(channelName);
+    if (found == nullptr)
+        return nullptr;
+    return found;
 }
