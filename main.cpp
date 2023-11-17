@@ -10,12 +10,12 @@ int main(int argc, char **argv)
 {
     if (argc == 3)
     {
-        Server server = Server(argv[2], std::stoi(argv[1]));
+        Server server = Server(argv[2], std::stoi(argv[1]), false);
         server.initServer();
     }
     else if (argc == 4)
     {
-        Server server = Server(argv[2], std::stoi(argv[1]), argv[3]);
+        Server server = Server(argv[2], std::stoi(argv[1]), argv[3], false);
         server.initServer();
     }
     std::cerr << "Usage: ./" << argv[0] << " <port>"

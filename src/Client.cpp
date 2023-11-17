@@ -1,9 +1,22 @@
+#include <chrono>
 #include "Client.hpp"
+
 
 Client::Client()
 {
-    _msg = std::string();
+    this->_lastRequestTime = time(nullptr);
+    this->_nextAllowedConnectionTime = 0;
+    this->_numRequests = 0;
+    this->_reqSize = 0;
+    this->_banned = false;
+    this->_pass = "";
+    this->_nickname = "";
+    this->_username = "";
+    this->_msg = "";
 }
+
+
+
 void Client::setHost(string host)
 {
     _host = host;
@@ -38,4 +51,62 @@ void Client::setPort(string port)
 void Client::setAddress(string address)
 {
     _address = address;
+}
+
+void Client::incrementRequest()
+{
+    _numRequests++;
+}
+void Client::incrementReqSize(long reqSize)
+{
+    _reqSize += reqSize;
+}
+
+long Client::getCurTime() const
+{
+    std::chrono::_V2::system_clock::duration durationSinceEpoch = std::chrono::system_clock::now().time_since_epoch();
+    long seconds = std::chrono::duration_cast<std::chrono::seconds>(durationSinceEpoch).count();
+    return seconds;
+}
+
+bool Client::canMakeRequest()
+{
+    _numRequests++;
+    long curTime = getCurTime();
+    if (_lastRequestTime == 0)
+    {
+        _lastRequestTime = curTime;
+        return true;
+    }
+    long diff = curTime - _lastRequestTime;
+    if (diff == 0)
+        diff = 1;
+    if (_numRequests / diff >= MAX_REQ_PER_SEC)
+        return false;
+    _numRequests = 1;
+    _lastRequestTime = curTime;
+    return true;
+}
+
+bool Client::canConnect() const
+{
+    long time = getCurTime();
+    if (time >= this->_nextAllowedConnectionTime || _nextAllowedConnectionTime == 0)
+        return true;
+    return false;
+}
+
+bool Client::isBannned() const
+{
+    return this->_banned;
+}
+
+bool Client::isGoingToGetBanned()
+{
+    if (this->_numRequests >= MAX_REQ_BEFORE_BAN)
+    {
+        _banned = true;
+        return true;
+    }
+    return false;
 }

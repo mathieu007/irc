@@ -1,7 +1,9 @@
 #include "Server.hpp"
 
-Server::Server(char *pass, int port, char *ip) : _pass(pass), _port(port)
+Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(pass), _port(port)
 {
+    if (fileLog)
+        _logger = Logger();
     this->_hostname = _getHostname();
     memset(&_serv_addr, 0, sizeof(_serv_addr));
     _serv_addr.sin_family = AF_INET;
@@ -9,14 +11,14 @@ Server::Server(char *pass, int port, char *ip) : _pass(pass), _port(port)
     _serv_addr.sin_addr.s_addr = inet_addr(ip);
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
-    std::string addr = string();
-    std::string portstr = string();
     _max_fd_set = 0;
     return;
 }
 
-Server::Server(char *pass, int port) : _pass(pass), _port(port)
+Server::Server(char *pass, int port, bool fileLog) : _pass(pass), _port(port)
 {
+    if (fileLog)
+        _logger = Logger();
     this->_hostname = _getHostname();
     memset(&_serv_addr, 0, sizeof(_serv_addr));
     _serv_addr.sin_family = AF_INET;
@@ -24,8 +26,6 @@ Server::Server(char *pass, int port) : _pass(pass), _port(port)
     _serv_addr.sin_addr.s_addr = INADDR_ANY;
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
-    std::string addr = string();
-    std::string portstr = string();
     _max_fd_set = 0;
     return;
 }
@@ -128,12 +128,6 @@ int Server::_setSockAddrStorage()
     string addr = string();
     string port = string();
     int result = getAddress(_serv_addr, _serv_size, addr, port);
-    if (result == 0)
-    {
-        _sock_host = addr;
-        _sock_port = port;
-        return 0;
-    }
     return result;
 }
 
@@ -165,13 +159,11 @@ int Server::acceptClient()
     int socketClient = accept(_socket, (sockaddr *)&_client_adrr, &_client_size); // accept == accept connexions on a socket
     if (socketClient < 0)
     {
-        std::cerr << "Failed to client connection to socket." << std::endl;
+        std::cerr << "Failed to connect client to socket." << std::endl;
         close(socketClient);
-        close(_socket);
+        // close(_socket);
         return (-1);
     }
-    if (_setSockAddrStorage() == -1)
-        return -1;
     return (socketClient);
 }
 
@@ -195,23 +187,51 @@ void setSignal(void)
     sigaction(SIGINT, &sigNc, NULL);
 }
 
-int Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
+
+bool Server::isAllowedToConnect(string clientAddress)
 {
-    std::string msg;
+    std::map<string, Client *>::iterator banClient = _bannedClients.find(clientAddress);
+    if (banClient != _bannedClients.end())
+    {
+        Client *bc = banClient->second;
+        if (bc->isBannned() || !bc->canConnect())
+            return false;
+        return true;
+    }
+    return true;
+}
+
+Client *Server::createOrGetClient(string clientAddress)
+{
+    std::map<string, Client *>::iterator bc = _bannedClients.find(clientAddress);
+    if (bc != _bannedClients.end())
+        return bc->second;
+    Client *client = new Client();
+    return client;
+}
+
+int Server::addClient(int socketClient, fd_set &use)
+{
     string clientAddress = string();
     string clientPort = string();
-
-    Client *client = new Client();
     int result = getAddress(_client_adrr, _client_size, clientAddress, clientPort);
     if (result != 0)
     {
         std::cerr << "Could not get client addresse and port." << std::endl;
         return -1;
     }
+    if (_clients[socketClient] != NULL)
+    {
+        std::cerr << "Client could not be added at index: " << socketClient << std::endl;
+        return -1;
+    }
+    if (!isAllowedToConnect(clientAddress))
+        return -1;
+    Client *client = createOrGetClient(clientAddress);
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    clients[socketClient] = client;  
+    _clients[socketClient] = client;
     FD_SET(socketClient, &use);
     return 0;
 }
@@ -240,17 +260,38 @@ void Server::_setNonBlocking(int sockfd)
     }
 }
 
+/*
+When a socket is in non-blocking mode using:
+int flags = fcntl(sockfd, F_GETFL, 0);
+fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
+select or poll:
+Even though you checked the readiness with select,
+it's possible that the non-blocking operation may still return EWOULDBLOCK or EAGAIN. 
+In such cases, you should handle these errors appropriately and try the operation again later.
+
+send:
+If the socket's send buffer is full, send may return immediately 
+with an error (EAGAIN or EWOULDBLOCK) instead of waiting for space in the buffer.
+
+recv:
+If there is no data available in the socket's receive buffer,
+recv may return immediately with an error (EAGAIN or EWOULDBLOCK) instead of waiting for data to arrive.
+*/
+
+//we need to put the leftover data in a queue so it's processed later.
 ssize_t Server::nonBlockingSend(Client *client, string &data, int flags)
 {
     ssize_t bytesSent = 0;
-    // if a previous io operation failed or block, we need to get the leftover bytes from the client, it's how non blocking io operations should be done...
+    // if a previous io operation failed or was blocking, we need to get the leftover bytes from the client, and resume sending...
     std::string msg = client->getMsg();
     msg.append(data);
+    int len = msg.length();
     const char *ptr = msg.c_str();
-    while (bytesSent < (ssize_t)msg.length())
+    while (bytesSent < (ssize_t)len)
     {
         ptr = ptr + bytesSent;
-        ssize_t result = send(client->getSocket(), ptr, msg.length() - bytesSent, flags);
+        ssize_t result = send(client->getSocket(), ptr, len - bytesSent, flags);
         // the data is not sent in one swoop we must handle the data per client, we need to save the left over msg data into user msg
         if (result > 0)
             bytesSent += result;
@@ -301,7 +342,7 @@ string Server::_nonBlockingRecv(int sockfd, char *buffer, int flags)
             return msg;
         else
         {
-            // iff no data available we don't wait and send the msg right away...
+            // iff no data available or the call is blocking we don't wait and send the msg right away...
             if (errno == EAGAIN || errno == EWOULDBLOCK)
             {
                 return msg;
@@ -328,6 +369,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
     int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
+        bool canMakeRequest = true;
         if (FD_ISSET(i, &_reading))
         {
             if (i == _socket)
@@ -336,13 +378,30 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 if (socketClient < 0)
                     return -1;
                 _setNonBlocking(socketClient);
-                if (addClient(_clients, socketClient, _use) == -1)
+                if (addClient(socketClient, _use) == -1)
                     continue;
                 string welcomeMsg = getWelcomeMsg();
                 nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
             }
             else
-                msg = _nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
+            {
+                canMakeRequest =_clients[i]->canMakeRequest();
+                if (canMakeRequest)
+                    msg = _nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
+                else if (_clients[i]->isGoingToGetBanned())
+                {
+                    std::cerr << "The following client have been banned from our irc server: " << _clients[i]->getHost() << std::endl;
+                    string warning = string("You are now banned from our irc server, you have been warnned!");
+                    nonBlockingSend(_clients[i], warning, 0);
+                }
+            }                
+        }
+        if (!canMakeRequest)
+        {
+            std::cerr << "A client might be trying to ddos our irc server: " << _clients[i]->getHost() << std::endl;
+            string warning = string("Trying to flood our irc server will get you banned forever!");
+            nonBlockingSend(_clients[i], warning, 0);
+            continue;
         }
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
