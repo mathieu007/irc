@@ -1,6 +1,5 @@
 #include "Nick.hpp"
 
-
 void Nick::execute(Client *client, std::vector<std::string> tokens) {
 	std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
 
