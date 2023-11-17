@@ -109,4 +109,5 @@ bool parseExec(Client *client, string &msg, Server &server)
 	(void)server;
 	static CommandFactory cmdFactory;
 	cmdFactory.tokenMessage(msg, client);
+	return true;
 }

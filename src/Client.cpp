@@ -1,5 +1,6 @@
 #include <chrono>
 #include "Client.hpp"
+#include "Server.hpp"
 
 
 Client::Client()
@@ -21,27 +22,35 @@ void Client::setHost(string host)
 {
     _host = host;
 }
-void Client::setSocket(int socket)
-{
+
+void Client::setSocket(int socket){
     _socket = socket;
 }
-string Client::getHost() const
-{
-    return _host;
+
+void Client::setNickname(std::string nickName){
+	_nickName = nickName;
 }
-int Client::getSocket() const
+
+	////////////////// GETTER ///////////////
+
+	string Client::getHost() const
 {
+	return _host;
+}
+
+int Client::getSocket() const{
     return _socket;
 }
+
+std::string Client::getNickname() const {
+	return _nickName;
+}
+
 string &Client::getMsg()
 {
     return _msg;
 }
 
-void Client::setNickname(std::string nickName)
-{
-    _nickName = nickName;
-}
 
 void Client::setMsg(string msg)
 {

@@ -22,8 +22,7 @@
 #include "Logger.hpp"
 #include "Message.hpp"
 
-class Server
-{
+class Server {
 private:
     std::string _hostname;
     std::string _hostIp;

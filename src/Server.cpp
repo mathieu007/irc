@@ -244,7 +244,7 @@ string getWelcomeMsg()
     std::string message;
 
     message += ":irc 001 ";
-    message += "math ";
+    message += "user ";
     message += "Welcome to our IRC.\r\n";
     return message;
 }

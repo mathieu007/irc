@@ -36,6 +36,7 @@ public:
     string &getMsg();
 
     void setNickname(std::string ncikName);
+    string getNickname() const;
     void setMsg(string msg);
     void setPort(string port);
     void setAddress(string address);

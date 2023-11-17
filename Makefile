@@ -2,9 +2,13 @@ NAME = ircserv
 SRC =	main.cpp 	\
 		src/Client.cpp \
 		src/Server.cpp \
+		src/Command.cpp \
+		src/CommandFactory.cpp \
+		src/Nick.cpp \
 		src/String.cpp \
 		src/Logger.cpp \
 		src/Message.cpp \
+		src/Ping.cpp
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
@@ -34,6 +38,9 @@ $(OBJDIR)/%.o: %.cpp
 
 -include $(OBJDEPS)
 
+run: all
+	./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
+	
 clean:
 	$(RM) -rf $(OBJDIR)
 	@printf "$(YELLOW)- Objects removed.$(RESET)\n"

@@ -10,7 +10,7 @@
 			"environment": [{ "name": "config", "value": "Debug" }],
 			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "ft_irc",
-			// "MIMode": "lldb"
+			"MIMode": "lldb"
 		}
 	]
 }
