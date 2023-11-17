@@ -46,6 +46,7 @@ private:
     vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
     // clients banned by ip address without port
     std::map<string, Client *> _bannedClients = std::map<string, Client *>();
+    std::map<string, long> _connectionsAttemps = std::map<string, long>();
     vector<Channel *> _channels = vector<Channel *>();
 
     int _setSockAddrStorage();

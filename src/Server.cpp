@@ -207,6 +207,7 @@ Client *Server::createOrGetClient(string clientAddress)
     if (bc != _bannedClients.end())
         return bc->second;
     Client *client = new Client();
+    _bannedClients[clientAddress] = client;
     return client;
 }
 
@@ -228,6 +229,8 @@ int Server::addClient(int socketClient, fd_set &use)
     if (!isAllowedToConnect(clientAddress))
         return -1;
     Client *client = createOrGetClient(clientAddress);
+    if (!client->canMakeRequest())
+        return -1;
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
@@ -376,10 +379,10 @@ int Server::fdSetClientMsgLoop(char *buffer)
             {
                 socketClient = acceptClient();
                 if (socketClient < 0)
-                    return -1;
-                _setNonBlocking(socketClient);
+                    return -1;                
                 if (addClient(socketClient, _use) == -1)
                     continue;
+                _setNonBlocking(socketClient);
                 string welcomeMsg = getWelcomeMsg();
                 nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
             }
@@ -391,6 +394,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 else if (_clients[i]->isGoingToGetBanned())
                 {
                     std::cerr << "The following client have been banned from our irc server: " << _clients[i]->getHost() << std::endl;
+                    _bannedClients[_clients[i]->getHost()] = _clients[i];
                     string warning = string("You are now banned from our irc server, you have been warnned!");
                     nonBlockingSend(_clients[i], warning, 0);
                 }
