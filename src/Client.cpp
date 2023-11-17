@@ -5,6 +5,7 @@ Client::Client()
 {
     _msg = std::string();
 	_nickName = "user";
+	_isRegistered = 0;
 }
 
 ///////////////// SETTER /////////////////
@@ -21,6 +22,17 @@ void Client::setNickname(std::string nickName){
 	_nickName = nickName;
 }
 
+void Client::setUsername(std::string userName){
+	_userName = userName;
+}
+
+void Client::setRealname(std::string realName){
+	_realName = realName;
+}
+
+void Client::setIsRegistered(){
+	_isRegistered = true;
+}
 	////////////////// GETTER ///////////////
 
 	string Client::getHost() const
@@ -38,6 +50,10 @@ std::string Client::getNickname() const {
 
 std::string Client::getUsername() const {
 	return _userName;
+}
+
+bool Client::getIsRegistered() const {
+	return _isRegistered;
 }
 
 string &Client::getMsg()

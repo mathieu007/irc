@@ -7,7 +7,9 @@ SRC =	main.cpp 	\
 		src/Nick.cpp \
 		src/String.cpp \
 		src/Message.cpp \
-		src/Ping.cpp
+		src/Ping.cpp \
+		src/User.cpp \
+		src/Join.cpp
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

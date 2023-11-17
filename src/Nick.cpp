@@ -1,7 +1,9 @@
 #include "Nick.hpp"
 
 
-void Nick::execute(Client *client, std::vector<std::string> tokens) {
+bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+	(void)server;
+
 	std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
 
 	std::vector<std::string>::iterator it = tokens.begin();
@@ -13,4 +15,5 @@ void Nick::execute(Client *client, std::vector<std::string> tokens) {
 	std::string messageToClient = ":" + oldNickName + " NICK :" + newNickName + "\r\n";
 	std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
 	nonBlockingSend(client, messageToClient, 0);
+	return 1;
 }

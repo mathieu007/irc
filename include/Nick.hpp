@@ -14,5 +14,5 @@ private:
 	// std::string _NickMessageToClient;
 
 public:
-	void execute(Client *client, std::vector<std::string> tokens);
+	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
 };

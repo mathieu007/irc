@@ -241,7 +241,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
         {
 			static CommandFactory factory;
 
-			factory.tokenMessage(msg, _clients[i]);
+			factory.tokenMessage(msg, _clients[i], *this);
 			
 			// std::cout << "send msg: " << msg << std::endl;
             // nonBlockingSend(_clients[i], msg, 0);

@@ -4,6 +4,9 @@
 #include <iostream>
 #include <vector>
 #include "Client.hpp"
+// #include "Message.hpp"
+
+
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -14,6 +17,9 @@
 #define CYAN "\033[36m"
 #define WHITE "\033[37m"
 
+
+class Server;
+
 class Command {
 private:
 	std::vector<std::string> _tokens;
@@ -23,5 +29,5 @@ public:
 	// Command(std::string message);
 	virtual ~Command();
 
-	virtual void execute(Client *client, std::vector<std::string> tokens) = 0;
+	virtual bool execute(Client *client, std::vector<std::string> tokens, Server &server) = 0;
 };
