@@ -14,7 +14,7 @@ SRC =	main.cpp 	\
 		src/Join.cpp \
 		src/Channel.cpp \
 		src/Kick.cpp \
-		src/Part.cpp
+		src/Part.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
@@ -22,8 +22,8 @@ OBJDEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRC))
 
 CC = c++
 RM = rm -f
-CPPFLAGS = -Wall -Wextra -Werror -std=c++11 -g -I./include
-
+CPPFLAGS =  -std=c++11 -g -I./include
+#-Wall -Wextra -Werror
 #Colors:
 GREEN		=	\e[92;5;118m
 YELLOW		=	\e[93;5;226m

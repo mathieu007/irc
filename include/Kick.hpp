@@ -4,6 +4,7 @@
 #include "Message.hpp"
 #include "Channel.hpp"
 
+
 class Kick : public Command {
 private:
 	std::string _errorMessage;

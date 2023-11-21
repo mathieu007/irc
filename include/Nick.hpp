@@ -6,8 +6,9 @@
 class Nick : public Command
 {
 private:
-	// std::string _NickMessageToClient;
+	std::string _errorMessage;
 
 public:
 	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
+	bool isValidCommand(const std::vector<std::string> &tokens, Client *client);
 };

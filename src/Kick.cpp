@@ -41,12 +41,7 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		nonBlockingSend(client, _errorMessage, 0);
 		return false;
 	}
-	// if (!client->isInChanel(channelName)){
-	// 	_errorMessage = "IRC " + client->getNickname() + " " + channelName + " :They aren't on that channel\r\n";
-	// 	std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
-	// 	nonBlockingSend(client, _errorMessage, 0);
-	// 	return false;
-	// }
+	
 	std::cout << GREEN << "Executing KICK command" << RESET << std::endl;
 	std::string messageToClient = createKickMessage(client, tokens);
 	std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;

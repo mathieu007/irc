@@ -1,5 +1,14 @@
 #include "Nick.hpp"
+#include "IServer.hpp"
 
+bool Nick::isValidCommand(const std::vector<std::string> &tokens, Client *client){
+
+	if (tokens.size() < 2)
+		_errorMessage = "431 " + client->getHost() + ":No nickname given\r\n";
+	else if (nickNameExist(tokens[1]))
+		_errorMessage = "476 " + tokens[1] + " :Bad Channel Mask\r\n";
+	return _errorMessage.empty() ? true : false;
+}
 
 bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
 	(void)server;

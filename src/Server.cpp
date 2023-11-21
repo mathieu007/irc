@@ -432,3 +432,198 @@ void Server::addChannel(IChannel* newChannel) {
             delete newChannel;
         }
 }
+
+
+
+///////////////////////////////////////////*//
+bool Server::isModerator(Client *client)
+{
+	// return true;
+	return false;
+}
+bool Server::isInChannel(Client *client, string channel)
+{
+	// return true;
+	return false;
+}
+bool Server::isInChannel(string username, string channel)
+{
+	// return true;
+	return false;
+}
+bool Server::isInChannel(Client *client, string channel, string key)
+{
+	// return true;
+	return false;
+}
+bool Server::channelExist(string channel)
+{
+	// return true;
+	return false;
+}
+bool Server::channelExist(string channel, string key)
+{
+	// return true;
+	return false;
+}
+bool Server::hasTopic(string &channelName)
+{
+	// return true;
+	return false;
+}
+Channel *Server::getChannel(const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::getChannel(const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::isValidChannelKey(const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeClientFromChannel(Client *client, const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeClientFromChannel(Client *client, const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeClientFromChannel(const std::string &username, const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeClientFromChannel(const std::string &username, const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::banClientFromChannel(Client *client, const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::banClientFromChannel(Client *client, const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::addClientToChannel(Client *client, const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::addClientToChannel(Client *client, const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::addTopicToChannel(const std::string &topic, const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::addTopicToChannel(const std::string &topic, const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeTopicFromChannel(const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeTopicFromChannel(const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeChannel(const std::string &channelName)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::removeChannel(const std::string &channelName, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channelName);
+	return nullptr;
+}
+
+Channel *Server::join(Client *client, const std::string &channel)
+{
+	// Implement actual logic here
+	// return new Channel(channel);
+	return nullptr;
+}
+
+Channel *Server::join(Client *client, const std::string &channel, const std::string &key)
+{
+	// Implement actual logic here
+	// return new Channel(channel);
+	return nullptr;
+}
+
+std::vector<Channel *> Server::getClientChannels(Client *client)
+{
+	// Implement actual logic here
+	// return std::vector<Channel *>();
+	return std::vector<Channel *>(); // return an empty vector
+}
+
+std::vector<Channel *> Server::getClientChannels(const std::string &username)
+{
+	// Implement actual logic here
+	return std::vector<Channel *>(); // return an empty vector
+}
+Client *Server::getClient(const std::string &username)
+{
+	// Implement actual logic here
+	// return nullptr;
+	return nullptr; // replace nullptr with actual logic
+}
+
+bool Server::nickNameExist(std::string &ncikName)
+{
+	return false;
+}

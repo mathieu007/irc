@@ -1,6 +1,6 @@
 #include "Part.hpp"
 std::string Part::createPartMessage(Client *client, const std::vector<std::string> &tokens) {
-	return ":" + client->getNickname() + " PART " + tokens[1] + " :kk\r\n";
+	return ":" + client->getNickname() + " PART " + tokens[1] + " " + tokens[2] + "\r\n";
 }
 
 bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server) {
