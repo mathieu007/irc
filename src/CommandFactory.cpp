@@ -5,6 +5,9 @@ CommandFactory::CommandFactory (){
 	_commandMap["PING"] = new Ping();
 	_commandMap["USER"] = new User();
 	_commandMap["JOIN"] = new Join();
+	_commandMap["KICK"] = new Kick();
+	_commandMap["PART"] = new Part();
+
 }
 
 Command *CommandFactory::createCommand(const std::string &commandType)

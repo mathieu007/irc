@@ -7,6 +7,8 @@
 #include "Ping.hpp"
 #include "User.hpp"
 #include "Join.hpp"
+#include "Kick.hpp"
+#include "Part.hpp"
 
 class CommandFactory {
 private:

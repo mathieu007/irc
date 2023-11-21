@@ -1,19 +1,36 @@
 #include "Server.hpp"
-#include "Command.hpp"
 
-Server::Server(char *pass, int port) : _pass(pass), _port(port)
+Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(pass), _port(port)
 {
+    if (fileLog)
+        _logger = Logger();
     this->_hostname = _getHostname();
-    _serv_adrr.sin_family = AF_INET;
-    _serv_adrr.sin_port = htons(this->_port);
-    _serv_adrr.sin_addr.s_addr = INADDR_ANY;
-    _serv_size = sizeof(this->_serv_adrr);
+    memset(&_serv_addr, 0, sizeof(_serv_addr));
+    _serv_addr.sin_family = AF_INET;
+    _serv_addr.sin_port = htons(this->_port);
+    _serv_addr.sin_addr.s_addr = inet_addr(ip);
+    _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
     _max_fd_set = 0;
     return;
 }
 
-Server::Server(const Server &serv) : _max_fd_set(serv._max_fd_set), _pass(serv._pass), _port(serv._port), _serv_adrr(serv._serv_adrr), _client_adrr(serv._client_adrr), _client_size(serv._client_size)
+Server::Server(char *pass, int port, bool fileLog) : _pass(pass), _port(port)
+{
+    if (fileLog)
+        _logger = Logger();
+    this->_hostname = _getHostname();
+    memset(&_serv_addr, 0, sizeof(_serv_addr));
+    _serv_addr.sin_family = AF_INET;
+    _serv_addr.sin_port = htons(this->_port);
+    _serv_addr.sin_addr.s_addr = INADDR_ANY;
+    _serv_size = sizeof(this->_serv_addr);
+    _client_size = _serv_size;
+    _max_fd_set = 0;
+    return;
+}
+
+Server::Server(const Server &serv) : _max_fd_set(serv._max_fd_set), _pass(serv._pass), _port(serv._port), _serv_addr(serv._serv_addr), _client_adrr(serv._client_adrr), _client_size(serv._client_size)
 {
 }
 
@@ -27,7 +44,7 @@ Server &Server::operator=(const Server &serv)
     this->_pass = serv._pass;
     this->_port = serv._port;
     this->_hostname = serv._hostname;
-    this->_serv_adrr = serv._serv_adrr;
+    this->_serv_addr = serv._serv_addr;
     this->_serv_size = serv._serv_size;
     this->_client_size = serv._client_size;
     this->_client_adrr = serv._client_adrr;
@@ -49,6 +66,50 @@ string Server::_getHostname() const
     }
 }
 
+int Server::getServerIp(string &ip)
+{
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) != 0)
+    {
+        perror("gethostname");
+        return -1;
+    }
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(hostname, NULL, &hints, &res) != 0)
+    {
+        perror("getaddrinfo");
+        return -1;
+    }
+
+    for (struct addrinfo *p = res; p != NULL; p = p->ai_next)
+    {
+        void *addr;
+        if (p->ai_family == AF_INET)
+        {
+            struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in *>(p->ai_addr);
+            addr = &(ipv4->sin_addr);
+        }
+        else
+        {
+            struct sockaddr_in6 *ipv6 = reinterpret_cast<struct sockaddr_in6 *>(p->ai_addr);
+            addr = &(ipv6->sin6_addr);
+        }
+        char ipstr[INET6_ADDRSTRLEN];
+        inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr));
+        ip.append(ipstr);
+    }
+    freeaddrinfo(res);
+    return 0;
+}
+
+const std::vector<IChannel *> &Server::getChannels() const{
+	return _channels;
+}
+
 void Server::_initServerSocket(void)
 {
     this->_socket = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM == TCP connection type, IPPROTO_TCP == TCP Protocol // if cannot connect change it to 0
@@ -57,7 +118,7 @@ void Server::_initServerSocket(void)
     int enable = 1;
     if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
         throw std::runtime_error("Error: Couldn't reuse socket address.\n");
-    if (bind(this->_socket, (sockaddr *)&(this->_serv_adrr), this->_serv_size) == -1)
+    if (bind(this->_socket, (sockaddr *)&(this->_serv_addr), this->_serv_size) == -1)
     {
         close(this->_socket);
         throw std::runtime_error("Error: Couldn't bind socket address.\n");
@@ -68,28 +129,33 @@ void Server::_initServerSocket(void)
 
 int Server::_setSockAddrStorage()
 {
+    string addr = string();
+    string port = string();
+    int result = getAddress(_serv_addr, _serv_size, addr, port);
+    return result;
+}
+
+int Server::getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port)
+{
     char host[NI_MAXHOST];
     char service[NI_MAXSERV];
     memset(host, 0, NI_MAXHOST);
     memset(service, 0, NI_MAXSERV);
-    int result = getnameinfo((struct sockaddr *)&_serv_adrr, sizeof(_serv_adrr),
+    int result = getnameinfo(reinterpret_cast<struct sockaddr *>(&sock_addr), size,
                              host, NI_MAXHOST,
                              service, NI_MAXSERV,
                              NI_NUMERICHOST | NI_NUMERICSERV);
-
     if (result == 0)
     {
-        std::cout << "New connection established to Host: " << host << " Port: " << service << std::endl;
-        _sock_host = string(host);
-        _sock_port = string(service);
-        _serv_size = sizeof(_serv_adrr);
+        std::cout << "New connection established to: " << host << ":" << service << std::endl;
+        address.append(host);
+        port.append(service);
         return 0;
     }
     else
-    {
         std::cerr << "getnameinfo failed: " << gai_strerror(result) << std::endl;
-        return -1;
-    }
+
+    return result;
 }
 
 int Server::acceptClient()
@@ -97,13 +163,11 @@ int Server::acceptClient()
     int socketClient = accept(_socket, (sockaddr *)&_client_adrr, &_client_size); // accept == accept connexions on a socket
     if (socketClient < 0)
     {
-        std::cerr << "Failed to client connection to socket." << std::endl;
+        std::cerr << "Failed to connect client to socket." << std::endl;
         close(socketClient);
-        close(_socket);
+        // close(_socket);
         return (-1);
     }
-    if (_setSockAddrStorage() == -1)
-        return -1;
     return (socketClient);
 }
 
@@ -127,36 +191,64 @@ void setSignal(void)
     sigaction(SIGINT, &sigNc, NULL);
 }
 
-void Server::addClient(std::map<int, Client *> &clients, int socketClient, fd_set &use)
+bool Server::isAllowedToConnect(string clientAddress)
 {
-    std::string msg;
+    std::map<string, Client *>::iterator banClient = _bannedClients.find(clientAddress);
+    if (banClient != _bannedClients.end())
+    {
+        Client *bc = banClient->second;
+        if (bc->isBannned() || !bc->canConnect())
+            return false;
+        return true;
+    }
+    return true;
+}
 
+Client *Server::createOrGetClient(string clientAddress)
+{
+    std::map<string, Client *>::iterator bc = _bannedClients.find(clientAddress);
+    if (bc != _bannedClients.end())
+        return bc->second;
     Client *client = new Client();
-    client->setSocket(socketClient);
-    client->setHost(_sock_host);
-    clients[socketClient] = client;
-    FD_SET(socketClient, &use);
+    _bannedClients[clientAddress] = client;
+    return client;
 }
 
-string Server::readClientMsg(Client *client)
+int Server::addClient(int socketClient, fd_set &use)
 {
-    std::string msg = string("");
-    char buffer[4096];
-
-    int read = recv(client->getSocket(), buffer, sizeof(buffer), 0);
-    if (read == -1)
-        std::cerr << "Error reading from client socket." << std::endl;
-    buffer[read] = 0;
-    msg += buffer;
-    return msg;
+    string clientAddress = string();
+    string clientPort = string();
+    int result = getAddress(_client_adrr, _client_size, clientAddress, clientPort);
+    if (result != 0)
+    {
+        std::cerr << "Could not get client addresse and port." << std::endl;
+        return -1;
+    }
+    if (_clients[socketClient] != NULL)
+    {
+        std::cerr << "Client could not be added at index: " << socketClient << std::endl;
+        return -1;
+    }
+    if (!isAllowedToConnect(clientAddress))
+        return -1;
+    Client *client = createOrGetClient(clientAddress);
+    if (!client->canMakeRequest())
+        return -1;
+    client->setAddress(clientAddress);
+    client->setPort(clientPort);
+    client->setSocket(socketClient);
+    client->setNickname("guest");
+    _clients[socketClient] = client;
+    FD_SET(socketClient, &use);
+    return 0;
 }
 
-string getWelcomeMsg()
+string getWelcomeMsg(Client *client)
 {
     std::string message;
 
     message += ":irc 001 ";
-    message += "user ";
+    message += client->getNickname() + " ";
     message += "Welcome to our IRC.\r\n";
     return message;
 }
@@ -175,66 +267,47 @@ void Server::_setNonBlocking(int sockfd)
     }
 }
 
-string Server::_nonBlockingRecv(int sockfd, char *buffer, int flags)
-{
-    std::string msg = std::string();
-    ssize_t bytesRead = 0;
-    while (true)
-    {
-        bytesRead = recv(sockfd, buffer, MAX_BUFFER_SIZE, flags);
-        if (bytesRead > 0)
-        {
-            buffer[bytesRead] = '\0';
-            msg += buffer;
-            return msg;            
-        }
-        // Connection closed by the peer
-        else if (bytesRead == 0)
-            return msg;
-        else
-        {
-            // iff no data available we don't wait and send the msg right away...
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-            {
-                return msg;
-            }
-            else if (errno == EINTR)
-            {
-                // should we continue ??????????
-                break;
-            }
-            else
-            {
-                // Error occurred
-                perror("recv");
-                break;
-            }
-        }
-    }
-    return msg;
-}
-
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     std::string msg;
-
-	int socketClient = 0;
+    int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
+
+        bool canMakeRequest = true;
         if (FD_ISSET(i, &_reading))
         {
             if (i == _socket)
             {
-                socketClient = acceptClient(); // accept == accept connexions on a socket
+                socketClient = acceptClient();
                 if (socketClient < 0)
                     return -1;
+                if (addClient(socketClient, _use) == -1)
+                    continue;
                 _setNonBlocking(socketClient);
-                addClient(_clients, socketClient, _use);
-                string welcomeMsg = getWelcomeMsg();
-				nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
-			}
+                string welcomeMsg = getWelcomeMsg(_clients[socketClient]);
+                nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
+            }
             else
-                msg = _nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
+            {
+                canMakeRequest = _clients[i]->canMakeRequest();
+                if (canMakeRequest)
+                    msg = nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
+                else if (_clients[i]->isGoingToGetBanned())
+                {
+                    std::cerr << "The following client have been banned from our irc server: " << _clients[i]->getHost() << std::endl;
+                    _bannedClients[_clients[i]->getHost()] = _clients[i];
+                    string warning = string("You are now banned from our irc server, you have been warnned!");
+                    nonBlockingSend(_clients[i], warning, 0);
+                }
+            }
+        }
+        if (!canMakeRequest)
+        {
+            std::cerr << "A client might be trying to ddos our irc server: " << _clients[i]->getHost() << std::endl;
+            string warning = string("Trying to flood our irc server will get you banned forever!");
+            nonBlockingSend(_clients[i], warning, 0);
+            continue;
         }
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
@@ -245,8 +318,9 @@ int Server::fdSetClientMsgLoop(char *buffer)
 			
 			// std::cout << "send msg: " << msg << std::endl;
             // nonBlockingSend(_clients[i], msg, 0);
+            // std::cout << msg << std::endl;
+            // parseExec(_clients[i], msg, *this);
         }
-            
     }
     return 1;
 }
@@ -280,6 +354,8 @@ void Server::initServer(void)
     FD_SET(_socket, &_use);
     _setNonBlocking(_socket);
     setSignal();
+    if (_setSockAddrStorage() == -1)
+        return;
     char buffer[MAX_BUFFER_SIZE];
     while (1)
     {
@@ -289,9 +365,39 @@ void Server::initServer(void)
             closeServer();
         if (fdSetClientMsgLoop(buffer) == -1)
             return;
-        
     }
     close(_socket);
+}
+
+IChannel *Server::isInChannel(Client *client, string &channelName) const
+{
+    return client->isInChanel(channelName);
+}
+
+IChannel *Server::addToChannel(Client *client, string &channelName, string &key)
+{
+    std::map<string, string>::iterator keyChannelName = _channelKeys.find(key);
+    if (keyChannelName != _channelKeys.end() && channelName != keyChannelName->second)
+        return nullptr;
+    return client->addToChanel(channelName);
+}
+
+IChannel *Server::addToChannel(Client *client, string &channelName)
+{
+    return client->addToChanel(channelName);
+}
+
+bool Server::userNameInUse(string &userName)
+{
+    vector<Client *>::const_iterator begin = this->_clients.begin();
+    vector<Client *>::const_iterator end = this->_clients.end();
+    while (begin != end)
+    {
+        if (userName == (*begin)->getUsername())
+            return true;
+        begin++;
+    }
+    return false;
 }
 
 void Server::closeServer(void)
@@ -300,4 +406,29 @@ void Server::closeServer(void)
         if (FD_ISSET(i, &_use))
             close(i);
     exit(1);
+}
+
+IChannel* Server::doesChannelExist(const std::string &channelName) const{
+	for (std::vector<IChannel *>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		const Channel *channel = dynamic_cast<const Channel *>(*it);
+		if (channel && channel->getChannelName() == channelName)
+		{
+			return *it; // Return the pointer to the existing channel
+		}
+	}
+	return nullptr; // Channel with the given name does not exist
+}
+
+void Server::addChannel(IChannel* newChannel) {
+        // Check if the channel already exists
+        if (std::find(_channels.begin(), _channels.end(), newChannel) == _channels.end()) {
+            // Channel doesn't exist, add it to the container
+            _channels.push_back(newChannel);
+        }
+		else {
+            // Channel already exists, handle accordingly (e.g., log an error or take appropriate action)
+            // You might also want to delete the newChannel if not needed
+            delete newChannel;
+        }
 }

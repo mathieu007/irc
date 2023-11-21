@@ -6,11 +6,11 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/ircserv",
-			"args": ["6667", "123456"],
+			"args": ["6667", "123456", "172.31.200.244"],
 			"environment": [{ "name": "config", "value": "Debug" }],
 			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "ft_irc",
-			"MIMode": "lldb"
+			// "MIMode": "lldb"
 		}
 	]
 }

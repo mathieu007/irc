@@ -1,4 +1,5 @@
 NAME = ircserv
+
 SRC =	main.cpp 	\
 		src/Client.cpp \
 		src/Server.cpp \
@@ -6,10 +7,14 @@ SRC =	main.cpp 	\
 		src/CommandFactory.cpp \
 		src/Nick.cpp \
 		src/String.cpp \
+		src/Logger.cpp \
 		src/Message.cpp \
 		src/Ping.cpp \
 		src/User.cpp \
-		src/Join.cpp
+		src/Join.cpp \
+		src/Channel.cpp \
+		src/Kick.cpp \
+		src/Part.cpp
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

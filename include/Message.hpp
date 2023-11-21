@@ -1,6 +1,11 @@
 #pragma once
+#include <sys/types.h>
+#include <sys/socket.h>
+#include "Client.hpp"
+#include "CommandFactory.hpp"
 
-#include "Server.hpp"
+class Server;
 
 ssize_t nonBlockingSend(Client *client, string &data, int flags);
-// std::vector<std::string> tokenMessage(std::string message);
+string nonBlockingRecv(int sockfd, char *buffer, int flags);
+bool parseExec(Client *client, string &msg, Server &server);
