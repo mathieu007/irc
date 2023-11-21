@@ -3,7 +3,10 @@
         {
             "name": "ft_irc",
             "includePath": [
-                "${workspaceFolder}/include/",
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include/Command/",
+                "${workspaceFolder}/include/Interfaces/",
+                "${workspaceFolder}/include/Execution/",
                 "${workspaceFolder}/src/"
             ],
             "defines": [],

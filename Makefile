@@ -1,20 +1,20 @@
 NAME = ircserv
 
-SRC =	main.cpp 	\
-		src/Client.cpp \
-		src/Server.cpp \
-		src/Command.cpp \
-		src/CommandFactory.cpp \
-		src/Nick.cpp \
-		src/String.cpp \
-		src/Logger.cpp \
-		src/Message.cpp \
-		src/Ping.cpp \
-		src/User.cpp \
-		src/Join.cpp \
-		src/Channel.cpp \
-		src/Kick.cpp \
-		src/Part.cpp \
+SRC =	src/main.cpp 	\
+		src/Execution/Client.cpp \
+		src/Execution/Server.cpp \
+		src/Execution/String.cpp \
+		src/Execution/Logger.cpp \
+		src/Execution/Message.cpp \
+		src/Command/Command.cpp \
+		src/Command/CommandFactory.cpp \
+		src/Command/Nick.cpp \
+		src/Command/Ping.cpp \
+		src/Command/User.cpp \
+		src/Command/Join.cpp \
+		src/Command/Channel.cpp \
+		src/Command/Kick.cpp \
+		src/Command/Part.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
@@ -22,7 +22,7 @@ OBJDEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRC))
 
 CC = c++
 RM = rm -f
-CPPFLAGS =  -std=c++11 -g -I./include
+CPPFLAGS =  -std=c++11 -g -I./include -I./include/Interfaces -I./include/Execution -I./include/Command
 #-Wall -Wextra -Werror
 #Colors:
 GREEN		=	\e[92;5;118m
