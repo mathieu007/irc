@@ -1,15 +1,14 @@
 #pragma once
 #include <iostream>
 #include <map>
+#include "IServer.hpp"
 #include "Command.hpp"
-#include "Server.hpp"
 #include "Nick.hpp"
 #include "Ping.hpp"
 #include "User.hpp"
 #include "Join.hpp"
 #include "Kick.hpp"
 #include "Part.hpp"
-// #include "IServer.hpp"
 
 class CommandFactory {
 private:
@@ -20,6 +19,6 @@ public:
 	~CommandFactory();
 
 	Command *createCommand(const std::string &commandType);
-	bool tokenMessage(std::string message, Client *client, Server &server);
+	bool tokenMessage(std::string message, Client *client, IServer &server);
 	bool isValid(const std::string &commandType);
 };

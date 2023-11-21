@@ -1,6 +1,6 @@
 #include "Ping.hpp"
 
-bool Ping::execute(Client *client, std::vector<std::string> tokens, Server &server)
+bool Ping::execute(Client *client, std::vector<std::string> tokens, IServer &server)
 {
 	(void)server;
 

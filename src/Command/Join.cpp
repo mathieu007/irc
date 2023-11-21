@@ -26,7 +26,8 @@ bool Join::isValidCommand(const std::vector<std::string> &tokens){
 	return true;
 }
 
-bool Join::execute(Client *client, std::vector<std::string> tokens, Server &server){
+bool Join::execute(Client *client, std::vector<std::string> tokens, IServer &server)
+{
 
 	// printTokens(tokens);
 
@@ -39,18 +40,7 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	std::string messageToClient = createJoinMessage(client, tokens);
 	std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 	nonBlockingSend(client, messageToClient, 0);
-
 	std::string channelName = tokens[1].substr(1);
-
-	IChannel *channelPtr = server.doesChannelExist(channelName);
-	if (channelPtr) {
-		channelPtr->addClient(client);
-	}
-	else {
-		Channel *newChannel = new Channel(channelName);
-		newChannel->addClient(client);
-		server.addChannel(newChannel);
-	}
-
+	server.addClientToChannel(client, channelName);
 	return true;
 }

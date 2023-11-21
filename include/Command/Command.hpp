@@ -3,10 +3,8 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include "IServer.hpp"
 #include "Client.hpp"
-// #include "IServer.hpp"
-// #include "Message.hpp"
-
 
 
 #define RESET "\033[0m"
@@ -30,5 +28,5 @@ public:
 	// Command(std::string message);
 	virtual ~Command();
 
-	virtual bool execute(Client *client, std::vector<std::string> tokens, Server &server) = 0;
+	virtual bool execute(Client *client, std::vector<std::string> tokens, IServer &server) = 0;
 };

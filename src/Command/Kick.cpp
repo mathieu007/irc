@@ -24,7 +24,8 @@ std::string Kick::createKickMessage(Client *client, const std::vector<std::strin
 	return ":" + client->getNickname() + " KICK " + tokens[1] + " " + client->getNickname() + "\r\n";
 }
 
-bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &server){
+bool Kick::execute(Client *client, std::vector<std::string> tokens, IServer &server)
+{
 	(void)server;
 	// printTokens(tokens);
 
@@ -34,7 +35,7 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		return false;
 	}
 	std::string channelName = tokens[1].substr(1);
-	IChannel *channelPtr = server.doesChannelExist(channelName);
+	IChannel *channelPtr = server.getChannel(channelName);
 	if (!channelPtr){
 		_errorMessage = "IRC " + channelName + " :No such channel\r\n";
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;

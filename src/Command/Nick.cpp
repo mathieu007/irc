@@ -1,7 +1,6 @@
 #include "Nick.hpp"
-#include "Server.hpp"
 
-bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, IServer &server){
 	std::string nickName = tokens[1];
 	_errorMessage = "";
 	if (tokens.size() < 2)
@@ -13,7 +12,7 @@ bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Nick::execute(Client *client, std::vector<std::string> tokens, IServer &server) {
 	std::string newNickName = tokens[1];
 	std::string oldNickName = client->getNickname();
 

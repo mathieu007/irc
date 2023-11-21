@@ -104,7 +104,7 @@ string nonBlockingRecv(int sockfd, char *buffer, int flags)
 	return msg;
 }
 
-bool parseExec(Client *client, string &msg, Server &server)
+bool parseExec(Client *client, string &msg, IServer &server)
 {
 	(void)server;
 	static CommandFactory cmdFactory;

@@ -32,7 +32,8 @@ bool CommandFactory::isValid(const std::string &commandType){
 		return 0;
 }
 
-bool CommandFactory::tokenMessage(std::string message, Client *client, Server &server){
+bool CommandFactory::tokenMessage(std::string message, Client *client, IServer &server)
+{
 	(void)server;
 	/////////print msg
 	std::cout << BLUE << "msg receved from client:" << message << RESET << std::endl;

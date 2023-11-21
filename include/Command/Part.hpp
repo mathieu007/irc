@@ -10,6 +10,6 @@ private:
 	std::string _errorMessage;
 
 public:
-	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
+	bool execute(Client *client, std::vector<std::string> tokens, IServer &server);
 	std::string createPartMessage(Client *client, const std::vector<std::string> &tokens);
 };

@@ -11,7 +11,7 @@ private:
 	std::string _kickReasson;
 
 public:
-	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
+	bool execute(Client *client, std::vector<std::string> tokens, IServer &server);
 	bool isValidCommand(const std::vector<std::string> &tokens);
 	void printTokens(const std::vector<std::string> &result);
 	std::string createKickMessage(Client *client, const std::vector<std::string> &tokens);

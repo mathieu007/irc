@@ -12,5 +12,5 @@
 class Ping : public Command {
 
 public:
-	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
+	bool execute(Client *client, std::vector<std::string> tokens, IServer &server);
 };

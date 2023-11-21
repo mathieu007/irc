@@ -1,6 +1,7 @@
 #include "User.hpp"
 
-bool User::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool User::execute(Client *client, std::vector<std::string> tokens, IServer &server)
+{
 	(void)server;
 	(void)tokens;
 
