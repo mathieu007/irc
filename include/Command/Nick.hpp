@@ -10,5 +10,5 @@ private:
 public:
 	~Nick();
 	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
-	bool isValidCommand(const std::vector<std::string> &tokens, Client *client);
+	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
 };

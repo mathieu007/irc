@@ -2,7 +2,8 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	std::string nickName = tokens[1];
 	_errorMessage = "";
 	if (tokens.size() < 2)
