@@ -29,6 +29,5 @@ public:
 	Command();
 	// Command(std::string message);
 	virtual ~Command();
-
 	virtual bool execute(Client *client, std::vector<std::string> tokens, IServer &server) = 0;
 };

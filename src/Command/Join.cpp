@@ -41,6 +41,6 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, IServer &ser
 	std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 	nonBlockingSend(client, messageToClient, 0);
 	std::string channelName = tokens[1].substr(1);
-	server.addClientToChannel(client, channelName);
+	server.join(client, channelName);
 	return true;
 }

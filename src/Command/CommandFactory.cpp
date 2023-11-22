@@ -7,7 +7,6 @@ CommandFactory::CommandFactory (){
 	_commandMap["JOIN"] = new Join();
 	_commandMap["KICK"] = new Kick();
 	_commandMap["PART"] = new Part();
-
 }
 
 Command *CommandFactory::createCommand(const std::string &commandType)

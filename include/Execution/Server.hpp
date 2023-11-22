@@ -18,6 +18,7 @@
 #include <algorithm>
 #include "String.hpp"
 #include "IServer.hpp"
+#include "Map.hpp"
 #include "Message.hpp"
 #include "IChannel.hpp"
 #include "Logger.hpp"
@@ -45,15 +46,16 @@ private:
     /// @brief non blocking io for reading.
     fd_set _reading;
     vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
-    // clients banned by ip address without port
-    std::map<string, Client *> _bannedClients = std::map<string, Client *>();
-    vector<IChannel *> _channels = vector<IChannel *>();
-    std::map<string, string> _channelKeys = std::map<string, string>();
+    //banned
+    Map<string, Client *> _bannedClients = Map<string, Client *>();
+    Map<string, string> _channels = Map<string, string>();
+
     int _setSockAddrStorage();
     string _getHostname() const;
     void _initServerSocket(void);
     void _setNonBlocking(int sockfd);
     int _selectFdSet();
+
 
 public:
     Server(char *pass, int port, bool fileLog);
@@ -81,6 +83,7 @@ public:
     void addChannel(IChannel *newChannel);
     const std::vector<IChannel *> &getChannels() const;
     /////////////
+
     IChannel *join(Client *client, std::string &channel);
     IChannel *join(Client *client, std::string &channel, std::string &key);
     vector<IChannel *> getClientChannels(Client *client);
