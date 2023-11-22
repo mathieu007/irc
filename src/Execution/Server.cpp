@@ -398,7 +398,7 @@ bool Server::cleanAll()
     Map<string, Channel *>::iterator it = _channels.begin();
     while (it != _channels.end())
     {
-        if (*it && (*it).second)
+        if ((*it).second)
             delete (*it).second;
         it++;
     }
