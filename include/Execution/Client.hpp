@@ -32,7 +32,6 @@ private:
     int _socket;
     bool _isAuthorized;
     bool _isBanned;
-    bool _isModerator;
     long _lastRequestTime;
     long _nextAllowedConnectionTime;
     int _numRequests;
@@ -71,7 +70,6 @@ public:
     void incrementRequest();
     void incrementReqSize(long reqSize);
 
-    bool isModerator() const;
     bool isAuthorized() const;
     bool passIsEmpty() const;
     bool canConnect() const;

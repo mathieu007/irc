@@ -15,21 +15,21 @@ public:
     // }
     bool hasKey(const TKey &key)
     {
-        if (this->empty())
+        if (this->isEmpty())
             return false;
         if (this->find(key) == this->end())
             return false;
         return true;
     }
 
-    bool empty()
+    bool isEmpty()
     {
         return this->empty();
     }
 
     bool tryGet(const TKey &key, T val)
     {
-        if (this->empty())
+        if (this->isEmpty())
             return false;
         typename std::map<TKey, T>::const_iterator it = this->find(key);
         if (it == this->end())
@@ -46,7 +46,7 @@ public:
 
     bool remove(const TKey &key)
     {
-        if (this->empty())
+        if (this->isEmpty())
             return false;
         typename std::map<TKey, T>::iterator it = this->find(key);
         if (it == this->end())
@@ -57,7 +57,7 @@ public:
 
     bool removeAll()
     {
-        if (this->empty())
+        if (this->isEmpty())
             return false;
         typename std::map<TKey, T>::iterator it = this->begin();
         typename std::map<TKey, T>::iterator end = this->end();

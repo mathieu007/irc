@@ -15,6 +15,7 @@ private:
     string _key;
     string _topic;
     bool _hasTopic;
+    Client *_moderator;
 
 public:
     Channel(string &name);
@@ -24,6 +25,7 @@ public:
     const string &getName() const;
     const string &getKey() const;
     const string &getId() const;
-    
+    Client *getModerator();
+    void setModerator(Client *moderator);
     void setTopic(string &topic);
 };

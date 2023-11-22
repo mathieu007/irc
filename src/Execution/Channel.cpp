@@ -6,6 +6,10 @@ Channel::Channel(string &name)
 {
     _name = name;
     _id = name;
+    _topic = "";
+    _hasTopic = false;
+    _key = "";
+    _moderator = nullptr;
 }
 
 Channel::Channel(string &name, string &key)
@@ -13,6 +17,9 @@ Channel::Channel(string &name, string &key)
     _name = name;
     _key = key;
     _id = _name + ":" + _key;
+    _moderator = nullptr;
+    _topic = "";
+    _hasTopic = false;
 }
 
 bool Channel::hasTopic() const
@@ -23,6 +30,11 @@ bool Channel::hasTopic() const
 void Channel::setTopic(string &topic)
 {
     this->_topic = topic;
+}
+
+void Channel::setModerator(Client *moderator)
+{
+    this->_moderator = moderator;
 }
 
 const string &Channel::getId() const
@@ -38,6 +50,11 @@ const string &Channel::getKey() const
 const string &Channel::getName() const
 {
     return this->_name;
+}
+
+Client *Channel::getModerator()
+{
+    return this->_moderator;
 }
 
 // Map<string, Client *> &Channel::getClients()

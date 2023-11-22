@@ -18,7 +18,8 @@ int main(int argc, char **argv)
         Server server = Server(argv[2], std::stoi(argv[1]), argv[3], false);
         server.initServer();
     }
-    std::cerr << "Usage: ./" << argv[0] << " <port>"
+    std::cerr << "Usage: ./" << argv[0] 
+            << " <port>"
               << " <pass>"
               << " <optional:ip>" << std::endl;
     exit(1);

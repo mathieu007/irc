@@ -15,7 +15,6 @@ Client::Client()
     this->_msg = "";
     this->_address = "";
     this->_port = "";
-    this->_isModerator = false;
     this->_kickedChannels = Map<string, Channel *>();
     this->_channels = Map<string, Channel *>();
     this->_isAuthorized = false;
@@ -52,7 +51,6 @@ void Client::setIsRegistered()
 {
     _isRegistered = true;
 }
-////////////////// GETTER ///////////////
 
 string Client::getHost() const
 {
@@ -270,7 +268,3 @@ bool Client::removeFromKickChannel(Channel *channel)
     return false;
 }
 
-bool Client::isModerator() const
-{
-    return _isModerator;
-}

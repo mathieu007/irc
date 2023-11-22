@@ -47,7 +47,7 @@ private:
     fd_set _writing;
     /// @brief non blocking io for reading.
     fd_set _reading;
-    vector<Client *> _clients = vector<Client *>();
+    vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
     // banned clients by ip address
     Map<string, Client *> _bannedClients = Map<string, Client *>();
     Map<string, Channel *> _channels = Map<string, Channel *>();
@@ -66,7 +66,8 @@ public:
     Server &operator=(const Server &serv);
     int acceptClient();
     void initServer(void);
-    void closeServer(void);
+    void closeFds(void);
+    bool cleanAll();
     int addClient(int socketClient, fd_set &use);
     int fdSetClientMsgLoop(char *buffer);
     string readClientMsg(Client *client);
@@ -75,15 +76,13 @@ public:
     Client *createOrGetClient(string clientAddress);
     bool isAllowedToConnect(string clientAddress);
     bool isAllowedToMakeRequest(Client *client);
-    bool nickNameInUse() const;
-    bool userNameInUse(string &userName);
     Channel *isInChannel(Client *client, string &channelName) const;
     Channel *addToChannel(Client *client, string &channelName);
     Channel *addToChannel(Client *client, string &channelName, string &key);
     void addChannel(Channel *newChannel);
     string hashPassword(const std::string &password);
 
-    string getChannelId(string &channelName, string &channelKey);
+    string getChannelId(const string &channelName, const string &channelKey);
     const std::vector<Channel *> getChannels() const;
     Channel *join(Client *client, std::string &channel);
     Channel *join(Client *client, std::string &channel, std::string &key);
@@ -93,7 +92,7 @@ public:
     Client *getClient(std::string &username);
     bool isAuthorized(Client *client);
     bool checkAndSetAuthorization(Client *client, const string &rawClientPassword);
-    bool isModerator(Client *client);
+    bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);
     bool isInChannel(Client *client, std::string &channel, std::string &key);
     bool isInKickChannel(Client *client, std::string &channelName);
@@ -102,13 +101,17 @@ public:
     bool channelExist(std::string &channel, std::string &key);
     bool hasTopic(std::string &channelName);
     bool hasTopic(string &channelName, string &key);
-    Channel *getChannel(std::string &channelName);
-    Channel *getChannel(std::string &channelName, std::string &key);
-    Channel *removeClientFromChannel(Client *client, std::string &channelName);
-    Channel *removeClientFromChannel(Client *client, std::string &channelName, std::string &key);
+    bool removeClient(string &username);
+    bool removeClient(Client *client);
+    bool banClient(Client *client);
+    bool nickNameExist(string &ncikName);
+    bool userNameExist(string &userName);
+    Channel *getChannel(const string &channelName);
+    Channel *getChannel(const std::string &channelName, const std::string &key);
+    Channel *removeClientFromChannel(Client *client, const std::string &channelName);
+    Channel *removeClientFromChannel(Client *client, const std::string &channelName, const std::string &key);
     Channel *kickClientFromChannel(Client *client, std::string &channelName);
     Channel *kickClientFromChannel(Client *client, std::string &channelName, std::string &key);
-    bool banClient(Client *client);
     Channel *addClientToChannel(Client *client, std::string &channelName);
     Channel *addClientToChannel(Client *client, std::string &channelName, std::string &key);
     Channel *addTopicToChannel(std::string &topic, std::string &channelName);
@@ -117,5 +120,4 @@ public:
     Channel *removeTopicFromChannel(std::string &channelName, std::string &key);
     vector<Client *> removeChannel(std::string &channelName);
     vector<Client *> removeChannel(std::string &channelName, string &key);
-    bool nickNameExist(string &ncikName);
 };
