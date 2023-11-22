@@ -3,18 +3,17 @@
 #include <string>
 #include <iterator>
 #include <map>
-#include "IMap.hpp"
 
 template <typename TKey, typename T>
-class Map : public std::map<TKey, T>, public IMap<TKey, T>
+class Map : public std::map<TKey, T>
 {
 public:
     Map() {}
-    ~Map()
-    {
-        removeAll();
-    }
-    bool hasKey(TKey &key)
+    // virtual ~Map()
+    // {
+    //     removeAll();
+    // }
+    bool hasKey(const TKey &key)
     {
         if (this->empty())
             return false;
@@ -28,7 +27,7 @@ public:
         return this->empty();
     }
 
-    bool tryGet(TKey &key, T &val)
+    bool tryGet(const TKey &key, T val)
     {
         if (this->empty())
             return false;
@@ -39,13 +38,13 @@ public:
         return true;
     }
 
-    T &get(TKey &key)
+    T get(const TKey &key)
     {
         typename std::map<TKey, T>::iterator it = this->find(key);
         return (*it).second;
     }
 
-    bool remove(TKey &key)
+    bool remove(const TKey &key)
     {
         if (this->empty())
             return false;
@@ -62,19 +61,24 @@ public:
             return false;
         typename std::map<TKey, T>::iterator it = this->begin();
         typename std::map<TKey, T>::iterator end = this->end();
-        while (it != end)
-        {
-            delete &(*it).second;
-        }
+        // while (it != end)
+        // {
+        //     // delete (*it).second;
+        // }
         return true;
     }
 
-    void addOrReplace(TKey &key, T &val)
+    void add(const TKey &key, T val)
     {
         (*this)[key] = val;
     }
 
-    bool replace(TKey &key, T &val)
+    void addOrReplace(const TKey &key, T val)
+    {
+        (*this)[key] = val;
+    }
+
+    bool replace(const TKey &key, T val)
     {
         if (!this->hasKey(key))
             return false;
@@ -82,7 +86,7 @@ public:
         return true;
     }
 
-    bool addIfNotExist(TKey &key, T &val)
+    bool addIfNotExist(const TKey &key, T val)
     {
         if (!this->hasKey(key))
         {

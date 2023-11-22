@@ -1,4 +1,5 @@
 #include "Message.hpp"
+#include "CommandFactory.hpp"
 
 /*
 When a socket is in non-blocking mode using:
@@ -21,7 +22,7 @@ recv may return immediately with an error (EAGAIN or EWOULDBLOCK) instead of wai
 
 // we need to put the leftover data in a queue so it's processed later.
 
-ssize_t nonBlockingSend(Client *client, string &data, int flags)
+ssize_t sendMsg(Client *client, string &data, int flags)
 {
 	ssize_t bytesSent = 0;
 	// if a previous io operation failed or was blocking, we need to get the leftover bytes from the client, and resume sending...
@@ -65,7 +66,7 @@ ssize_t nonBlockingSend(Client *client, string &data, int flags)
 	return bytesSent;
 }
 
-string nonBlockingRecv(int sockfd, char *buffer, int flags)
+string recvMsg(int sockfd, char *buffer, int flags)
 {
 	std::string msg = std::string();
 	ssize_t bytesRead = 0;
@@ -104,7 +105,7 @@ string nonBlockingRecv(int sockfd, char *buffer, int flags)
 	return msg;
 }
 
-bool parseExec(Client *client, string &msg, IServer &server)
+bool parseAndExec(Client *client, string &msg, Server &server)
 {
 	(void)server;
 	static CommandFactory cmdFactory;

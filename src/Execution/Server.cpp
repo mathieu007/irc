@@ -1,6 +1,10 @@
 #include "Server.hpp"
+#include "CommandFactory.hpp"
+#include "Message.hpp"
+#include "Channel.hpp"
+#include "Client.hpp"
 
-Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(pass), _port(port)
+Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPassword(pass)), _port(port)
 {
     if (fileLog)
         _logger = Logger();
@@ -15,7 +19,7 @@ Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(pass), _por
     return;
 }
 
-Server::Server(char *pass, int port, bool fileLog) : _pass(pass), _port(port)
+Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), _port(port)
 {
     if (fileLog)
         _logger = Logger();
@@ -36,7 +40,6 @@ Server::Server(const Server &serv) : _max_fd_set(serv._max_fd_set), _pass(serv._
 
 Server::~Server(void)
 {
-    return;
 }
 
 Server &Server::operator=(const Server &serv)
@@ -64,6 +67,19 @@ string Server::_getHostname() const
         throw std::runtime_error("Could not get hostname.\n");
         return NULL;
     }
+}
+
+// not secure but as cpp98 doesn't support cryptographic...
+string Server::hashPassword(const std::string &password)
+{
+    if (password.empty())
+        return password;
+    std::ostringstream hashed_ss;
+    for (size_t i = 0; i < password.size(); i++)
+    {
+        hashed_ss << std::hex << std::setw(2) << std::setfill('0') << (int)password[i];
+    }
+    return hashed_ss.str();
 }
 
 int Server::getServerIp(string &ip)
@@ -106,9 +122,16 @@ int Server::getServerIp(string &ip)
     return 0;
 }
 
-const std::vector<IChannel *> &Server::getChannels() const
+const std::vector<Channel *> Server::getChannels() const
 {
-    return _channels;
+    std::map<string, Channel *>::const_iterator start = _channels.begin();
+    std::map<string, Channel *>::const_iterator end = _channels.end();
+    vector<Channel *> vec = vector<Channel *>();
+    for (std::map<string, Channel *>::const_iterator it = start; it != end; ++it)
+    {
+        vec.push_back(it->second);
+    }
+    return vec;
 }
 
 void Server::_initServerSocket(void)
@@ -166,7 +189,7 @@ int Server::acceptClient()
     {
         std::cerr << "Failed to connect client to socket." << std::endl;
         close(socketClient);
-        // close(_socket);
+        close(_socket);
         return (-1);
     }
     return (socketClient);
@@ -194,24 +217,21 @@ void setSignal(void)
 
 bool Server::isAllowedToConnect(string clientAddress)
 {
-    std::map<string, Client *>::iterator banClient = _bannedClients.find(clientAddress);
-    if (banClient != _bannedClients.end())
+    Client *client;
+    if (_bannedClients.tryGet(clientAddress, client))
     {
-        Client *bc = banClient->second;
-        if (bc->isBannned() || !bc->canConnect())
+        if (client->isBannned() || !client->canConnect())
             return false;
         return true;
     }
-    return true;
+    return false;
 }
 
 Client *Server::createOrGetClient(string clientAddress)
 {
-    std::map<string, Client *>::iterator bc = _bannedClients.find(clientAddress);
-    if (bc != _bannedClients.end())
-        return bc->second;
-    Client *client = new Client();
-    _bannedClients[clientAddress] = client;
+    Client *client = nullptr;
+    if (!_bannedClients.tryGet(clientAddress, client))
+        client = new Client();
     return client;
 }
 
@@ -239,7 +259,7 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setPort(clientPort);
     client->setSocket(socketClient);
     client->setNickname("guest");
-    _clients[socketClient] = client;
+    _clients.insert(_clients.begin() + socketClient, client);
     FD_SET(socketClient, &use);
     return 0;
 }
@@ -274,7 +294,6 @@ int Server::fdSetClientMsgLoop(char *buffer)
     int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
-
         bool canMakeRequest = true;
         if (FD_ISSET(i, &_reading))
         {
@@ -287,19 +306,20 @@ int Server::fdSetClientMsgLoop(char *buffer)
                     continue;
                 _setNonBlocking(socketClient);
                 string welcomeMsg = getWelcomeMsg(_clients[socketClient]);
-                nonBlockingSend(_clients[socketClient], welcomeMsg, 0);
+                sendMsg(_clients[socketClient], welcomeMsg, 0);
             }
             else
             {
                 canMakeRequest = _clients[i]->canMakeRequest();
                 if (canMakeRequest)
-                    msg = nonBlockingRecv(_clients[i]->getSocket(), buffer, 0);
+                    msg = recvMsg(_clients[i]->getSocket(), buffer, 0);
                 else if (_clients[i]->isGoingToGetBanned())
                 {
                     std::cerr << "The following client have been banned from our irc server: " << _clients[i]->getHost() << std::endl;
-                    _bannedClients[_clients[i]->getHost()] = _clients[i];
+                    string key = _clients[i]->getHost();
+                    _bannedClients.addOrReplace(key, _clients[i]);
                     string warning = string("You are now banned from our irc server, you have been warnned!");
-                    nonBlockingSend(_clients[i], warning, 0);
+                    sendMsg(_clients[i], warning, 0);
                 }
             }
         }
@@ -307,14 +327,13 @@ int Server::fdSetClientMsgLoop(char *buffer)
         {
             std::cerr << "A client might be trying to ddos our irc server: " << _clients[i]->getHost() << std::endl;
             string warning = string("Trying to flood our irc server will get you banned forever!");
-            nonBlockingSend(_clients[i], warning, 0);
+            sendMsg(_clients[i], warning, 0);
             continue;
         }
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
         {
             static CommandFactory factory;
-
             factory.tokenMessage(msg, _clients[i], *this);
 
             // std::cout << "send msg: " << msg << std::endl;
@@ -370,24 +389,6 @@ void Server::initServer(void)
     close(_socket);
 }
 
-IChannel *Server::isInChannel(Client *client, string &channelName) const
-{
-    return client->isInChanel(channelName);
-}
-
-IChannel *Server::addToChannel(Client *client, string &channelName, string &key)
-{
-    std::map<string, string>::iterator keyChannelName = _channelKeys.find(key);
-    if (keyChannelName != _channelKeys.end() && channelName != keyChannelName->second)
-        return nullptr;
-    return client->addToChanel(channelName);
-}
-
-IChannel *Server::addToChannel(Client *client, string &channelName)
-{
-    return client->addToChanel(channelName);
-}
-
 bool Server::userNameInUse(string &userName)
 {
     vector<Client *>::const_iterator begin = this->_clients.begin();
@@ -409,223 +410,334 @@ void Server::closeServer(void)
     exit(1);
 }
 
-IChannel *Server::doesChannelExist(const std::string &channelName) const
+string Server::getChannelId(string &channelName, string &channelKey)
 {
-    for (std::vector<IChannel *>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
-    {
-        const Channel *channel = dynamic_cast<const Channel *>(*it);
-        if (channel && channel->getChannelName() == channelName)
-        {
-            return *it; // Return the pointer to the existing channel
-        }
-    }
-    return nullptr; // Channel with the given name does not exist
+    string key = channelName + ":" + channelKey;
+    return key;
 }
 
-void Server::addChannel(IChannel *newChannel)
+bool Server::isAuthorized(Client *client)
 {
-    // Check if the channel already exists
-    if (std::find(_channels.begin(), _channels.end(), newChannel) == _channels.end())
+    return client->isAuthorized();
+}
+
+bool Server::checkAndSetAuthorization(Client *client, const string &rawClientPassword)
+{
+    if (client->isAuthorized())
+        return true;
+    if (_pass == hashPassword(rawClientPassword))
     {
-        // Channel doesn't exist, add it to the container
-        _channels.push_back(newChannel);
+        client->setIsAuthorized(true);
+        return true;
     }
-    else
-    {
-        // Channel already exists, handle accordingly (e.g., log an error or take appropriate action)
-        // You might also want to delete the newChannel if not needed
-        delete newChannel;
-    }
+    return false;
 }
 
 bool Server::isModerator(Client *client)
 {
-    // return true;
-    return false;
+    return client->isModerator();
 }
-bool Server::isInChannel(Client *client, string &channel)
+bool Server::isInChannel(Client *client, string &channelName)
 {
-    // return true;
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel && client->isInChannel(channel))
+        return true;
     return false;
 }
-bool Server::isInChannel(string &username, string &channel)
+bool Server::isInChannel(Client *client, string &channelName, string &key)
 {
-    // return true;
+    Channel *channel = nullptr;
+    if (!client)
+        return false;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel && client->isInChannel(channel))
+        return true;
     return false;
 }
-bool Server::isInChannel(Client *client, string &channel, string &key)
+
+bool Server::isInKickChannel(Client *client, std::string &channelName)
 {
-    // return true;
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel && client->isInKickChannel(channel))
+        return true;
     return false;
 }
+
+bool Server::isInKickChannel(Client *client, std::string &channelName, std::string &key)
+{
+    Channel *channel = nullptr;
+    if (!client)
+        return false;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel && client->isInKickChannel(channel))
+        return true;
+    return false;
+}
+
 bool Server::channelExist(string &channel)
 {
-    // return true;
-    return false;
+    return _channels.hasKey(channel);
 }
+
 bool Server::channelExist(string &channel, string &key)
 {
-    // return true;
-    return false;
+    string id = getChannelId(channel, key);
+    return _channels.hasKey(id);
 }
+
 bool Server::hasTopic(string &channelName)
 {
-    // return true;
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel && channel->hasTopic())
+        return true;
     return false;
 }
-IChannel *Server::getChannel(std::string &channelName)
+
+bool Server::hasTopic(string &channelName, string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel && channel->hasTopic())
+        return true;
+    return false;
+}
+
+vector<Client *> Server::getClientsInAChannel(Channel *channel)
+{
+    vector<Client *> clients = vector<Client *>();
+    if (!channel)
+        return clients;
+    vector<Client *>::iterator it = _clients.begin();
+    while (it != _clients.end())
+    {
+        if ((*it) && (*it)->isInChannel(channel))
+        {
+            clients.push_back(*it);
+        }
+        it++;
+    }
+    return clients;
+}
+
+Channel *Server::getChannel(std::string &channelName)
+{
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel)
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::getChannel(std::string &channelName, std::string &key)
+Channel *Server::getChannel(std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel)
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::isValidChannelKey(std::string &channelName, std::string &key)
+Channel *Server::removeClientFromChannel(Client *client, std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel && client->getChannels().remove(channel->getId()))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::removeClientFromChannel(Client *client, std::string &channelName)
+Channel *Server::removeClientFromChannel(Client *client, std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel && client->getChannels().remove(channel->getId()))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::removeClientFromChannel(Client *client, std::string &channelName, std::string &key)
+Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    if (_channels.tryGet(channelName, channel) && channel && client->addToKickedChannel(channel))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::removeClientFromChannel(std::string &username, std::string &channelName)
+Channel *Server::kickClientFromChannel(Client *client, std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = nullptr;
+    string id = getChannelId(channelName, key);
+    if (_channels.tryGet(id, channel) && channel && client->addToKickedChannel(channel))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::removeClientFromChannel(std::string &username, std::string &channelName, std::string &key)
+bool Server::banClient(Client *client)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    if (_bannedClients.hasKey(client->getUsername()))
+        return false;
+    _bannedClients.add(client->getUsername(), client);
+    if (_clients.size() < client->getSocket())
+        return true;
+    _clients.erase(_clients.begin() + client->getSocket());
+    return true;
+}
+
+Channel *Server::addClientToChannel(Client *client, std::string &channelName)
+{
+    Channel *channel = getChannel(channelName);
+    if (channel && client->addToChannel(channel))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::banClientFromChannel(Client *client, std::string &channelName)
+Channel *Server::addClientToChannel(Client *client, std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = getChannel(channelName, key);
+    if (channel && client->addToChannel(channel))
+        return channel;
     return nullptr;
 }
 
-IChannel *Server::banClientFromChannel(Client *client, std::string &channelName, std::string &key)
+Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = getChannel(channelName);
+    if (channel)
+    {
+        channel->setTopic(topic);
+        return channel;
+    }
     return nullptr;
 }
 
-IChannel *Server::addClientToChannel(Client *client, std::string &channelName)
+Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = getChannel(channelName, key);
+    if (channel)
+    {
+        channel->setTopic(topic);
+        return channel;
+    }
     return nullptr;
 }
 
-IChannel *Server::addClientToChannel(Client *client, std::string &channelName, std::string &key)
+Channel *Server::removeTopicFromChannel(std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = getChannel(channelName);
+    if (channel->hasTopic())
+    {
+        string topic = "";
+        channel->setTopic(topic);
+        return channel;
+    }
     return nullptr;
 }
 
-IChannel *Server::addTopicToChannel(std::string &topic, std::string &channelName)
+Channel *Server::removeTopicFromChannel(std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
+    Channel *channel = getChannel(channelName);
+    if (channel->hasTopic())
+    {
+        string topic = "";
+        channel->setTopic(topic);
+        return channel;
+    }
     return nullptr;
 }
 
-IChannel *Server::addTopicToChannel(std::string &topic, std::string &channelName, std::string &key)
+/// @brief this will remove the channel but also all users from this channels if they are in...
+/// @param channelName
+/// @return we return the list of client from which they were removed.
+vector<Client *> Server::removeChannel(std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
-    return nullptr;
+    Channel *channel = getChannel(channelName);
+    vector<Client *> vec = getClientsInAChannel(channel);
+    vector<Client *>::iterator it = vec.begin();
+    while (it != vec.end())
+    {
+        (*it)->removeFromChannel(channel);
+        it++;
+    }
+    return vec;
 }
 
-IChannel *Server::removeTopicFromChannel(std::string &channelName)
+vector<Client *> Server::removeChannel(std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
-    return nullptr;
+    Channel *channel = getChannel(channelName, key);
+    vector<Client *> vec = getClientsInAChannel(channel);
+    vector<Client *>::iterator it = vec.begin();
+    while (it != vec.end())
+    {
+        (*it)->removeFromChannel(channel);
+        it++;
+    }
+    return vec;
 }
 
-IChannel *Server::removeTopicFromChannel(std::string &channelName, std::string &key)
+Channel *Server::join(Client *client, std::string &channelName)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
-    return nullptr;
+    Channel *channel = getChannel(channelName);
+    client->addToChannel(channel);
+    return channel;
 }
 
-IChannel *Server::removeChannel(std::string &channelName)
+Channel *Server::join(Client *client, std::string &channelName, std::string &key)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
-    return nullptr;
+    Channel *channel = getChannel(channelName, key);
+    client->addToChannel(channel);
+    return channel;
 }
 
-IChannel *Server::removeChannel(std::string &channelName, std::string &key)
+vector<Channel *> Server::getClientChannels(Client *client)
 {
-    // Implement actual logic here
-    // return new Channel(channelName);
-    return nullptr;
+    vector<Channel *> vec = vector<Channel *>();
+    Map<string, Channel *> channels = client->getChannels();
+    Map<string, Channel *>::iterator it = channels.begin();
+    while (it != channels.end())
+    {
+        if ((*it).second)
+            vec.push_back((*it).second);
+        it++;
+    }
+    return vec;
 }
 
-IChannel *Server::join(Client *client, std::string &channel)
+vector<Channel *> Server::getClientChannels(std::string &username)
 {
-    // Implement actual logic here
-    // return new Channel(channel);
-    return nullptr;
-}
-
-IChannel *Server::join(Client *client, std::string &channel, std::string &key)
-{
-    // Implement actual logic here
-    // return new Channel(channel);
-    return nullptr;
-}
-
-std::vector<IChannel *> Server::getClientChannels(Client *client)
-{
-    // Implement actual logic here
-    // return std::vector<Channel *>();
-    return std::vector<IChannel *>(); // return an empty vector
-}
-
-std::vector<IChannel *> Server::getClientChannels(std::string &username)
-{
-    // Implement actual logic here
-    return std::vector<IChannel *>(); // return an empty vector
+    vector<Channel *> vec = vector<Channel *>();
+    Client *client = getClient(username);
+    if (!client)
+        return vec;
+    Map<string, Channel *> channels = client->getChannels();
+    Map<string, Channel *>::iterator it = channels.begin();
+    while (it != channels.end())
+    {
+        if ((*it).second)
+            vec.push_back((*it).second);
+        it++;
+    }
+    return vec;
 }
 Client *Server::getClient(std::string &username)
 {
-    // Implement actual logic here
-    // return nullptr;
-    return nullptr; // replace nullptr with actual logic
+    vector<Client *>::const_iterator begin = this->_clients.begin();
+    vector<Client *>::const_iterator end = this->_clients.end();
+    while (begin != end)
+    {
+        if (username == (*begin)->getUsername())
+            return (*begin);
+        begin++;
+    }
+    return nullptr;
 }
 
-bool Server::nickNameExist(std::string &ncikName)
+bool Server::nickNameExist(std::string &nickname)
 {
+    vector<Client *>::const_iterator begin = this->_clients.begin();
+    vector<Client *>::const_iterator end = this->_clients.end();
+    while (begin != end)
+    {
+        if (nickname == (*begin)->getNickname())
+            return true;
+        begin++;
+    }
     return false;
 }

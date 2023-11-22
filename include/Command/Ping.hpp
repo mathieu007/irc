@@ -1,7 +1,5 @@
 #pragma once
-#include "Client.hpp"
 #include "Command.hpp"
-#include "Message.hpp"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -9,8 +7,10 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 
-class Ping : public Command {
+class Ping : public Command
+{
 
 public:
-	bool execute(Client *client, std::vector<std::string> tokens, IServer &server);
+	~Ping();
+	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
 };

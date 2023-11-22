@@ -1,17 +1,26 @@
 #include "Client.hpp"
+#include "Channel.hpp"
 
 Client::Client()
 {
-	this->_isRegistered = 0;
+    this->_isRegistered = false;
     this->_lastRequestTime = time(nullptr);
     this->_nextAllowedConnectionTime = 0;
     this->_numRequests = 0;
     this->_reqSize = 0;
-    this->_banned = false;
+    this->_isBanned = false;
     this->_pass = "";
     this->_nickName = "";
     this->_userName = "";
     this->_msg = "";
+    this->_address = "";
+    this->_port = "";
+    this->_isModerator = false;
+    this->_kickedChannels = Map<string, Channel *>();
+    this->_channels = Map<string, Channel *>();
+    this->_isAuthorized = false;
+    this->_realName = "";
+    this->_socket = 0;
 }
 
 void Client::setHost(string host)
@@ -29,18 +38,21 @@ void Client::setNickname(std::string nickName)
     _nickName = nickName;
 }
 
-void Client::setUsername(std::string userName){
-	_userName = userName;
+void Client::setUsername(std::string userName)
+{
+    _userName = userName;
 }
 
-void Client::setRealname(std::string realName){
-	_realName = realName;
+void Client::setRealname(std::string realName)
+{
+    _realName = realName;
 }
 
-void Client::setIsRegistered(){
-	_isRegistered = true;
+void Client::setIsRegistered()
+{
+    _isRegistered = true;
 }
-	////////////////// GETTER ///////////////
+////////////////// GETTER ///////////////
 
 string Client::getHost() const
 {
@@ -62,13 +74,29 @@ string Client::getUsername() const
     return _userName;
 }
 
-bool Client::getIsRegistered() const {
-	return _isRegistered;
+bool Client::isRegistered() const
+{
+    return _isRegistered && !_isBanned;
 }
 
 string &Client::getMsg()
 {
     return _msg;
+}
+
+Map<string, Channel *> &Client::getChannels()
+{
+    return _channels;
+}
+
+Map<string, Channel *> &Client::getKickedChannels()
+{
+    return _kickedChannels;
+}
+
+void Client::setIsAuthorized(bool isAuthorized)
+{
+    _isAuthorized = isAuthorized;
 }
 
 void Client::setMsg(string msg)
@@ -79,6 +107,12 @@ void Client::setMsg(string msg)
 void Client::setPort(string port)
 {
     _port = port;
+}
+
+// do
+void Client::setPass(string pass)
+{
+    _pass = pass;
 }
 
 void Client::setAddress(string address)
@@ -95,8 +129,7 @@ void Client::incrementReqSize(long reqSize)
     _reqSize += reqSize;
 }
 
-
-///version cpp11
+/// version cpp11
 // long Client::getCurTime() const
 // {
 //     std::chrono::_V2::system_clock::duration durationSinceEpoch = std::chrono::system_clock::now().time_since_epoch();
@@ -107,13 +140,13 @@ void Client::incrementReqSize(long reqSize)
 ////version cpp98
 long Client::getCurTime() const
 {
-	// Get the current time in seconds since the epoch
-	time_t currentTime = std::time(nullptr);
+    // Get the current time in seconds since the epoch
+    time_t currentTime = std::time(nullptr);
 
-	// Convert time_t to long
-	long seconds = static_cast<long>(currentTime);
+    // Convert time_t to long
+    long seconds = static_cast<long>(currentTime);
 
-	return seconds;
+    return seconds;
 }
 
 bool Client::canMakeRequest()
@@ -145,47 +178,99 @@ bool Client::canConnect() const
 
 bool Client::isBannned() const
 {
-    return this->_banned;
+    return this->_isBanned;
+}
+
+bool Client::isAuthorized() const
+{
+    return _isAuthorized;
+}
+
+bool Client::passIsEmpty() const
+{
+    return _pass == "";
 }
 
 bool Client::isGoingToGetBanned()
 {
     if (this->_numRequests >= MAX_REQ_BEFORE_BAN)
     {
-        _banned = true;
+        _isBanned = true;
         return true;
     }
     return false;
 }
 
-IChannel *Client::addToChanel(string &channelName)
+bool Client::addToChannel(Channel *channel)
 {
-    IChannel *channel = this->findByName(channelName);
-    if (channel == nullptr)
-        return nullptr;
-    channel->addClient(this);
-    return channel;
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    // if is in kicked channel then cannot add to channel;
+    if (_kickedChannels.tryGet(id, channel))
+        return false;
+    channel = _channels.get(id);
+    // if not null is already in channel.
+    if (channel)
+        return channel;
+    if (_channels.addIfNotExist(id, channel))
+        return channel;
+    return true;
 }
 
-IChannel *Client::findByName(string &channelName) const
+bool Client::addToKickedChannel(Channel *channel)
 {
-    vector<IChannel *>::const_iterator begin = this->_registeredChannels.begin();
-    vector<IChannel *>::const_iterator end = this->_registeredChannels.end();
-    if (channelName.empty())
-        return nullptr;
-    while (begin != end)
-    {
-        if (channelName == (*begin)->getChannelName())
-            return *begin;
-        begin++;
-    }
-    return nullptr;
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    // if is in kicked channel then cannot add to channel;
+    if (_kickedChannels.hasKey(id))
+        return false;
+    _kickedChannels.add(id, channel);
+    return true;
 }
 
-IChannel *Client::isInChanel(string &channelName) const
+bool Client::isInChannel(Channel *channel)
 {
-    IChannel *found = this->findByName(channelName);
-    if (found == nullptr)
-        return nullptr;
-    return found;
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    if (_channels.hasKey(id))
+        return true;
+    return false;
+}
+
+bool Client::isInKickChannel(Channel *channel)
+{
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    if (_kickedChannels.hasKey(id))
+        return true;
+    return false;
+}
+
+bool Client::removeFromChannel(Channel *channel)
+{
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    if (_channels.remove(id))
+        return true;
+    return false;
+}
+
+bool Client::removeFromKickChannel(Channel *channel)
+{
+    if (!channel)
+        return false;
+    string id = channel->getId();
+    if (_kickedChannels.remove(id))
+        return true;
+    return false;
+}
+
+bool Client::isModerator() const
+{
+    return _isModerator;
 }

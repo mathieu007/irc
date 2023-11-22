@@ -6,13 +6,13 @@ SRC =	src/main.cpp 	\
 		src/Execution/String.cpp \
 		src/Execution/Logger.cpp \
 		src/Execution/Message.cpp \
+		src/Execution/Channel.cpp \
 		src/Command/Command.cpp \
 		src/Command/CommandFactory.cpp \
 		src/Command/Nick.cpp \
 		src/Command/Ping.cpp \
 		src/Command/User.cpp \
 		src/Command/Join.cpp \
-		src/Command/Channel.cpp \
 		src/Command/Kick.cpp \
 		src/Command/Part.cpp \
 

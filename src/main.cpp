@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     }
     std::cerr << "Usage: ./" << argv[0] << " <port>"
               << " <pass>"
-                << " <optional:ip>" << std::endl;
+              << " <optional:ip>" << std::endl;
     exit(1);
 }
 

@@ -1,6 +1,13 @@
 #include "CommandFactory.hpp"
+#include "Nick.hpp"
+#include "Ping.hpp"
+#include "User.hpp"
+#include "Join.hpp"
+#include "Kick.hpp"
+#include "Part.hpp"
 
-CommandFactory::CommandFactory (){
+CommandFactory::CommandFactory()
+{
 	_commandMap["NICK"] = new Nick();
 	_commandMap["PING"] = new Ping();
 	_commandMap["USER"] = new User();
@@ -23,7 +30,8 @@ Command *CommandFactory::createCommand(const std::string &commandType)
 	}
 }
 
-bool CommandFactory::isValid(const std::string &commandType){
+bool CommandFactory::isValid(const std::string &commandType)
+{
 	std::map<std::string, Command *>::iterator it = _commandMap.find(commandType);
 	if (it != _commandMap.end())
 		return 1;
@@ -31,7 +39,7 @@ bool CommandFactory::isValid(const std::string &commandType){
 		return 0;
 }
 
-bool CommandFactory::tokenMessage(std::string message, Client *client, IServer &server)
+bool CommandFactory::tokenMessage(std::string message, Client *client, Server &server)
 {
 	(void)server;
 	/////////print msg
@@ -43,12 +51,14 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, IServer &
 	std::string currentCommand;
 	for (std::string::size_type i = 0; i < message.length(); ++i)
 	{
-		if (message[i] == '\r' && i + 1 < message.length() && message[i + 1] == '\n'){
+		if (message[i] == '\r' && i + 1 < message.length() && message[i + 1] == '\n')
+		{
 			commands.push_back(currentCommand);
 			currentCommand.clear();
 			++i;
 		}
-		else {
+		else
+		{
 			currentCommand += message[i];
 		}
 	}
@@ -81,16 +91,19 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, IServer &
 	}
 
 	/////print all command and tokens
-	for (std::size_t i = 0; i < tokensList.size(); ++i) {
+	for (std::size_t i = 0; i < tokensList.size(); ++i)
+	{
 		std::cout << "Tokens for Command " << i + 1 << ": ";
-		for (std::size_t j = 0; j < tokensList[i].size(); ++j) {
+		for (std::size_t j = 0; j < tokensList[i].size(); ++j)
+		{
 			std::cout << "[" << tokensList[i][j] << "] ";
 		}
 		std::cout << std::endl;
 	}
 
 	/////execute all commands
-	for (std::size_t i = 0; i < tokensList.size(); ++i) {
+	for (std::size_t i = 0; i < tokensList.size(); ++i)
+	{
 		if (isValid(tokensList[i].front()))
 			_commandMap[tokensList[i].front()]->execute(client, tokensList[i], server);
 		else
@@ -99,8 +112,10 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, IServer &
 	return 1;
 }
 
-CommandFactory::~CommandFactory() {
-	for (std::map<std::string, Command *>::iterator it = _commandMap.begin(); it != _commandMap.end(); ++it) {
+CommandFactory::~CommandFactory()
+{
+	for (std::map<std::string, Command *>::iterator it = _commandMap.begin(); it != _commandMap.end(); ++it)
+	{
 		delete it->second;
 	}
 }

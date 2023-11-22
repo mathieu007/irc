@@ -1,5 +1,6 @@
 #include "Nick.hpp"
-#include "IServer.hpp"
+#include "Server.hpp"
+#include "Message.hpp"
 
 // bool Nick::isValidCommand(const std::vector<std::string> &tokens, Client *client){
 
@@ -9,13 +10,11 @@
 // 		_errorMessage = "476 " + tokens[1] + " :Bad Channel Mask\r\n";
 // 	return _errorMessage.empty() ? true : false;
 // }
-
-bool Nick::execute(Client *client, std::vector<std::string> tokens, IServer &server)
+Nick::~Nick() {}
+bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server)
 {
 	(void)server;
-
 	std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
-
 	std::vector<std::string>::iterator it = tokens.begin();
 	std::string newNickName = *(it + 1);
 	std::string oldNickName = client->getNickname();
@@ -24,6 +23,6 @@ bool Nick::execute(Client *client, std::vector<std::string> tokens, IServer &ser
 	// std::cout << "settedname:" << client->getNickname() << std::endl;
 	std::string messageToClient = ":" + oldNickName + " NICK :" + newNickName + "\r\n";
 	std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-	nonBlockingSend(client, messageToClient, 0);
+	sendMsg(client, messageToClient, 0);
 	return 1;
 }

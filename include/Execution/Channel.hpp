@@ -4,19 +4,26 @@
 #include <iostream>
 #include <vector>
 #include "Client.hpp"
-#include "IChannel.hpp"
 
 using std::string;
 using std::vector;
-class Channel : public IChannel
+class Channel
 {
-    private:
-        string _name;
-        vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
-    public:
-        Channel(string name);
-        ~Channel();
-        const string &getChannelName() const;
-        bool addClient(Client *client);
-        bool isInChannel(Client *client);
+private:
+    string _id;
+    string _name;
+    string _key;
+    string _topic;
+    bool _hasTopic;
+
+public:
+    Channel(string &name);
+    Channel(string &name, string &key);
+    ~Channel();
+    bool hasTopic() const;
+    const string &getName() const;
+    const string &getKey() const;
+    const string &getId() const;
+    
+    void setTopic(string &topic);
 };

@@ -1,18 +1,24 @@
 #include "User.hpp"
+#include "Server.hpp"
+#include "Message.hpp"
 
-bool User::execute(Client *client, std::vector<std::string> tokens, IServer &server)
+User::~User() {}
+
+bool User::execute(Client *client, std::vector<std::string> tokens, Server &server)
 {
 	(void)server;
 	(void)tokens;
 
-	if (tokens.size() != 5){
+	if (tokens.size() != 5)
+	{
 		std::string errorMessage = "461 USER :Not enough parameters\r\n";
-		nonBlockingSend(client, errorMessage, 0);
+		sendMsg(client, errorMessage, 0);
 		return 0;
 	}
-	if (client->getIsRegistered()){
+	if (client->isRegistered())
+	{
 		std::string errorMessage = "462 :You may not reregister\r\n";
-		nonBlockingSend(client, errorMessage, 0);
+		sendMsg(client, errorMessage, 0);
 		return 0;
 	}
 	std::cout << GREEN << "Executing USER command" << RESET << std::endl;

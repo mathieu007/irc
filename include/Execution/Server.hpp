@@ -1,6 +1,9 @@
 #pragma once
 #include <map>
+#include "Map.hpp"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -17,15 +20,14 @@
 #include <fcntl.h>
 #include <algorithm>
 #include "String.hpp"
-#include "IServer.hpp"
 #include "Map.hpp"
-#include "Message.hpp"
-#include "IChannel.hpp"
 #include "Logger.hpp"
+#include "Client.hpp"
 
 using std::string;
+class Channel;
 
-class Server: public IServer
+class Server
 {
 private:
     std::string _hostname;
@@ -45,17 +47,16 @@ private:
     fd_set _writing;
     /// @brief non blocking io for reading.
     fd_set _reading;
-    vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
-    //banned
+    vector<Client *> _clients = vector<Client *>();
+    // banned clients by ip address
     Map<string, Client *> _bannedClients = Map<string, Client *>();
-    Map<string, string> _channels = Map<string, string>();
+    Map<string, Channel *> _channels = Map<string, Channel *>();
 
     int _setSockAddrStorage();
     string _getHostname() const;
     void _initServerSocket(void);
     void _setNonBlocking(int sockfd);
     int _selectFdSet();
-
 
 public:
     Server(char *pass, int port, bool fileLog);
@@ -76,42 +77,45 @@ public:
     bool isAllowedToMakeRequest(Client *client);
     bool nickNameInUse() const;
     bool userNameInUse(string &userName);
-    IChannel *isInChannel(Client *client, string &channelName) const;
-    IChannel *addToChannel(Client *client, string &channelName);
-    IChannel *addToChannel(Client *client, string &channelName, string &key);
-    IChannel *doesChannelExist(const std::string &channelName) const;
-    void addChannel(IChannel *newChannel);
-    const std::vector<IChannel *> &getChannels() const;
-    /////////////
+    Channel *isInChannel(Client *client, string &channelName) const;
+    Channel *addToChannel(Client *client, string &channelName);
+    Channel *addToChannel(Client *client, string &channelName, string &key);
+    void addChannel(Channel *newChannel);
+    string hashPassword(const std::string &password);
 
-    IChannel *join(Client *client, std::string &channel);
-    IChannel *join(Client *client, std::string &channel, std::string &key);
-    vector<IChannel *> getClientChannels(Client *client);
-    vector<IChannel *> getClientChannels(std::string &username);
+    string getChannelId(string &channelName, string &channelKey);
+    const std::vector<Channel *> getChannels() const;
+    Channel *join(Client *client, std::string &channel);
+    Channel *join(Client *client, std::string &channel, std::string &key);
+    vector<Channel *> getClientChannels(Client *client);
+    vector<Channel *> getClientChannels(std::string &username);
+    vector<Client *> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
+    bool isAuthorized(Client *client);
+    bool checkAndSetAuthorization(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client);
     bool isInChannel(Client *client, std::string &channel);
-    bool isInChannel(std::string &username, std::string &channel);
     bool isInChannel(Client *client, std::string &channel, std::string &key);
+    bool isInKickChannel(Client *client, std::string &channelName);
+    bool isInKickChannel(Client *client, std::string &channelName, std::string &key);
     bool channelExist(std::string &channel);
     bool channelExist(std::string &channel, std::string &key);
     bool hasTopic(std::string &channelName);
-    IChannel *getChannel(std::string &channelName);
-    IChannel *getChannel(std::string &channelName, std::string &key);
-    IChannel *isValidChannelKey(std::string &channelName, std::string &key);
-    IChannel *removeClientFromChannel(Client *client, std::string &channelName);
-    IChannel *removeClientFromChannel(Client *client, std::string &channelName, std::string &key);
-    IChannel *removeClientFromChannel(std::string &username, std::string &channelName);
-    IChannel *removeClientFromChannel(std::string &username, std::string &channelName, std::string &key);
-    IChannel *banClientFromChannel(Client *client, std::string &channelName);
-    IChannel *banClientFromChannel(Client *client, std::string &channelName, std::string &key);
-    IChannel *addClientToChannel(Client *client, std::string &channelName);
-    IChannel *addClientToChannel(Client *client, std::string &channelName, std::string &key);
-    IChannel *addTopicToChannel(std::string &topic, std::string &channelName);
-    IChannel *addTopicToChannel(std::string &topic, std::string &channelName, std::string &key);
-    IChannel *removeTopicFromChannel(std::string &channelName);
-    IChannel *removeTopicFromChannel(std::string &channelName, std::string &key);
-    IChannel *removeChannel(std::string &channelName);
-    IChannel *removeChannel(string &channelName, string &key);
+    bool hasTopic(string &channelName, string &key);
+    Channel *getChannel(std::string &channelName);
+    Channel *getChannel(std::string &channelName, std::string &key);
+    Channel *removeClientFromChannel(Client *client, std::string &channelName);
+    Channel *removeClientFromChannel(Client *client, std::string &channelName, std::string &key);
+    Channel *kickClientFromChannel(Client *client, std::string &channelName);
+    Channel *kickClientFromChannel(Client *client, std::string &channelName, std::string &key);
+    bool banClient(Client *client);
+    Channel *addClientToChannel(Client *client, std::string &channelName);
+    Channel *addClientToChannel(Client *client, std::string &channelName, std::string &key);
+    Channel *addTopicToChannel(std::string &topic, std::string &channelName);
+    Channel *addTopicToChannel(std::string &topic, std::string &channelName, std::string &key);
+    Channel *removeTopicFromChannel(std::string &channelName);
+    Channel *removeTopicFromChannel(std::string &channelName, std::string &key);
+    vector<Client *> removeChannel(std::string &channelName);
+    vector<Client *> removeChannel(std::string &channelName, string &key);
     bool nickNameExist(string &ncikName);
 };

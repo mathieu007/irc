@@ -1,7 +1,6 @@
 #pragma once
-#include "Client.hpp"
 #include "Command.hpp"
-#include "Message.hpp"
+#include "Client.hpp"
 
 class Nick : public Command
 {
@@ -9,6 +8,7 @@ private:
 	std::string _errorMessage;
 
 public:
-	bool execute(Client *client, std::vector<std::string> tokens, IServer &server);
+	~Nick();
+	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
 	bool isValidCommand(const std::vector<std::string> &tokens, Client *client);
 };
