@@ -2,7 +2,17 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-// bool Nick::isValidCommand(const std::vector<std::string> &tokens, Client *client){
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
+	std::string nickName = tokens[1];
+	_errorMessage = "";
+	if (tokens.size() < 2)
+		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
+	else if (isdigit(nickName[0]) || nickName[0] == '#' || nickName[0] == ':' || nickName.find(" ") != std::string::npos)
+		_errorMessage = "432 " + client->getHost() + nickName + " :Erroneus nickname\r\n";
+	else if (server.nickNameExist(nickName))
+		_errorMessage = "433 " + client->getHost() + nickName + " :Nickname is already in use\r\n";
+	return _errorMessage.empty() ? true : false;
+}
 
 // 	if (tokens.size() < 2)
 // 		_errorMessage = "431 " + client->getHost() + ":No nickname given\r\n";
