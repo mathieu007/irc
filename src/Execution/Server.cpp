@@ -398,7 +398,7 @@ bool Server::cleanAll()
     Map<string, Channel *>::iterator it = _channels.begin();
     while (it != _channels.end())
     {
-        if ((*it).second)
+        if (*it && (*it).second)
             delete (*it).second;
         it++;
     }
@@ -411,7 +411,7 @@ bool Server::userNameExist(string &userName)
     vector<Client *>::const_iterator end = this->_clients.end();
     while (begin != end)
     {
-        if (userName == (*begin)->getUsername())
+        if (*begin && userName == (*begin)->getUsername())
             return true;
         begin++;
     }
@@ -531,7 +531,7 @@ vector<Client *> Server::getClientsInAChannel(Channel *channel)
     vector<Client *>::iterator it = _clients.begin();
     while (it != _clients.end())
     {
-        if ((*it) && (*it)->isInChannel(channel))
+        if (*it && (*it)->isInChannel(channel))
         {
             clients.push_back(*it);
         }
@@ -571,10 +571,13 @@ bool Server::removeClient(Client *client)
     vector<Channel *>::iterator it = channels.begin();
     while (it != channels.end())
     {
-        if (!(*it)->getKey().empty())
-            removeClientFromChannel(client, (*it)->getName(), (*it)->getKey());
-        else
-            removeClientFromChannel(client, (*it)->getName());
+        if (*it)
+        {
+            if (!(*it)->getKey().empty())
+                removeClientFromChannel(client, (*it)->getName(), (*it)->getKey());
+            else
+                removeClientFromChannel(client, (*it)->getName());
+        }
         it++;
     }
     return true;
@@ -698,7 +701,8 @@ vector<Client *> Server::removeChannel(std::string &channelName)
     vector<Client *>::iterator it = vec.begin();
     while (it != vec.end())
     {
-        (*it)->removeFromChannel(channel);
+        if (*it)
+            (*it)->removeFromChannel(channel);
         it++;
     }
     return vec;
@@ -711,7 +715,8 @@ vector<Client *> Server::removeChannel(std::string &channelName, std::string &ke
     vector<Client *>::iterator it = vec.begin();
     while (it != vec.end())
     {
-        (*it)->removeFromChannel(channel);
+        if (*it)
+            (*it)->removeFromChannel(channel);
         it++;
     }
     return vec;
@@ -777,7 +782,7 @@ Client *Server::getClient(std::string &username)
     vector<Client *>::const_iterator end = this->_clients.end();
     while (begin != end)
     {
-        if (username == (*begin)->getUsername())
+        if (*begin && username == (*begin)->getUsername())
             return (*begin);
         begin++;
     }
@@ -790,7 +795,7 @@ bool Server::nickNameExist(std::string &nickname)
     vector<Client *>::const_iterator end = this->_clients.end();
     while (begin != end)
     {
-        if (nickname == (*begin)->getNickname())
+        if (*begin && nickname == (*begin)->getNickname())
             return true;
         begin++;
     }

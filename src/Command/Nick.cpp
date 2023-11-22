@@ -24,16 +24,21 @@ bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 Nick::~Nick() {}
 bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server)
 {
-	(void)server;
-	std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
-	std::vector<std::string>::iterator it = tokens.begin();
-	std::string newNickName = *(it + 1);
+	std::string newNickName = tokens[1];
 	std::string oldNickName = client->getNickname();
-	// std::cout << "old nick: " << oldNickName << std::endl;
-	client->setNickname(newNickName);
-	// std::cout << "settedname:" << client->getNickname() << std::endl;
-	std::string messageToClient = ":" + oldNickName + " NICK :" + newNickName + "\r\n";
-	std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-	sendMsg(client, messageToClient, 0);
-	return 1;
+
+	if (!isValidCommand(tokens, client, server))
+	{
+		sendMsg(client, _errorMessage, 0);
+		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
+	}
+	else
+	{
+		std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
+		client->setNickname(newNickName);
+		std::string messageToClient = ":" + oldNickName + " NICK :" + newNickName + "\r\n";
+		std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
+		sendMsg(client, messageToClient, 0);
+	}
+	return _errorMessage.empty() ? true : false;
 }
