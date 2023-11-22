@@ -30,7 +30,7 @@ private:
     string _host;
     string _msg;
     int _socket;
-    bool _isAuthorized;
+    bool _isAuthenticated;
     bool _isBanned;
     long _lastRequestTime;
     long _nextAllowedConnectionTime;
@@ -70,7 +70,7 @@ public:
     void incrementRequest();
     void incrementReqSize(long reqSize);
 
-    bool isAuthorized() const;
+    bool isAuthenticated() const;
     bool passIsEmpty() const;
     bool canConnect() const;
     bool isBannned() const;

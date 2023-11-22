@@ -90,7 +90,7 @@ public:
     vector<Channel *> getClientChannels(std::string &username);
     vector<Client *> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
-    bool isAuthorized(Client *client);
+    bool isAuthenticated(Client *client);
     bool checkAndSetAuthorization(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);

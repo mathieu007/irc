@@ -17,7 +17,7 @@ Client::Client()
     this->_port = "";
     this->_kickedChannels = Map<string, Channel *>();
     this->_channels = Map<string, Channel *>();
-    this->_isAuthorized = false;
+    this->_isAuthenticated = false;
     this->_realName = "";
     this->_socket = 0;
 }
@@ -94,7 +94,7 @@ Map<string, Channel *> &Client::getKickedChannels()
 
 void Client::setIsAuthorized(bool isAuthorized)
 {
-    _isAuthorized = isAuthorized;
+    _isAuthenticated = isAuthorized;
 }
 
 void Client::setMsg(string msg)
@@ -179,9 +179,9 @@ bool Client::isBannned() const
     return this->_isBanned;
 }
 
-bool Client::isAuthorized() const
+bool Client::isAuthenticated() const
 {
-    return _isAuthorized;
+    return _isAuthenticated;
 }
 
 bool Client::passIsEmpty() const
@@ -267,4 +267,3 @@ bool Client::removeFromKickChannel(Channel *channel)
         return true;
     return false;
 }
-

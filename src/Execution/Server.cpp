@@ -258,7 +258,7 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    client->setNickname("guest");
+    client->setNickname("user");
     _clients.insert(_clients.begin() + socketClient, client);
     FD_SET(socketClient, &use);
     return 0;
@@ -431,14 +431,14 @@ string Server::getChannelId(const string &channelName, const string &channelKey)
     return key;
 }
 
-bool Server::isAuthorized(Client *client)
+bool Server::isAuthenticated(Client *client)
 {
-    return client->isAuthorized();
+    return client->isAuthenticated();
 }
 
 bool Server::checkAndSetAuthorization(Client *client, const string &rawClientPassword)
 {
-    if (client->isAuthorized())
+    if (client->isAuthenticated())
         return true;
     if (_pass == hashPassword(rawClientPassword))
     {
