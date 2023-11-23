@@ -1,10 +1,20 @@
+<<<<<<< HEAD
+=======
+select() error: Interrupted system call
+select() error: Interrupted system call
+>>>>>>> origin/master
 Error: Couldn't bind socket address.
 
 Error: Couldn't bind socket address.
 
 Error: Couldn't bind socket address.
 
+<<<<<<< HEAD
 Error: Couldn't bind socket address.
 
 Error: Couldn't bind socket address.
 
+=======
+select() error: Interrupted system call
+select() error: Interrupted system call
+>>>>>>> origin/master

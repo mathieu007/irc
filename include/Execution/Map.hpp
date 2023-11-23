@@ -27,7 +27,7 @@ public:
         return this->empty();
     }
 
-    bool tryGet(const TKey &key, T val)
+    bool tryGet(const TKey &key, T &val)
     {
         if (this->isEmpty())
             return false;
@@ -93,7 +93,6 @@ public:
             (*this)[key] = val;
             return true;
         }
-        (*this)[key] = val;
         return false;
     }
 };

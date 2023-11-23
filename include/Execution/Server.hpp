@@ -24,6 +24,7 @@
 #include "Logger.hpp"
 #include "Client.hpp"
 
+using std::cout;
 using std::string;
 class Channel;
 
@@ -86,11 +87,12 @@ public:
     const std::vector<Channel *> getChannels() const;
     Channel *join(Client *client, std::string &channel);
     Channel *join(Client *client, std::string &channel, std::string &key);
+    bool disconnect(Client *client);
     vector<Channel *> getClientChannels(Client *client);
     vector<Channel *> getClientChannels(std::string &username);
     vector<Client *> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
-    bool isAuthorized(Client *client);
+    bool isAuthenticated(Client *client);
     bool checkAndSetAuthorization(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);

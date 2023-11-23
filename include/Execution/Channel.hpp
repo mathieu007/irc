@@ -14,18 +14,29 @@ private:
     string _name;
     string _key;
     string _topic;
-    bool _hasTopic;
-    Client *_moderator;
+    bool _canBeJoinOnInvitationOnly;
+    Client *_superModerator;
+    vector<Client *> _moderators;
+    vector<Client *> _invitedClients;
 
 public:
     Channel(string &name);
     Channel(string &name, string &key);
     ~Channel();
-    bool hasTopic() const;
     const string &getName() const;
     const string &getKey() const;
     const string &getId() const;
-    Client *getModerator();
-    void setModerator(Client *moderator);
+    Client *getSuperModerator();
+    vector<Client *> &getModerators();
+    vector<Client *> &getInvitedClients();
+    bool deleteModerator(Client *client, Client *moderatorToDelete);
+    bool moderatorAlreadyExist(Client *client) const;
+    bool hasTopic() const;
+    bool canBejoinOnInvitationOnly() const;
+    bool isAllowedToJoin(Client *client) const;
+    bool canDeleteChannel(Client *client) const;
+    bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;
+    void setSuperModerator(Client *moderator);
+    void setJoinOnInvitationOnly(bool onInvite);
     void setTopic(string &topic);
 };

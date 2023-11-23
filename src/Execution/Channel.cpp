@@ -1,4 +1,5 @@
 #include <Channel.hpp>
+#include "Vector.hpp"
 
 Channel::~Channel() {}
 
@@ -7,9 +8,9 @@ Channel::Channel(string &name)
     _name = name;
     _id = name;
     _topic = "";
-    _hasTopic = false;
     _key = "";
-    _moderator = nullptr;
+    _superModerator = nullptr;
+    _moderators = vector<Client *>();
 }
 
 Channel::Channel(string &name, string &key)
@@ -17,14 +18,14 @@ Channel::Channel(string &name, string &key)
     _name = name;
     _key = key;
     _id = _name + ":" + _key;
-    _moderator = nullptr;
+    _superModerator = nullptr;
+    _moderators = vector<Client *>();
     _topic = "";
-    _hasTopic = false;
 }
 
 bool Channel::hasTopic() const
 {
-    return this->_hasTopic;
+    return !this->_topic.empty();
 }
 
 void Channel::setTopic(string &topic)
@@ -32,9 +33,27 @@ void Channel::setTopic(string &topic)
     this->_topic = topic;
 }
 
-void Channel::setModerator(Client *moderator)
+bool Channel::moderatorAlreadyExist(Client *moderator) const
 {
-    this->_moderator = moderator;
+    if (!moderator)
+        return false;
+    if (Vector::isIn(this->_moderators, *moderator, &Client::getUsername))
+        return true;
+    return false;
+}
+
+void Channel::setJoinOnInvitationOnly(bool onInvite)
+{
+    this->_canBeJoinOnInvitationOnly = onInvite;
+}
+
+void Channel::setSuperModerator(Client *moderator)
+{
+    if (this->_superModerator != nullptr)
+        return;
+    this->_superModerator = moderator;
+    if (!moderatorAlreadyExist(moderator))
+        _moderators.push_back(moderator);
 }
 
 const string &Channel::getId() const
@@ -52,44 +71,47 @@ const string &Channel::getName() const
     return this->_name;
 }
 
-Client *Channel::getModerator()
+Client *Channel::getSuperModerator()
 {
-    return this->_moderator;
+    return this->_superModerator;
 }
 
-// Map<string, Client *> &Channel::getClients()
-// {
-//     return this->_clients;
-// }
+vector<Client *> &Channel::getModerators()
+{
+    return this->_moderators;
+}
 
-// Client *Channel::getClient(string userName)
-// {
-//     Client *client = nullptr;
-//     this->_clients.tryGet(userName, client);
-//     return client;
-// }
+bool Channel::canBejoinOnInvitationOnly() const
+{
+    return this->_canBeJoinOnInvitationOnly;
+}
 
-// bool Channel::addClient(Client *client)
-// {
-//     string username = client->getUsername();
-//     if (_clients.addIfNotExist(username, client))
-//         return false;
-//     return true;
-// }
+bool Channel::isAllowedToJoin(Client *client) const
+{
+    if (!client)
+        return false;
+    if (_canBeJoinOnInvitationOnly && Vector::isIn(_invitedClients, *client, &Client::getUsername))
+        return true;
+    else if (!_canBeJoinOnInvitationOnly)
+        return true;
+    return false;
+}
 
-// bool Channel::isInChannel(Client *client)
-// {
-//     if (!client)
-//         return false;
-//     string username = client->getUsername();
-//     if (_clients.hasKey(username))
-//         return true;
-//     return false;
-// }
+bool Channel::canDeleteModerator(Client *client, Client *moderatorToDelete) const
+{
+    if (!moderatorToDelete || client)
+        return false;
+    if (client->getUsername() == moderatorToDelete->getUsername() || moderatorToDelete->getUsername() == _superModerator->getUsername())
+        return false;
+    return true;
+}
 
-// bool Channel::isInChannel(string &username)
-// {
-//     if (_clients.hasKey(username))
-//         return true;
-//     return false;
-// }
+bool Channel::deleteModerator(Client *client, Client *moderatorToDelete)
+{
+    if (!moderatorToDelete || client)
+        return false;
+    string username = moderatorToDelete->getUsername();
+    if (canDeleteModerator(client, moderatorToDelete))
+        return Vector::removeWhere(_moderators, &Client::getUsername, username);
+    return false;
+}

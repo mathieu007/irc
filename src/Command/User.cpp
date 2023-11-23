@@ -8,7 +8,7 @@ bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "461 " + client->getHost() + " PASS :Not enough parameters\r\n";
 	if (tokens.size() > 5)
 		_errorMessage = "1002 " + client->getHost() + " PASS :Too much parameters\r\n";
-	else if (client->isAuthorized())
+	else if (client->isAuthenticated())
 		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
 	return _errorMessage.empty() ? true : false;
 }

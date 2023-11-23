@@ -3,6 +3,16 @@
 #include "Message.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
+#include <csignal>
+#include <iostream>
+#include "Vector.hpp"
+
+// volatile sig_atomic_t flag = 0;
+
+// void handler(int signum) {
+//     cout << "Signal: " << signum << " sent." << std::endl;
+//     flag = 1;
+// }
 
 Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPassword(pass)), _port(port)
 {
@@ -16,6 +26,7 @@ Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPasswor
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
     _max_fd_set = 0;
+
     return;
 }
 
@@ -195,24 +206,29 @@ int Server::acceptClient()
     return (socketClient);
 }
 
-bool endSignal = false;
+volatile sig_atomic_t endSignal = 0;
 
-void sigNcHandler(int sig, siginfo_t *info, void *context)
+void signalHandler(int sig, siginfo_t *info, void *context)
 {
+    cout << std::endl
+         << "A Signal have been received sig: " << sig << std::endl;
     (void)info;
     (void)context;
     (void)sig;
-    endSignal = true;
+    endSignal = 1;
 }
 
 void setSignal(void)
 {
-    struct sigaction sigNc;
+    struct sigaction sigAction;
 
-    memset(&sigNc, 0, sizeof(sigNc));
-    sigaddset(&sigNc.sa_mask, SIGKILL);
-    sigNc.sa_sigaction = &sigNcHandler;
-    sigaction(SIGINT, &sigNc, NULL);
+    memset(&sigAction, 0, sizeof(sigAction));
+    sigaddset(&sigAction.sa_mask, SIGKILL);
+    sigAction.sa_sigaction = &signalHandler;
+
+    sigaction(SIGINT, &sigAction, NULL);  // Ctrl+C
+    sigaction(SIGTSTP, &sigAction, NULL); // Ctrl+Z
+    sigaction(SIGQUIT, &sigAction, NULL); // Ctrl+\..
 }
 
 bool Server::isAllowedToConnect(string clientAddress)
@@ -258,7 +274,7 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    client->setNickname("guestwhosnevergonnabeusedeverloltye");
+    client->setNickname("guestsdadsadsadsadsa");
     _clients.insert(_clients.begin() + socketClient, client);
     FD_SET(socketClient, &use);
     return 0;
@@ -333,13 +349,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
         _writing = _use;
         if (FD_ISSET(i, &_writing) && msg.length() > 0)
         {
-            static CommandFactory factory;
-            factory.tokenMessage(msg, _clients[i], *this);
-
-            // std::cout << "send msg: " << msg << std::endl;
-            // nonBlockingSend(_clients[i], msg, 0);
-            // std::cout << msg << std::endl;
-            // parseExec(_clients[i], msg, *this);
+            parseAndExec(_clients[i], msg, *this);
         }
     }
     return 1;
@@ -380,12 +390,13 @@ void Server::initServer(void)
     while (true && !std::cin.fail() && !std::cin.eof())
     {
         if (_selectFdSet() < 0)
-            return;
-        if (endSignal == true)
+            break;
+        if (endSignal == 1)
             break;
         if (fdSetClientMsgLoop(buffer) == -1)
-            return;
+            break;
     }
+    cout << "Closing server." << std::endl;
     close(_socket);
     closeFds();
     cleanAll();
@@ -431,14 +442,14 @@ string Server::getChannelId(const string &channelName, const string &channelKey)
     return key;
 }
 
-bool Server::isAuthorized(Client *client)
+bool Server::isAuthenticated(Client *client)
 {
-    return client->isAuthorized();
+    return client->isAuthenticated();
 }
 
 bool Server::checkAndSetAuthorization(Client *client, const string &rawClientPassword)
 {
-    if (client->isAuthorized())
+    if (client->isAuthenticated())
         return true;
     if (_pass == hashPassword(rawClientPassword))
     {
@@ -453,8 +464,9 @@ bool Server::isModerator(Client *client, const string &channelName)
     Channel *channel = getChannel(channelName);
     if (!channel)
         return false;
-    Client *moderator = channel->getModerator();
-    if (moderator->isInChannel(channel) && client->getUsername() == moderator->getUsername())
+    vector<Client *> moderators = channel->getModerators();
+    string username = client->getUsername();
+    if (Vector::isIn(moderators, &Client::getUsername, username))
         return true;
     return false;
 }
@@ -543,6 +555,7 @@ vector<Client *> Server::getClientsInAChannel(Channel *channel)
 Channel *Server::getChannel(const string &channelName)
 {
     Channel *channel = nullptr;
+    cout << "map Count " << _channels.size() << std::endl;
     if (_channels.tryGet(channelName, channel) && channel)
         return channel;
     return nullptr;
@@ -728,8 +741,9 @@ Channel *Server::join(Client *client, std::string &channelName)
     if (!channel)
     {
         channel = new Channel(channelName);
-        channel->setModerator(client);
+        channel->setSuperModerator(client);
     }
+    _channels.addIfNotExist(channel->getId(), channel);
     client->addToChannel(channel);
     return channel;
 }
@@ -740,10 +754,18 @@ Channel *Server::join(Client *client, std::string &channelName, std::string &key
     if (!channel)
     {
         channel = new Channel(channelName, key);
-        channel->setModerator(client);
+        channel->setSuperModerator(client);
     }
+    _channels.addIfNotExist(channel->getId(), channel);
     client->addToChannel(channel);
     return channel;
+}
+
+bool Server::disconnect(Client *client)
+{
+    if (!client)
+        return false;
+    return true;
 }
 
 vector<Channel *> Server::getClientChannels(Client *client)
