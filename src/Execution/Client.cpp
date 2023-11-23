@@ -208,9 +208,7 @@ bool Client::addToChannel(Channel *channel)
     // if is in kicked channel then cannot add to channel;
     if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
         return false;
-    channel = _channels.get(id);
-    // if not null is already in channel.
-    if (channel)
+    if (_channels.hasKey(id))
         return channel;
     if (_channels.addIfNotExist(id, channel))
         return channel;

@@ -555,6 +555,7 @@ vector<Client *> Server::getClientsInAChannel(Channel *channel)
 Channel *Server::getChannel(const string &channelName)
 {
     Channel *channel = nullptr;
+    cout << "map Count " << _channels.size() << std::endl;
     if (_channels.tryGet(channelName, channel) && channel)
         return channel;
     return nullptr;
@@ -742,6 +743,7 @@ Channel *Server::join(Client *client, std::string &channelName)
         channel = new Channel(channelName);
         channel->setSuperModerator(client);
     }
+    _channels.addIfNotExist(channel->getId(), channel);
     client->addToChannel(channel);
     return channel;
 }
@@ -754,6 +756,7 @@ Channel *Server::join(Client *client, std::string &channelName, std::string &key
         channel = new Channel(channelName, key);
         channel->setSuperModerator(client);
     }
+    _channels.addIfNotExist(channel->getId(), channel);
     client->addToChannel(channel);
     return channel;
 }
