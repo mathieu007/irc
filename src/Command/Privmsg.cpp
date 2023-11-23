@@ -54,7 +54,8 @@ bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &s
 			// sendMsg(client, messageToClient, 0);
 			Channel *channel = server.getChannel(channelName);
 			std::vector<Client*> clients = server.getClientsInAChannel(channel);
-			std::cout << "ici" << std::endl;
+			if (clients.empty())
+				std::cout << "ici" << std::endl;
 
 			for (std::vector<Client*>::size_type i = 0; i < clients.size(); ++i) {
 				Client* currentClient = clients[i];
