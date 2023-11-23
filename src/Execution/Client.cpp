@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Vector.hpp"
 
 Client::Client()
 {
@@ -15,7 +16,7 @@ Client::Client()
     this->_msg = "";
     this->_address = "";
     this->_port = "";
-    this->_kickedChannels = Map<string, Channel *>();
+    this->_kickedChannels = vector<Channel *>();
     this->_channels = Map<string, Channel *>();
     this->_isAuthenticated = false;
     this->_realName = "";
@@ -67,7 +68,7 @@ string Client::getNickname() const
     return _nickName;
 }
 
-string Client::getUsername() const
+const string &Client::getUsername() const
 {
     return _userName;
 }
@@ -87,7 +88,7 @@ Map<string, Channel *> &Client::getChannels()
     return _channels;
 }
 
-Map<string, Channel *> &Client::getKickedChannels()
+vector<Channel *> &Client::getKickedChannels()
 {
     return _kickedChannels;
 }
@@ -205,7 +206,7 @@ bool Client::addToChannel(Channel *channel)
         return false;
     string id = channel->getId();
     // if is in kicked channel then cannot add to channel;
-    if (_kickedChannels.tryGet(id, channel))
+    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
         return false;
     channel = _channels.get(id);
     // if not null is already in channel.
@@ -222,9 +223,9 @@ bool Client::addToKickedChannel(Channel *channel)
         return false;
     string id = channel->getId();
     // if is in kicked channel then cannot add to channel;
-    if (_kickedChannels.hasKey(id))
+    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
         return false;
-    _kickedChannels.add(id, channel);
+    _kickedChannels.push_back(channel);
     return true;
 }
 
@@ -243,7 +244,7 @@ bool Client::isInKickChannel(Channel *channel)
     if (!channel)
         return false;
     string id = channel->getId();
-    if (_kickedChannels.hasKey(id))
+    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
         return true;
     return false;
 }
@@ -263,7 +264,7 @@ bool Client::removeFromKickChannel(Channel *channel)
     if (!channel)
         return false;
     string id = channel->getId();
-    if (_kickedChannels.remove(id))
+    if (Vector::removeWhere(_kickedChannels, &Channel::getId, id))
         return true;
     return false;
 }

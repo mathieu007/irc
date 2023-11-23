@@ -24,6 +24,7 @@
 #include "Logger.hpp"
 #include "Client.hpp"
 
+using std::cout;
 using std::string;
 class Channel;
 
@@ -86,6 +87,7 @@ public:
     const std::vector<Channel *> getChannels() const;
     Channel *join(Client *client, std::string &channel);
     Channel *join(Client *client, std::string &channel, std::string &key);
+    bool disconnect(Client *client);
     vector<Channel *> getClientChannels(Client *client);
     vector<Channel *> getClientChannels(std::string &username);
     vector<Client *> getClientsInAChannel(Channel *channel);

@@ -40,20 +40,20 @@ private:
     string _port;
     // channels by channelnameKey
     Map<string, Channel *> _channels;
-    Map<string, Channel *> _kickedChannels;
+    vector<Channel *> _kickedChannels;
     bool _isRegistered;
 
 public:
     Client();
     string getNickname() const;
-    string getUsername() const;
+    const string &getUsername() const;
     long getCurTime() const;
     int getSocket() const;
     string getHost() const;
     string &getMsg();
     bool isRegistered() const;
     Map<string, Channel *> &getChannels();
-    Map<string, Channel *> &getKickedChannels();
+    vector<Channel *> &getKickedChannels();
 
     void setHost(string host);
     void setSocket(int socket);
