@@ -258,7 +258,7 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    client->setNickname("guest");
+    client->setNickname("guestwhosnevergonnabeusedeverloltye");
     _clients.insert(_clients.begin() + socketClient, client);
     FD_SET(socketClient, &use);
     return 0;
@@ -776,6 +776,7 @@ vector<Channel *> Server::getClientChannels(std::string &username)
     }
     return vec;
 }
+
 Client *Server::getClient(std::string &username)
 {
     vector<Client *>::const_iterator begin = this->_clients.begin();
@@ -783,6 +784,19 @@ Client *Server::getClient(std::string &username)
     while (begin != end)
     {
         if (*begin && username == (*begin)->getUsername())
+            return (*begin);
+        begin++;
+    }
+    return nullptr;
+}
+
+Client *Server::getClientByNickname(std::string &nickname)
+{
+    vector<Client *>::const_iterator begin = this->_clients.begin();
+    vector<Client *>::const_iterator end = this->_clients.end();
+    while (begin != end)
+    {
+        if (*begin && nickname == (*begin)->getNickname())
             return (*begin);
         begin++;
     }

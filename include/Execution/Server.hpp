@@ -120,4 +120,6 @@ public:
     Channel *removeTopicFromChannel(std::string &channelName, std::string &key);
     vector<Client *> removeChannel(std::string &channelName);
     vector<Client *> removeChannel(std::string &channelName, string &key);
+
+	Client *getClientByNickname(std::string &nickname);
 };

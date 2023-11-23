@@ -5,6 +5,8 @@
 #include "Join.hpp"
 #include "Kick.hpp"
 #include "Part.hpp"
+#include "Pass.hpp"
+#include "Privmsg.hpp"
 
 CommandFactory::CommandFactory()
 {
@@ -14,6 +16,9 @@ CommandFactory::CommandFactory()
 	_commandMap["JOIN"] = new Join();
 	_commandMap["KICK"] = new Kick();
 	_commandMap["PART"] = new Part();
+	_commandMap["PASS"] = new Pass();
+	_commandMap["PRIVMSG"] = new Privmsg();
+
 }
 
 Command *CommandFactory::createCommand(const std::string &commandType)

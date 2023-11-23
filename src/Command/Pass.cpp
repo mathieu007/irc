@@ -1,34 +1,30 @@
-#include "User.hpp"
+#include "Pass.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Pass::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
+	std::string password = tokens[1];
 	_errorMessage = "";
-	if (tokens.size() < 5)
+	if (tokens.size() < 2)
 		_errorMessage = "461 " + client->getHost() + " PASS :Not enough parameters\r\n";
-	if (tokens.size() > 5)
+	else if (tokens.size() > 2)
 		_errorMessage = "1002 " + client->getHost() + " PASS :Too much parameters\r\n";
 	else if (client->isAuthorized())
 		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
-
-bool User::execute(Client *client, std::vector<std::string> tokens, Server &server) {
-	(void)server;
-
+bool Pass::execute(Client *client, std::vector<std::string> tokens, Server &server){
+	std::string password = tokens[1];
 	if (!isValidCommand(tokens, client, server)) {
 		sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 	}
 	else {
-		std::cout << GREEN << "Executing USER command" << RESET << std::endl;
-		std::string newUserName = tokens[1];
-		std::string newRealName = tokens[4].substr(1);
-		client->setUsername(newUserName);
-		client->setRealname(newRealName);
+		std::cout << GREEN << "Executing PASS command" << RESET << std::endl;
+		client->setPass(password);
 	}
 	return _errorMessage.empty() ? true : false;
 }
 
-User::~User() {}
+Pass::~Pass(){}
