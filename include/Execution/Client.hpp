@@ -42,6 +42,7 @@ private:
     Map<string, Channel *> _channels;
     vector<Channel *> _kickedChannels;
     bool _isRegistered;
+	
 
 public:
     Client();
