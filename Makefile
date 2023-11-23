@@ -16,7 +16,7 @@ SRC =	src/main.cpp 	\
 		src/Command/Kick.cpp \
 		src/Command/Part.cpp \
 		src/Command/Pass.cpp \
-		src/command/Privmsg.cpp \
+		src/Command/Privmsg.cpp \
 
 
 OBJDIR = ./objs
