@@ -16,5 +16,6 @@ bool Part::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	std::string messageToClient = createPartMessage(client, tokens);
 	std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 	sendMsg(client, messageToClient, 0);
+	server.removeClientFromChannel(client, tokens[1]);
 	return true;
 }

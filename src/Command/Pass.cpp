@@ -3,7 +3,6 @@
 #include "Message.hpp"
 
 bool Pass::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
-	std::string password = tokens[1];
 	_errorMessage = "";
 	if (tokens.size() < 2)
 		_errorMessage = "461 " + client->getHost() + " PASS :Not enough parameters\r\n";
@@ -15,14 +14,14 @@ bool Pass::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 }
 
 bool Pass::execute(Client *client, std::vector<std::string> tokens, Server &server){
-	std::string password = tokens[1];
+	_password = tokens[1];
 	if (!isValidCommand(tokens, client, server)) {
 		sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 	}
 	else {
 		std::cout << GREEN << "Executing PASS command" << RESET << std::endl;
-		client->setPass(password);
+		client->setPass(_password);
 	}
 	return _errorMessage.empty() ? true : false;
 }
