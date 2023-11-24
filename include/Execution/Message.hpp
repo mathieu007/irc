@@ -9,3 +9,4 @@ ssize_t sendMsg(Client *client, string &data, int flags);
 string recvMsg(int sockfd, char *buffer, int flags);
 bool parseAndExec(Client *client, string &msg, Server &server);
 ssize_t sendQueuedMsg(Client *client, int flags);
+bool sendAuthMessages(Client *client);

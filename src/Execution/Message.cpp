@@ -109,6 +109,27 @@ ssize_t sendQueuedMsg(Client *client, int flags)
 	return bytesSent;
 }
 
+bool sendAuthMessages(Client *client)
+{
+	std::string msg;
+	if (client->getPass() == "")
+	{
+		msg = "ERROR :No Password set, configure your irc client, or use /pass <password> if using nc.\r\n";
+		sendMsg(client, msg, 0);
+	}
+	if (client->getUsername() == "")
+	{
+		msg = "ERROR :No Username set, configure your irc client, or use /user <username> if using nc.\r\n";
+		sendMsg(client, msg, 0);
+	}
+	if (client->getNickname() == "")
+	{
+		msg = "ERROR :No Username set, configure your irc client, or use /nick <username> if using nc.\r\n";
+		sendMsg(client, msg, 0);
+	}
+	return true;
+}
+
 // you absolutely need this if the sender is not the same as the recipient for non blocking io!!!!!
 ssize_t sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags)
 {

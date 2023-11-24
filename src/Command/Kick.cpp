@@ -42,6 +42,7 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	}
 	std::string channelName = tokens[1].substr(1);
 	Channel *channelPtr = server.getChannel(channelName);
+	
 	if (!channelPtr)
 	{
 		_errorMessage = "IRC " + channelName + " :No such channel\r\n";

@@ -10,16 +10,15 @@ Client::Client()
     this->_numRequests = 0;
     this->_reqSize = 0;
     this->_isBanned = false;
-    this->_pass = "";
-    this->_nickName = "";
-    this->_userName = "";
+    this->_pass = std::string();
+    this->_nickName = std::string();
+    this->_userName = std::string();
     this->_msg = "";
     this->_msgQueue = std::string();
     this->_address = "";
     this->_port = "";
     this->_kickedChannels = vector<Channel *>();
     this->_channels = Map<string, Channel *>();
-    this->_isAuthenticated = false;
     this->_realName = "";
     this->_socket = 0;
 }
@@ -86,6 +85,11 @@ const string &Client::getUsername() const
     return _userName;
 }
 
+const string &Client::getPass() const
+{
+    return _pass;
+}
+
 bool Client::isRegistered() const
 {
     return _isRegistered && !_isBanned;
@@ -109,11 +113,6 @@ Map<string, Channel *> &Client::getChannels()
 vector<Channel *> &Client::getKickedChannels()
 {
     return _kickedChannels;
-}
-
-void Client::setIsAuthorized(bool isAuthorized)
-{
-    _isAuthenticated = isAuthorized;
 }
 
 void Client::setMsg(string msg)
@@ -205,7 +204,7 @@ bool Client::isBannned() const
 
 bool Client::isAuthenticated() const
 {
-    return _isAuthenticated;
+    return !(_pass == "" || _nickName == "" || _nickName == "guest" || _userName == "");
 }
 
 bool Client::passIsEmpty() const
