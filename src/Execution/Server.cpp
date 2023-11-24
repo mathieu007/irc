@@ -325,8 +325,6 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 _setNonBlocking(socketClient);
                 string welcomeMsg = getWelcomeMsg(_clients[socketClient]);
                 sendMsg(_clients[socketClient], welcomeMsg, 0);
-                if (!this->isAuthenticated(_clients[socketClient]))
-                    authMessage = true;
             }
             else
             {
@@ -365,13 +363,11 @@ int Server::fdSetClientMsgLoop(char *buffer)
             else if (String::startWith(msg, "CAP") || String::startWith(msg, "NICK") || String::startWith(msg, "USER") || String::startWith(msg, "PASS"))
             {
                 clearBuffer = parseAndExec(_clients[i], msg, *this);
+                if (String::startWith(msg, "CAP"))
+                    sendAuthMessages(_clients[i]);
             }
             else if (String::startWith(msg, "PING"))
-            {
                 clearBuffer = parseAndExec(_clients[i], msg, *this);
-            }
-            if (authMessage)
-                sendAuthMessages(_clients[i]);
         }
         if (clearBuffer)
             msg.clear();

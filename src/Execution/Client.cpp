@@ -204,7 +204,7 @@ bool Client::isBannned() const
 
 bool Client::isAuthenticated() const
 {
-    return !(_pass == "" || _nickName == "" || _nickName == "guest" || _userName == "");
+    return (_pass != "" && _nickName != "" && _nickName != "guest" && _userName != "");
 }
 
 bool Client::passIsEmpty() const
