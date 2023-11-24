@@ -82,13 +82,13 @@ bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, 
 
 		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
 		{
-			Client *currentClient = clients[i];
-			if (currentClient != client)
+			Client *recipient = clients[i];
+			if (recipient != client)
 			{
-				std::cout << "Client " << i << ": " << currentClient->getNickname() << std::endl;
+				std::cout << "Client " << i << ": " << recipient->getNickname() << std::endl;
 				std::string messageToClient = ":" + senderNick + " PRIVMSG " + channelName + " " + message + "\r\n";
 				std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-				sendMsg(currentClient, messageToClient, 0);
+				sendMsgToRecipient(client, recipient, messageToClient, 0);
 			}
 		}
 	}

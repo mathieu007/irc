@@ -29,6 +29,8 @@ private:
     string _pass;
     string _host;
     string _msg;
+    // for a 100% non blocking io, while we send data to multiple recipients we need to use the main loop and not use sendMsg otherwise, it's why we need a queue...
+    string _msgQueue;
     int _socket;
     bool _isAuthenticated;
     bool _isBanned;
@@ -54,6 +56,7 @@ public:
     int getSocket() const;
     string getHost() const;
     string &getMsg();
+    string &getMsgQueue();
     bool isRegistered() const;
     Map<string, Channel *> &getChannels();
     vector<Channel *> &getKickedChannels();
@@ -61,6 +64,7 @@ public:
     void setHost(string host);
     void setSocket(int socket);
     void setMsg(string msg);
+    void setMsgQueue(string msg);
     void setPass(string pass);
     void setPort(string port);
     void setAddress(string address);

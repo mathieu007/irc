@@ -14,6 +14,7 @@ Client::Client()
     this->_nickName = "";
     this->_userName = "";
     this->_msg = "";
+    this->_msgQueue = std::string();
     this->_address = "";
     this->_port = "";
     this->_kickedChannels = vector<Channel *>();
@@ -95,6 +96,11 @@ string &Client::getMsg()
     return _msg;
 }
 
+string &Client::getMsgQueue()
+{
+    return _msgQueue;
+}
+
 Map<string, Channel *> &Client::getChannels()
 {
     return _channels;
@@ -113,6 +119,11 @@ void Client::setIsAuthorized(bool isAuthorized)
 void Client::setMsg(string msg)
 {
     _msg = msg;
+}
+
+void Client::setMsgQueue(string msg)
+{
+    _msgQueue = msg;
 }
 
 void Client::setPort(string port)
