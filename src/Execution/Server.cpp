@@ -368,6 +368,8 @@ int Server::fdSetClientMsgLoop(char *buffer)
             }
             else if (String::startWith(msg, "PING"))
                 clearBuffer = parseAndExec(_clients[i], msg, *this);
+            else if (!msg.empty())
+                sendAuthMessages(_clients[i]);
         }
         if (clearBuffer)
             msg.clear();
