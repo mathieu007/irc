@@ -2,8 +2,8 @@
 
 #define MAX_CLIENTS FD_SETSIZE
 #define MAX_BUFFER_SIZE 8096
-#define MAX_REQ_PER_SEC 4
-#define MAX_REQ_BEFORE_BAN 30
+#define MAX_REQ_PER_SEC 15
+#define MAX_REQ_BEFORE_BAN 60
 #define MAX_REQ_SIZE_PER_SEC 8096
 
 #include <string>
@@ -42,10 +42,12 @@ private:
     Map<string, Channel *> _channels;
     vector<Channel *> _kickedChannels;
     bool _isRegistered;
-	
 
 public:
     Client();
+    bool operator==(const Client &cmp) const;
+    bool operator!=(const Client &cmp) const;
+    ~Client();
     string getNickname() const;
     const string &getUsername() const;
     long getCurTime() const;

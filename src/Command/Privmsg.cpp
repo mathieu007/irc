@@ -35,10 +35,14 @@ bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &s
 		}
 		else
 		{
+			Client *receiver = server.getClientByNickname(receiverNick);
 			std::cout << GREEN << "Executing PRIVMSG to user command" << RESET << std::endl;
 			std::string messageToClient = ":" + senderNick + " Privmsg " + receiverNick + " " + message + "\r\n";
 			std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-			sendMsg(client, messageToClient, 0);
+			if (client->getNickname() != receiverNick)
+			{
+				sendMsg(receiver, messageToClient, 0);
+			}
 		}
 	}
 	////message to channel
@@ -63,16 +67,9 @@ bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &s
 			Channel *channel = server.getChannel(channelName);
 			std::vector<Client *> clients = server.getClientsInAChannel(channel);
 			std::cout << "ici" << clients.size() << std::endl;
-
-			for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
-			{
-				Client *currentClient = clients[i];
-				std::cout << "Client " << i << ": " << currentClient->getNickname() << std::endl;
-
-				std::string messageToClient = ":" + senderNick + " PRIVMSG " + channelName + " " + message + "\r\n";
-				std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-				sendMsg(currentClient, messageToClient, 0);
-			}
+			std::string messageToClient = ":" + senderNick + " PRIVMSG " + channelName + " " + message + "\r\n";
+			std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
+			sendMsg(client, messageToClient, 0);
 		}
 	}
 	return _errorMessage.empty() ? true : false;

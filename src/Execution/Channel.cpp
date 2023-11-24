@@ -102,7 +102,7 @@ bool Channel::canDeleteModerator(Client *client, Client *moderatorToDelete) cons
     if (!moderatorToDelete || client)
         return false;
     if (client->getUsername() == moderatorToDelete->getUsername() || moderatorToDelete->getUsername() == _superModerator->getUsername())
-        false;
+        return false;
     return true;
 }
 

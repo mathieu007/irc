@@ -23,6 +23,18 @@ Client::Client()
     this->_socket = 0;
 }
 
+Client::~Client() {}
+
+bool Client::operator==(const Client &cmp) const
+{
+    return this->getUsername() == cmp.getUsername();
+}
+
+bool Client::operator!=(const Client &cmp) const
+{
+    return this->getUsername() != cmp.getUsername();
+}
+
 void Client::setHost(string host)
 {
     _host = host;
