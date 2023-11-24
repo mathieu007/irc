@@ -555,7 +555,6 @@ vector<Client *> Server::getClientsInAChannel(Channel *channel)
 Channel *Server::getChannel(const string &channelName)
 {
     Channel *channel = nullptr;
-    cout << "map Count " << _channels.size() << std::endl;
     if (_channels.tryGet(channelName, channel) && channel)
         return channel;
     return nullptr;

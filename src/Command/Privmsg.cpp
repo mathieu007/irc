@@ -55,8 +55,6 @@ bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, 
 	std::string senderNick = client->getNickname();
 	std::string channelName = tokens[1];
 	std::string message = createMessage(tokens);
-		
-	std::cout << "message [" << message << "]" << std::endl;
 
 	if (!isValidCommandToChannel(tokens, client, server)) {
 		sendMsg(client, _errorMessage, 0);
@@ -65,16 +63,19 @@ bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, 
 	else {
 		Channel *channel = server.getChannel(channelName);
 		std::vector<Client*> clients = server.getClientsInAChannel(channel);
-		if (clients.empty())
-			std::cout << "ici" << std::endl;
+			// std::string recevingclient = server.getClientByNickname();
 
+			// std::string messageToClient = ":" + senderNick + " PRIVMSG " + channelName + " " + message + "\r\n";
+			// std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
+			// sendMsg(client, messageToClient, 0);
 		for (std::vector<Client*>::size_type i = 0; i < clients.size(); ++i) {
 			Client* currentClient = clients[i];
 			std::cout << "Client " << i << ": " << currentClient->getNickname() << std::endl;
 
 			std::string messageToClient = ":" + senderNick + " PRIVMSG " + channelName + " " + message + "\r\n";
 			std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-			sendMsg(currentClient, messageToClient, 0);
+			if (currentClient->getNickname() != client->getNickname())
+				sendMsg(currentClient, messageToClient, 0);
 		}
 	}
 	return _errorMessage.empty() ? true : false;
