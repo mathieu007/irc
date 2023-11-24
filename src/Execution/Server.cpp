@@ -306,10 +306,11 @@ void Server::_setNonBlocking(int sockfd)
 
 int Server::fdSetClientMsgLoop(char *buffer)
 {
-    std::string msg;
+
     int socketClient = 0;
     for (int i = 0; i < FD_SETSIZE; i++)
     {
+        std::string msg;
         bool canMakeRequest = true;
         if (FD_ISSET(i, &_reading))
         {
@@ -336,6 +337,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
                     _bannedClients.addOrReplace(key, _clients[i]);
                     string warning = string("You are now banned from our irc server, you have been warnned!");
                     sendMsg(_clients[i], warning, 0);
+                    _clients[i] = nullptr;
                 }
             }
         }
@@ -347,10 +349,16 @@ int Server::fdSetClientMsgLoop(char *buffer)
             continue;
         }
         _writing = _use;
-        if (FD_ISSET(i, &_writing) && msg.length() > 0)
+        bool clearBuffer = msg.length() == 0;
+        if (FD_ISSET(i, &_writing) && _clients[i])
         {
-            parseAndExec(_clients[i], msg, *this);
+            if (!_clients[i]->getMsgQueue().empty())
+                sendQueuedMsg(_clients[i], 0);
+            else if (msg.length() > 0)
+                clearBuffer = parseAndExec(_clients[i], msg, *this);
         }
+        if (clearBuffer)
+            msg.clear();
     }
     return 1;
 }
