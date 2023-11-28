@@ -29,16 +29,20 @@ private:
     string _pass;
     string _host;
     string _msg;
-    // for a 100% non blocking io, while we send data to multiple recipients we need to use the main loop and not use sendMsg otherwise, it's why we need a queue...
-    string _msgQueue;
+    // for a 100% non blocking io, while we send data to multiple recipients we need to use the main loop and not use Msg::sendMsg otherwise, it's why we need a queue...
+    string _msgSendQueue;
+    string _msgRecvQueue;
     int _socket;
+    bool _remove;
     bool _isBanned;
     long _lastRequestTime;
+    long _lastActivityTime;
     long _nextAllowedConnectionTime;
     int _numRequests;
     int _reqSize;
     string _address;
     string _port;
+    int _socketIndex;
     // channels by channelnameKey
     Map<string, Channel *> _channels;
     vector<Channel *> _kickedChannels;
@@ -54,31 +58,39 @@ public:
     const string &getPass() const;
     long getCurTime() const;
     int getSocket() const;
+    int getSocketIndex() const;
     string getHost() const;
     string &getMsg();
-    string &getMsgQueue();
+    string &getMsgSendQueue();
+    string &getMsgRecvQueue();
+    long getLastActivity();
     bool isRegistered() const;
     Map<string, Channel *> &getChannels();
     vector<Channel *> &getKickedChannels();
     void setHost(string host);
     void setSocket(int socket);
+    void setSocketIndex(int index);
     void setMsg(string msg);
-    void setMsgQueue(string msg);
+    void setMsgSendQueue(string msg);
+    void setMsgRecvQueue(string msg);
     void setPass(string pass);
     void setPort(string port);
     void setAddress(string address);
+    void setLastActivity(long lastActivity);
     void setNickname(std::string ncikName);
     void setUsername(std::string userName);
     void setRealname(std::string realName);
+    void setRemove(bool remove);
+    bool shouldBeRemoved() const;
     void setIsRegistered();
     void incrementRequest();
     void incrementReqSize(long reqSize);
-    bool isAuthenticated() const;
+    bool isValidUserInfo() const;
     bool passIsEmpty() const;
     bool canConnect() const;
     bool isBannned() const;
     bool canMakeRequest();
-    bool isGoingToGetBanned();
+    bool hasReachMaxReq();
 
     // WARNING do not use these functions, use the server's functions instead, these functions are only called from the server.
     bool addToChannel(Channel *channel);

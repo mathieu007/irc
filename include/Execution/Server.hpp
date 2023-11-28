@@ -1,4 +1,7 @@
 #pragma once
+
+#define MAX_CLIENT_INACTIVITY 60 * 5
+
 #include <map>
 #include "Map.hpp"
 #include <iostream>
@@ -41,13 +44,14 @@ private:
     struct sockaddr_in _client_adrr;
     socklen_t _serv_size;
     socklen_t _client_size;
-    int _socket;
+    int _serverSocket;
     /// @brief non blocking io, for monitoring both read and write operations.
     fd_set _use;
     /// @brief non blocking io for writing.
     fd_set _writing;
     /// @brief non blocking io for reading.
     fd_set _reading;
+    vector<int> _clientSockets = vector<int>();
     vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
     // banned clients by ip address
     Map<string, Client *> _bannedClients = Map<string, Client *>();
@@ -58,8 +62,13 @@ private:
     void _initServerSocket(void);
     void _setNonBlocking(int sockfd);
     int _selectFdSet();
+    void _banClient(Client *client, int clientSocket);
+    void _disconnectInnactiveClient(Client *client, int index);
+    string _recvClientMsg(Client *client, char *buffer, int clientSocket);
+    void _execUnAuthenticatedCmd(string msg, Client *client);
 
 public:
+    Server();
     Server(char *pass, int port, bool fileLog);
     Server(char *pass, int port, char *ip, bool fileLog);
     ~Server();
@@ -69,11 +78,15 @@ public:
     void initServer(void);
     void closeFds(void);
     bool cleanAll();
-    int addClient(int socketClient, fd_set &use);
+    int createClient(int socketClient);
     int fdSetClientMsgLoop(char *buffer);
+
     string readClientMsg(Client *client);
     int getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port);
     int getServerIp(string &ip);
+    vector<int> &getClientSockets();
+    vector<Client *> &getClients();
+    int checkIncomingClientConnection();
     Client *createOrGetClient(string clientAddress);
     bool isAllowedToConnect(string clientAddress);
     bool isAllowedToMakeRequest(Client *client);
@@ -91,8 +104,9 @@ public:
     vector<Channel *> getClientChannels(std::string &username);
     vector<Client *> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
+    bool isValidPassword(Client *client);
     bool isAuthenticated(Client *client);
-    bool setPassword(Client *client, const string &rawClientPassword);
+    bool setClientPassword(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);
     bool isInKickChannel(Client *client, std::string &channelName);

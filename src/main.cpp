@@ -5,21 +5,24 @@
 #include <cstring>
 #include <fcntl.h>
 #include "Server.hpp"
+#include "Message.hpp"
 
 int main(int argc, char **argv)
 {
     if (argc == 3)
     {
         Server server = Server(argv[2], std::stoi(argv[1]), false);
+        Msg::_server = &server;
         server.initServer();
     }
     else if (argc == 4)
     {
         Server server = Server(argv[2], std::stoi(argv[1]), argv[3], false);
+        Msg::_server = &server;
         server.initServer();
     }
-    std::cerr << "Usage: ./" << argv[0] 
-            << " <port>"
+    std::cerr << "Usage: ./" << argv[0]
+              << " <port>"
               << " <pass>"
               << " <optional:ip>" << std::endl;
     exit(1);

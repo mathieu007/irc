@@ -1,7 +1,9 @@
 #include "Message.hpp"
 #include "CommandFactory.hpp"
 #include "String.hpp"
+#include "Server.hpp"
 
+Server *Msg::_server = nullptr;
 /*
 When a socket is in non-blocking mode using:
 int flags = fcntl(sockfd, F_GETFL, 0);
@@ -22,7 +24,7 @@ recv may return immediately with an error (EAGAIN or EWOULDBLOCK) instead of wai
 */
 
 // we need to put the leftover data in a queue so it's processed later.
-ssize_t sendMsg(Client *client, string &data, int flags)
+ssize_t Msg::sendMsg(Client *client, string &data, int flags)
 {
 	ssize_t bytesSent = 0;
 	// if a previous io operation failed or was blocking, we need to get the leftover bytes from the client, and resume sending...
@@ -47,17 +49,21 @@ ssize_t sendMsg(Client *client, string &data, int flags)
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
 				client->setMsg(ptr);
-				continue;
+				cout << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
+				return bytesSent;
 			}
 			else if (errno == EINTR)
 			{
 				// Interrupted by a signal, continue sending ????????????
-				continue;
+				client->setRemove(true);
+				perror("send interupted by signal");
+				break;
 			}
 			else
 			{
 				// Error occurred
-				perror("send");
+				client->setRemove(true);
+				perror("send interupted by peer");
 				break;
 			}
 		}
@@ -66,11 +72,11 @@ ssize_t sendMsg(Client *client, string &data, int flags)
 	return bytesSent;
 }
 
-ssize_t sendQueuedMsg(Client *client, int flags)
+ssize_t Msg::sendQueuedMsg(Client *client, int flags)
 {
 	ssize_t bytesSent = 0;
 	// if a previous io operation failed or was blocking, we need to get the leftover bytes from the client, and resume sending...
-	std::string msg = client->getMsgQueue();
+	std::string msg = client->getMsgSendQueue();
 	int len = msg.length();
 	const char *ptr = msg.c_str();
 	while (bytesSent < (ssize_t)len)
@@ -80,77 +86,81 @@ ssize_t sendQueuedMsg(Client *client, int flags)
 		// the data is not sent in one swoop we must handle the data per client, we need to save the left over msg data into user msg
 		if (result > 0)
 			bytesSent += result;
-		else if (result == 0)
+		else if (result == 0 && len == bytesSent)
 		{
-			client->setMsgQueue(ptr);
+			client->setMsgSendQueue("");
 			break;
 		}
 		else
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				client->setMsgQueue(ptr);
-				continue;
+				client->setMsgSendQueue(ptr);
+				cout << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
+				return bytesSent;
 			}
 			else if (errno == EINTR)
 			{
 				// Interrupted by a signal, continue sending ????????????
-				continue;
+				client->setRemove(true);
+				perror("send interupted by signal");
+				break;
 			}
 			else
 			{
-				// Error occurred
-				perror("send");
+				client->setRemove(true);
+				perror("send interupted by peer");
 				break;
 			}
 		}
 	}
-	client->getMsgQueue().clear();
+	client->setMsgSendQueue("");
 	return bytesSent;
 }
 
-bool sendAuthMessages(Client *client)
+bool Msg::sendAuthMessages(Client *client)
 {
 	std::string msg;
 	if (client->getPass() == "")
 	{
-		msg = "ERROR :No Password set, configure your irc client, or use /pass <password> if using nc.\r\n";
-		sendMsg(client, msg, 0);
+		msg = "ERROR :No Password set, configure your irc client, or use PASS <password> if using nc.\r\n";
+		Msg::sendMsg(client, msg, 0);
 	}
-	if (client->getUsername() == "")
+	else if (client->getUsername() == "")
 	{
-		msg = "ERROR :No Username set, configure your irc client, or use /user <username> if using nc.\r\n";
-		sendMsg(client, msg, 0);
+		msg = "ERROR :No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
+		Msg::sendMsg(client, msg, 0);
 	}
-	if (client->getNickname() == "")
+	else if (client->getNickname() == "")
 	{
-		msg = "ERROR :No Username set, configure your irc client, or use /nick <username> if using nc.\r\n";
-		sendMsg(client, msg, 0);
+		msg = "ERROR :No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
+		Msg::sendMsg(client, msg, 0);
 	}
 	return true;
 }
 
 // you absolutely need this if the sender is not the same as the recipient for non blocking io!!!!!
-ssize_t sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags)
+ssize_t Msg::sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags)
 {
 	ssize_t byteToSend = 0;
 
 	if (sender == recipient)
-		return sendMsg(recipient, msg, flags);
-	string msgQueue = recipient->getMsgQueue();
+		return Msg::sendMsg(recipient, msg, flags);
+	string msgQueue = recipient->getMsgSendQueue();
 	msgQueue.append(msg);
 	byteToSend = msgQueue.length();
-	recipient->setMsgQueue(msgQueue);
+	recipient->setMsgSendQueue(msgQueue);
 	return byteToSend;
 }
 
-string recvMsg(int sockfd, char *buffer, int flags)
+string Msg::recvMsg(int sockfd, char *buffer, bool &success)
 {
+	success = true;
 	std::string msg = std::string();
 	ssize_t bytesRead = 0;
 	while (true)
 	{
-		bytesRead = recv(sockfd, buffer, MAX_BUFFER_SIZE, flags);
+		bytesRead = recv(sockfd, buffer, MAX_BUFFER_SIZE, 0);
 		if (bytesRead > 0)
 		{
 			buffer[bytesRead] = '\0';
@@ -165,17 +175,28 @@ string recvMsg(int sockfd, char *buffer, int flags)
 			// iff no data available or the call is blocking we don't wait and send the msg right away...
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
+				cout << "recv EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
 				return msg;
 			}
 			else if (errno == EINTR)
 			{
 				// should we continue ??????????
+				vector<Client *> clients = Msg::_server->getClients();
+				Client *client = clients[sockfd];
+				if (client)
+					client->setRemove(true);
+				success = false;
 				break;
 			}
 			else
 			{
 				// Error occurred
-				perror("recv");
+				vector<Client *> clients = Msg::_server->getClients();
+				Client *client = clients[sockfd];
+				if (client)
+					client->setRemove(true);
+				perror("recv interupted by peer");
+				success = false;
 				break;
 			}
 		}
@@ -183,15 +204,23 @@ string recvMsg(int sockfd, char *buffer, int flags)
 	return msg;
 }
 
-bool parseAndExec(Client *client, string &msg, Server &server)
+bool Msg::parseAndExec(Client *client, string &msg, Server &server)
 {
 	(void)server;
+	string extracted;
 	static CommandFactory cmdFactory;
 	// if the string is not ending with \r\n then we do not clear the buffer and wait for the rest of the string.
-	if (String::endsWith(msg, "\r\n"))
+	while (!msg.empty())
 	{
-		cmdFactory.tokenMessage(msg, client, server);
-		return true;
+		extracted = String::extractUptoFirstOccurence(msg, "\r\n");
+		if (extracted.empty())
+			return true;
+		cmdFactory.tokenMessage(extracted, client, server);
+		if (msg.length() - extracted.length() == 0)
+			msg = string("");
+		else
+			msg.erase(msg.begin(), msg.begin() + extracted.length());
+		client->setMsgRecvQueue(msg);
 	}
-	return false;
+	return true;
 }

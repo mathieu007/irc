@@ -34,13 +34,13 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 
 	if (!isValidCommand(tokens, client, server)) {
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
-		sendMsg(client, _errorMessage, 0);
+		Msg::sendMsg(client, _errorMessage, 0);
 	}
 	else {
 		std::cout << GREEN << "Executing KICK command" << RESET << std::endl;
 		std::string messageToClient = createMessageToClient(client, tokens);
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
-		sendMsg(client, messageToClient, 0);
+		Msg::sendMsg(client, messageToClient, 0);
 		server.kickClientFromChannel(_clientToKick, _channelName);
 	}
 

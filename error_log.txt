@@ -1,0 +1,22 @@
+Failed to connect client to socket.
+Failed to connect client to socket.
+Failed to connect client to socket.
+select() error: Interrupted system call
+Error: Couldn't bind socket address.
+
+Error: Couldn't bind socket address.
+
+Error: Couldn't bind socket address.
+
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor

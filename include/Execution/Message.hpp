@@ -4,9 +4,15 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
-ssize_t sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags);
-ssize_t sendMsg(Client *client, string &data, int flags);
-string recvMsg(int sockfd, char *buffer, int flags);
-bool parseAndExec(Client *client, string &msg, Server &server);
-ssize_t sendQueuedMsg(Client *client, int flags);
-bool sendAuthMessages(Client *client);
+class Server;
+class Msg
+{
+public:
+    static Server *_server;
+    static ssize_t sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags);
+    static ssize_t sendMsg(Client *client, string &data, int flags);
+    static string recvMsg(int sockfd, char *buffer, bool &success);
+    static bool parseAndExec(Client *client, string &msg, Server &server);
+    static ssize_t sendQueuedMsg(Client *client, int flags);
+    static bool sendAuthMessages(Client *client);
+};
