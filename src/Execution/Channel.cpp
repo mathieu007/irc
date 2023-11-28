@@ -20,7 +20,7 @@ Channel::Channel(string &name, string &key)
     _id = _name;
     _topic = "";
     _superModerator = nullptr;
-    _moderators = vector<Client *>();    
+    _moderators = vector<Client *>();
 }
 
 bool Channel::hasTopic() const
@@ -54,6 +54,16 @@ void Channel::setSuperModerator(Client *moderator)
     this->_superModerator = moderator;
     if (!moderatorAlreadyExist(moderator))
         _moderators.push_back(moderator);
+}
+
+bool Channel::addModerator(Client *moderator)
+{
+    if (!moderatorAlreadyExist(moderator))
+    {
+        _moderators.push_back(moderator);
+        return true;
+    }
+    return false;
 }
 
 const string &Channel::getId() const

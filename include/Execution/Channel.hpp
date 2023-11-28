@@ -31,6 +31,7 @@ public:
     vector<Client *> &getInvitedClients();
     bool deleteModerator(Client *client, Client *moderatorToDelete);
     bool moderatorAlreadyExist(Client *client) const;
+    bool addModerator(Client *moderator);
     bool hasTopic() const;
     bool canBejoinOnInvitationOnly() const;
     bool isAllowedToJoin(Client *client) const;
