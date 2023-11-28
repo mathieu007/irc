@@ -274,7 +274,7 @@ int Server::addClient(int socketClient, fd_set &use)
     client->setAddress(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    client->setNickname("guestsdadsadsadsadsa");
+    client->setNickname("guest");
     _clients.insert(_clients.begin() + socketClient, client);
     FD_SET(socketClient, &use);
     return 0;
@@ -312,6 +312,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
     {
         std::string msg;
         bool canMakeRequest = true;
+        bool authMessage = false;
         if (FD_ISSET(i, &_reading))
         {
             if (i == _socket)
@@ -324,6 +325,8 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 _setNonBlocking(socketClient);
                 string welcomeMsg = getWelcomeMsg(_clients[socketClient]);
                 sendMsg(_clients[socketClient], welcomeMsg, 0);
+                if (!this->isAuthenticated(_clients[socketClient]))
+                    authMessage = true;
             }
             else
             {
@@ -352,10 +355,23 @@ int Server::fdSetClientMsgLoop(char *buffer)
         bool clearBuffer = msg.length() == 0;
         if (FD_ISSET(i, &_writing) && _clients[i])
         {
-            if (!_clients[i]->getMsgQueue().empty())
-                sendQueuedMsg(_clients[i], 0);
-            else if (msg.length() > 0)
+            if (this->isAuthenticated(_clients[i]))
+            {
+                if (!_clients[i]->getMsgQueue().empty())
+                    sendQueuedMsg(_clients[i], 0);
+                else if (msg.length() > 0)
+                    clearBuffer = parseAndExec(_clients[i], msg, *this);
+            }
+            else if (String::startWith(msg, "CAP") || String::startWith(msg, "NICK") || String::startWith(msg, "USER") || String::startWith(msg, "PASS"))
+            {
                 clearBuffer = parseAndExec(_clients[i], msg, *this);
+            }
+            else if (String::startWith(msg, "PING"))
+            {
+                clearBuffer = parseAndExec(_clients[i], msg, *this);
+            }
+            if (authMessage)
+                sendAuthMessages(_clients[i]);
         }
         if (clearBuffer)
             msg.clear();
@@ -444,24 +460,18 @@ void Server::closeFds(void)
             close(i);
 }
 
-string Server::getChannelId(const string &channelName, const string &channelKey)
-{
-    string key = channelName + ":" + channelKey;
-    return key;
-}
-
 bool Server::isAuthenticated(Client *client)
 {
     return client->isAuthenticated();
 }
 
-bool Server::checkAndSetAuthorization(Client *client, const string &rawClientPassword)
+bool Server::setPassword(Client *client, const string &rawClientPassword)
 {
     if (client->isAuthenticated())
         return true;
     if (_pass == hashPassword(rawClientPassword))
     {
-        client->setIsAuthorized(true);
+        client->setPass(rawClientPassword);
         return true;
     }
     return false;
@@ -478,20 +488,11 @@ bool Server::isModerator(Client *client, const string &channelName)
         return true;
     return false;
 }
+
 bool Server::isInChannel(Client *client, string &channelName)
 {
     Channel *channel = nullptr;
     if (_channels.tryGet(channelName, channel) && channel && client->isInChannel(channel))
-        return true;
-    return false;
-}
-bool Server::isInChannel(Client *client, string &channelName, string &key)
-{
-    Channel *channel = nullptr;
-    if (!client)
-        return false;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel && client->isInChannel(channel))
         return true;
     return false;
 }
@@ -504,41 +505,15 @@ bool Server::isInKickChannel(Client *client, std::string &channelName)
     return false;
 }
 
-bool Server::isInKickChannel(Client *client, std::string &channelName, std::string &key)
-{
-    Channel *channel = nullptr;
-    if (!client)
-        return false;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel && client->isInKickChannel(channel))
-        return true;
-    return false;
-}
-
 bool Server::channelExist(string &channel)
 {
     return _channels.hasKey(channel);
-}
-
-bool Server::channelExist(string &channel, string &key)
-{
-    string id = getChannelId(channel, key);
-    return _channels.hasKey(id);
 }
 
 bool Server::hasTopic(string &channelName)
 {
     Channel *channel = nullptr;
     if (_channels.tryGet(channelName, channel) && channel && channel->hasTopic())
-        return true;
-    return false;
-}
-
-bool Server::hasTopic(string &channelName, string &key)
-{
-    Channel *channel = nullptr;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel && channel->hasTopic())
         return true;
     return false;
 }
@@ -568,15 +543,6 @@ Channel *Server::getChannel(const string &channelName)
     return nullptr;
 }
 
-Channel *Server::getChannel(const std::string &channelName, const std::string &key)
-{
-    Channel *channel = nullptr;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel)
-        return channel;
-    return nullptr;
-}
-
 bool Server::removeClient(string &username)
 {
     Client *client = getClient(username);
@@ -593,10 +559,7 @@ bool Server::removeClient(Client *client)
     {
         if (*it)
         {
-            if (!(*it)->getKey().empty())
-                removeClientFromChannel(client, (*it)->getName(), (*it)->getKey());
-            else
-                removeClientFromChannel(client, (*it)->getName());
+            removeClientFromChannel(client, (*it)->getName());
         }
         it++;
     }
@@ -611,28 +574,10 @@ Channel *Server::removeClientFromChannel(Client *client, const std::string &chan
     return nullptr;
 }
 
-Channel *Server::removeClientFromChannel(Client *client, const std::string &channelName, const std::string &key)
-{
-    Channel *channel = nullptr;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel && client->getChannels().remove(channel->getId()))
-        return channel;
-    return nullptr;
-}
-
 Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
 {
     Channel *channel = nullptr;
     if (_channels.tryGet(channelName, channel) && channel && client->addToKickedChannel(channel))
-        return channel;
-    return nullptr;
-}
-
-Channel *Server::kickClientFromChannel(Client *client, std::string &channelName, std::string &key)
-{
-    Channel *channel = nullptr;
-    string id = getChannelId(channelName, key);
-    if (_channels.tryGet(id, channel) && channel && client->addToKickedChannel(channel))
         return channel;
     return nullptr;
 }
@@ -657,14 +602,6 @@ Channel *Server::addClientToChannel(Client *client, std::string &channelName)
     return nullptr;
 }
 
-Channel *Server::addClientToChannel(Client *client, std::string &channelName, std::string &key)
-{
-    Channel *channel = getChannel(channelName, key);
-    if (channel && client->addToChannel(channel))
-        return channel;
-    return nullptr;
-}
-
 Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName)
 {
     Channel *channel = getChannel(channelName);
@@ -676,30 +613,7 @@ Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName)
     return nullptr;
 }
 
-Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName, std::string &key)
-{
-    Channel *channel = getChannel(channelName, key);
-    if (channel)
-    {
-        channel->setTopic(topic);
-        return channel;
-    }
-    return nullptr;
-}
-
 Channel *Server::removeTopicFromChannel(std::string &channelName)
-{
-    Channel *channel = getChannel(channelName);
-    if (channel->hasTopic())
-    {
-        string topic = "";
-        channel->setTopic(topic);
-        return channel;
-    }
-    return nullptr;
-}
-
-Channel *Server::removeTopicFromChannel(std::string &channelName, std::string &key)
 {
     Channel *channel = getChannel(channelName);
     if (channel->hasTopic())
@@ -728,20 +642,6 @@ vector<Client *> Server::removeChannel(std::string &channelName)
     return vec;
 }
 
-vector<Client *> Server::removeChannel(std::string &channelName, std::string &key)
-{
-    Channel *channel = getChannel(channelName, key);
-    vector<Client *> vec = getClientsInAChannel(channel);
-    vector<Client *>::iterator it = vec.begin();
-    while (it != vec.end())
-    {
-        if (*it)
-            (*it)->removeFromChannel(channel);
-        it++;
-    }
-    return vec;
-}
-
 Channel *Server::join(Client *client, std::string &channelName)
 {
     Channel *channel = getChannel(channelName);
@@ -755,17 +655,32 @@ Channel *Server::join(Client *client, std::string &channelName)
     return channel;
 }
 
-Channel *Server::join(Client *client, std::string &channelName, std::string &key)
+Channel *Server::join(Client *client, string &channelName, string &key)
 {
-    Channel *channel = getChannel(channelName, key);
+    Channel *channel = getChannel(channelName);
     if (!channel)
     {
         channel = new Channel(channelName, key);
         channel->setSuperModerator(client);
     }
     _channels.addIfNotExist(channel->getId(), channel);
-    client->addToChannel(channel);
+    if (channelName == channel->getName() && channel->getKey() == key)
+        client->addToChannel(channel);
     return channel;
+}
+
+const string &Server::getChannelKey(std::string &channelName)
+{
+    Channel *channel = getChannel(channelName);
+    return channel->getKey();
+}
+
+bool Server::channelKeyExist(std::string &channelName, std::string &key)
+{
+    Channel *channel = getChannel(channelName);
+    if (channel->getKey() == key)
+        return true;
+    return false;
 }
 
 bool Server::disconnect(Client *client)

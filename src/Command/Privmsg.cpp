@@ -30,7 +30,6 @@ bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, S
 	std::string senderNick = client->getNickname();
 	std::string receiverNick = tokens[1];
 	std::string message = createMessage(tokens);
-
 	Client *receverClient = server.getClientByNickname(receiverNick);
 
 	if (!isValidCommandToClient(tokens, client, server)) {

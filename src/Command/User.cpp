@@ -2,7 +2,8 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	_errorMessage = "";
 	if (tokens.size() < 5)
 		_errorMessage = "461 " + client->getHost() + " PASS :Not enough parameters\r\n";
@@ -10,12 +11,14 @@ bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "1002 " + client->getHost() + " PASS :Too much parameters\r\n";
 	else if (client->isAuthenticated())
 		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
+	// else if (tokens[1] == "")
+	// 	_errorMessage = "ERROR :No Username set, configure your irc client, or use: USER <username> if using nc.\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
-
 bool User::execute(Client *client, std::vector<std::string> tokens, Server &server) {
-	(void)server;
+ 	_newUserName = tokens[1];
+	_newRealName = tokens[4].substr(1);
 
 	if (!isValidCommand(tokens, client, server)) {
 		sendMsg(client, _errorMessage, 0);
@@ -23,10 +26,8 @@ bool User::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	}
 	else {
 		std::cout << GREEN << "Executing USER command" << RESET << std::endl;
-		std::string newUserName = tokens[1];
-		std::string newRealName = tokens[4].substr(1);
-		client->setUsername(newUserName);
-		client->setRealname(newRealName);
+		client->setUsername(_newUserName);
+		client->setRealname(_newRealName);
 	}
 	return _errorMessage.empty() ? true : false;
 }

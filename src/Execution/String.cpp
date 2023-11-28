@@ -9,4 +9,10 @@ namespace String
             return (fullString.compare(fullString.length() - suffix.length(), suffix.length(), suffix) == 0);
         return false;
     }
+    bool startWith(const std::string &fullString, const std::string &prefix)
+    {
+        if (fullString.length() >= prefix.length())
+            return (fullString.compare(0, prefix.length(), prefix) == 0);
+        return false;
+    }
 }

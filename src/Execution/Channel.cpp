@@ -17,10 +17,10 @@ Channel::Channel(string &name, string &key)
 {
     _name = name;
     _key = key;
-    _id = _name + ":" + _key;
-    _superModerator = nullptr;
-    _moderators = vector<Client *>();
+    _id = _name;
     _topic = "";
+    _superModerator = nullptr;
+    _moderators = vector<Client *>();    
 }
 
 bool Channel::hasTopic() const
