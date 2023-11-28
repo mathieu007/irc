@@ -2,8 +2,7 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-std::string Privmsg::createMessage(std::vector<std::string> tokens)
-{
+std::string Privmsg::createMessage(std::vector<std::string> tokens) {
 	std::string message;
 
 	for (std::size_t i = 2; i < tokens.size(); ++i)
@@ -19,8 +18,7 @@ std::string Privmsg::createMessage(std::vector<std::string> tokens)
 	return message;
 }
 
-bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *client, Server &server)
-{
+bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *client, Server &server) {
 	(void)server;
 	_errorMessage = "";
 	if (tokens.size() < 2)
@@ -31,13 +29,15 @@ bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *c
 
 bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, Server &server)
 {
+	std::string receiverNick = "";
+
 	std::string senderNick = client->getNickname();
-	std::string receiverNick = tokens[1];
+	if (tokens.size() > 1)
+		receiverNick = tokens[1];
 	std::string message = createMessage(tokens);
 	// Client *receverClient = server.getClientByNickname(receiverNick);
 
-	if (!isValidCommandToClient(tokens, client, server))
-	{
+	if (!isValidCommandToClient(tokens, client, server)){
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 	}
@@ -61,10 +61,12 @@ bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, Server &server)
-{
+bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, Server &server) {
+	std::string channelName = "";
+
 	std::string senderNick = client->getNickname();
-	std::string channelName = tokens[1];
+	if (tokens.size() > 1)
+		channelName = tokens[1];
 	std::string message = createMessage(tokens);
 
 	if (!isValidCommandToChannel(tokens, client, server))

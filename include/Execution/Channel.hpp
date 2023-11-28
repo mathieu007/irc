@@ -26,6 +26,7 @@ public:
     const string &getName() const;
     const string &getKey() const;
     const string &getId() const;
+	const string &getTopic() const;
     Client *getSuperModerator();
     vector<Client *> &getModerators();
     vector<Client *> &getInvitedClients();

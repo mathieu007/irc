@@ -3,6 +3,14 @@
 #include "Message.hpp"
 #include "Channel.hpp"
 
+void Kick::setVariableToZero(){
+	_errorMessage = "";
+	_kickReasson = "";
+	_channelName = "";
+	_clientNickToKick = "";
+	_clientToKick = nullptr;
+}
+
 std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens) {
 	std::string message = ":" + client->getNickname() + " KICK " + _channelName + " " + client->getNickname();
 	if (tokens.size() == 4)
@@ -11,8 +19,6 @@ std::string Kick::createMessageToClient(Client *client, std::vector<std::string>
 }
 
 bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
-	_errorMessage = "";
-
 	if (tokens.size() < 3 || tokens.size() > 4)
 		_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
 	else if (server.channelExist(_channelName))
@@ -27,10 +33,15 @@ bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 }
 
 bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
-	_channelName = tokens[1];
-	_clientNickToKick = tokens[2];
-	_kickReasson = tokens[3];
-	_clientToKick = server.getClientByNickname(_clientNickToKick);
+	setVariableToZero();
+	if (tokens.size() > 1)
+		_channelName = tokens[1];
+	if (tokens.size() > 2) {
+		_clientNickToKick = tokens[2];
+		_clientToKick = server.getClientByNickname(_clientNickToKick);
+	}
+	if (tokens.size() > 3)
+		_kickReasson = tokens[3];
 
 	if (!isValidCommand(tokens, client, server)) {
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;

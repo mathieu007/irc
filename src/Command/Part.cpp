@@ -2,11 +2,14 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
+void Part::setVariableToZero(){
+	_errorMessage = "";
+}
+
 bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	(void)tokens;
 	(void)client;
 	(void)server;
-	_errorMessage = "";
 	// if (tokens.size() != 2)
 	// 	_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
 	return _errorMessage.empty() ? true : false;
@@ -17,6 +20,7 @@ std::string Part::createPartMessage(Client *client, const std::vector<std::strin
 }
 
 bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+	setVariableToZero();
 	if (!isValidCommand(tokens, client, server)) {
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << RED << "Error sent to client:" << _errorMessage << RESET << std::endl;

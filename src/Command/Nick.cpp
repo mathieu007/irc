@@ -2,9 +2,13 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
-{
+void Nick::setVariableToZero(){
 	_errorMessage = "";
+	_newNickName = "";
+	_oldNickName = "";
+}
+
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
 	else if (tokens[1].size() > 20)
@@ -18,9 +22,10 @@ bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server)
-{
-	_newNickName = tokens[1];
+bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+	setVariableToZero();
+	if (tokens.size() > 1)
+		_newNickName = tokens[1];
 	_oldNickName = client->getNickname();
 	if (_oldNickName == "")
 		_oldNickName = "backupnicknameforspe";

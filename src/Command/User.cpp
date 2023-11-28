@@ -2,10 +2,13 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
-{
-	(void)server;
+void User::setVariableToZero(){
 	_errorMessage = "";
+	_newUserName = "";
+	_newRealName = "";
+}
+
+bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	if (tokens.size() < 5)
 		_errorMessage = "461 " + client->getHost() + " USER :Not enough parameters\r\n";
 	if (tokens.size() > 5)
@@ -16,8 +19,11 @@ bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 }
 
 bool User::execute(Client *client, std::vector<std::string> tokens, Server &server) {
- 	_newUserName = tokens[1];
-	_newRealName = tokens[4].substr(1);
+	setVariableToZero();
+	if (tokens.size() > 1)
+ 		_newUserName = tokens[1];
+	if (tokens.size() > 4)
+		_newRealName = tokens[4].substr(1);
 
 	if (!isValidCommand(tokens, client, server)) {
 		Msg::sendMsg(client, _errorMessage, 0);

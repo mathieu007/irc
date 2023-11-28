@@ -61,6 +61,7 @@ const string &Channel::getId() const
     return this->_id;
 }
 
+
 const string &Channel::getKey() const
 {
     return this->_key;
@@ -69,6 +70,11 @@ const string &Channel::getKey() const
 const string &Channel::getName() const
 {
     return this->_name;
+}
+
+const string &Channel::getTopic() const
+{
+    return this->_topic;
 }
 
 Client *Channel::getSuperModerator()

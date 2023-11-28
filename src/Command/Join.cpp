@@ -1,28 +1,31 @@
 #include "Join.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
+#include "Channel.hpp"
 
+void Join::setVariableToZero(){
+	_errorMessage = "";
+	_channelName = "";
+	_channelKey = "";
+	_hasKey = 0;
+}
 
 bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server){
-	_errorMessage = "";
-
 	if (tokens.size() < 2 || tokens.size() > 3)
-		_errorMessage = "461 " + client->getHost() + "JOIN :Not enought or too much parameters\r\n";
+		_errorMessage = "461 " + client->getHost() + " JOIN :Not enought or too much parameters\r\n";
 	if (_channelName[0] != '#')
-		_errorMessage = "476 " + client->getHost() + _channelName + " :Bad Channel Mask\r\n";
-		///////////rework/////////
-	// if (hasKey) {
-	// 	std::string key = tokens[3];
-	// 	if (!server.channelExist(_channelName, key))
-	// 		_errorMessage = "475 " + client->getHost() + _channelName + " :Cannot join channel (+k)\r\n";
-	// }
+		_errorMessage = "476 " + client->getHost() + " " + _channelName + " :Bad Channel Mask\r\n";
 	if (server.isInKickChannel(client, _channelName))
 		_errorMessage = "474 " + client->getHost() + _channelName + " :Cannot join channel (+b)\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
 bool Join::execute(Client *client, std::vector<std::string> tokens, Server &server) {
-	_channelName = tokens[1];
+	setVariableToZero();
+	if (tokens.size() > 1)
+		_channelName = tokens[1];
+	
+			//check again
 	_hasKey = 0;
 	if (tokens.size() == 3) {
 		_channelKey = tokens[2];
@@ -43,6 +46,14 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 			server.join(client, _channelName, _channelKey);
 		else
 			server.join(client, _channelName);
+		//send channel topic
+		if (server.hasTopic(_channelName)) {
+			std::string topic = server.getChannel(_channelName)->getTopic();
+			messageToClient = client->getHost() + " " + _channelName + " : " + topic + "\r\n";
+		}
+		else
+			messageToClient = client->getHost() + " " + _channelName + " :No topic is set\r\n";
+
 	}
 	return _errorMessage.empty() ? true : false;
 }
@@ -51,5 +62,4 @@ Join::~Join() {}
 
 ///to many channel?
 ///to many in channel?
-//topic
 //473 invite;

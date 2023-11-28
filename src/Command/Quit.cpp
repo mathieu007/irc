@@ -29,3 +29,4 @@ bool Quit::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	server.disconnect(client);
 	return true;
 }
+

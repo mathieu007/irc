@@ -6,9 +6,11 @@ private:
 	std::string _errorMessage;
 	std::string _newUserName;
 	std::string _newRealName;
+
+	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
+	void setVariableToZero();
 	
 public:
-	~User();
 	bool execute(Client *client, std::vector<std::string> tokens, Server &server);
-	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
+	~User();
 };
