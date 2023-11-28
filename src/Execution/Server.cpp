@@ -62,27 +62,30 @@ Server::Server(const Server &serv) : _max_fd_set(serv._max_fd_set), _pass(serv._
 
 Server::~Server(void)
 {
+    CleanServer();
+}
+
+void Server::CleanServer()
+{
+    cout << "start server cleaning: " << std::endl;
     std::vector<Client *>::iterator it = _clients.begin();
-    while (*it && it != _clients.end())
+    while (it != _clients.end())
     {
         std::vector<Client *>::iterator todelete = it;
         it++;
+        // cout << "todelete: " << (*todelete)->getNickname() << " socket :" << (*todelete)->getSocket() << std::endl;
+        if (!(*todelete))   
+            continue;
         string ip = (*todelete)->getHost();
         if (_bannedClients.hasKey(ip))
             _bannedClients.remove(ip);
         delete (*todelete);
-        *todelete = nullptr;        
+        *todelete = nullptr;
     }
-    // std::map<string, Client *>::iterator itmap = _bannedClients.begin();
-    // while ((*itmap).second && itmap != _bannedClients.end())
-    // {
-    //     delete (*itmap).second;
-
-    // }
     std::map<string, Channel *>::iterator itChan = _channels.begin();
-    while ((*itChan).second && itChan != _channels.end())
+    while (itChan != _channels.end())
     {
-        std::map<std::string, Channel*>::iterator toDelete = itChan;
+        std::map<std::string, Channel *>::iterator toDelete = itChan;
         ++itChan;
         delete toDelete->second;
         _channels.erase(toDelete);
@@ -304,8 +307,12 @@ int Server::createClient(int socketClient)
     }
     if (!isAllowedToConnect(clientAddress))
         return -1;
-    Client *client = createOrGetClient(clientAddress);
-    if (!client->canMakeRequest())
+    Client *client = nullptr;
+    if (!_bannedClients.tryGet(clientAddress, client))
+    {
+        client = new Client();
+    }
+    else
         return -1;
     client->setAddress(clientAddress);
     client->setPort(clientPort);
@@ -313,6 +320,7 @@ int Server::createClient(int socketClient)
     client->setNickname("guest");
     client->setLastActivity(static_cast<long>(time(NULL)));
     _clients.insert(_clients.begin() + socketClient, client);
+    cout << "new client, clientAddresd: " << clientAddress << " socketClient: " << socketClient << std::endl;
     // FD_SET(socketClient, &use);
     return 0;
 }
@@ -448,7 +456,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 else if (!client->getMsgRecvQueue().empty())
                     Msg::parseAndExec(client, client->getMsgRecvQueue(), *this);
             }
-            else
+            else if (!client->getMsgRecvQueue().empty())
                 _execUnAuthenticatedCmd(client->getMsgRecvQueue(), client);
             if (static_cast<long>(time(NULL)) - client->getLastActivity() >= MAX_CLIENT_INACTIVITY)
                 _disconnectInnactiveClient(client, i);
@@ -572,6 +580,9 @@ void Server::closeFds(void)
 {
     for (int i = 0; i < FD_SETSIZE; i++)
         if (FD_ISSET(i, &_reading))
+            close(i);
+    for (int i = 0; i < FD_SETSIZE; i++)
+        if (FD_ISSET(i, &_writing))
             close(i);
 }
 

@@ -17,8 +17,6 @@ bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "432 " + client->getHost() + _newNickName + " :Erroneus nickname\r\n";
 	else if (server.nickNameExist(_newNickName))
 		_errorMessage = "433 " + client->getHost() + _newNickName + " :Nickname is already in use\r\n";
-	// else if (_newNickName == "guest")
-	// 	_errorMessage = "dont send";
 	return _errorMessage.empty() ? true : false;
 }
 

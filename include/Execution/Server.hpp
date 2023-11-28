@@ -80,6 +80,7 @@ public:
     bool cleanAll();
     int createClient(int socketClient);
     int fdSetClientMsgLoop(char *buffer);
+    void CleanServer();
 
     string readClientMsg(Client *client);
     int getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port);

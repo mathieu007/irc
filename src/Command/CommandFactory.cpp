@@ -8,6 +8,8 @@
 #include "Part.hpp"
 #include "Pass.hpp"
 #include "Privmsg.hpp"
+#include "Mode.hpp"
+#include "Topic.hpp"
 
 CommandFactory::CommandFactory()
 {
@@ -20,6 +22,8 @@ CommandFactory::CommandFactory()
 	_commandMap["PASS"] = new Pass();
 	_commandMap["QUIT"] = new Quit();
 	_commandMap["PRIVMSG"] = new Privmsg();
+	_commandMap["TOPIC"] = new Topic();
+	_commandMap["MODE"] = new Mode();
 }
 
 Command *CommandFactory::createCommand(const std::string &commandType)

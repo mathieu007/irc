@@ -19,6 +19,7 @@ SRC =	src/main.cpp 	\
 		src/Command/Pass.cpp \
 		src/Command/Privmsg.cpp \
 		src/Command/Topic.cpp \
+		src/Command/Mode.cpp \
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

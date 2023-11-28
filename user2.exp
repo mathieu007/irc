@@ -15,13 +15,13 @@ sleep 0.2
 expect ""
 exec echo "\r\n"
 set stty_init raw
-send "NICK User2\x0d\x0a"
+send "NICK UserNC\x0d\x0a"
 sleep 0.2
 
 expect ""
 exec echo "\r\n"
 set stty_init raw
-send "USER user2 * 0 User2Fullname\x0d\x0a"
+send "USER usernc * 0 UserncFullname\x0d\x0a"
 sleep 0.2
 
 expect ""
@@ -30,23 +30,24 @@ exec echo "\r\n"
 # stty sane
 # send "\x0d\x0a"
 set stty_init raw
-send "JOIN #Chan1\x0d\x0a"
+send "JOIN #ddd\x0d\x0a"
 sleep 0.2
 
 expect ""
-send "PRIVMSG #Chan1 :Hi! I will strart writing shit too!\x0d\x0a"
+send "PRIVMSG #ddd :Hi! I will strart writing shit too!\x0d\x0a"
 sleep 0.2
 expect ""
 set repeat_count 10
 for {set i 0} {$i < $repeat_count} {incr i} {
     set commandOutput [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
-    send "PRIVMSG #Chan1 :$commandOutput!\x0d\x0a"
+    send "PRIVMSG #ddd :$commandOutput|||||"
+    send "$commandOutput!\x0d\x0a"
     expect ""
 }
 
 sleep 10
 expect ""
-send "QUIT End of script...\x0d\x0a"
+send "QUIT End nc script...\x0d\x0a"
 sleep 0.2
 
 interact
