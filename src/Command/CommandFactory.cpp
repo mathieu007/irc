@@ -4,6 +4,7 @@
 #include "User.hpp"
 #include "Join.hpp"
 #include "Kick.hpp"
+#include "Quit.hpp"
 #include "Part.hpp"
 #include "Pass.hpp"
 #include "Privmsg.hpp"
@@ -17,8 +18,8 @@ CommandFactory::CommandFactory()
 	_commandMap["KICK"] = new Kick();
 	_commandMap["PART"] = new Part();
 	_commandMap["PASS"] = new Pass();
+	_commandMap["QUIT"] = new Quit();
 	_commandMap["PRIVMSG"] = new Privmsg();
-
 }
 
 Command *CommandFactory::createCommand(const std::string &commandType)

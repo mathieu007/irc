@@ -2,7 +2,8 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	_errorMessage = "";
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
@@ -12,29 +13,30 @@ bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "432 " + client->getHost() + _newNickName + " :Erroneus nickname\r\n";
 	else if (server.nickNameExist(_newNickName))
 		_errorMessage = "433 " + client->getHost() + _newNickName + " :Nickname is already in use\r\n";
-	else if (_newNickName == "guest")
-		_errorMessage = "dont send";
+	// else if (_newNickName == "guest")
+	// 	_errorMessage = "dont send";
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server)
+{
 	_newNickName = tokens[1];
 	_oldNickName = client->getNickname();
 	if (_oldNickName == "")
 		_oldNickName = "backupnicknameforspe";
 
-	if (!isValidCommand(tokens, client, server)) {
-		if (_errorMessage == "dont send")
-			return false;
-		sendMsg(client, _errorMessage, 0);
+	if (!isValidCommand(tokens, client, server))
+	{
+		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 	}
-	else {
+	else
+	{
 		std::cout << GREEN << "Executing NICK command" << RESET << std::endl;
 		client->setNickname(_newNickName);
 		std::string messageToClient = ":" + _oldNickName + " NICK :" + _newNickName + "\r\n";
 		std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-		sendMsg(client, messageToClient, 0);
+		Msg::sendMsg(client, messageToClient, 0);
 	}
 	return _errorMessage.empty() ? true : false;
 }

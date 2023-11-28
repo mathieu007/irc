@@ -12,7 +12,7 @@ bool Ping::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	{
 		std::string messageToClient = "PONG " + tokens[1] + "\r\n";
 		std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
-		sendMsg(client, messageToClient, 0);
+		Msg::sendMsg(client, messageToClient, 0);
 		return 1;
 	}
 	else

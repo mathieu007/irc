@@ -32,13 +32,13 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 
 	if (!isValidCommand(tokens, client, server)) {
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
-		sendMsg(client, _errorMessage, 0);
+		Msg::sendMsg(client, _errorMessage, 0);
 	}
 	else {
 		std::cout << GREEN << "Executing JOIN command" << RESET << std::endl;
 		std::string messageToClient = ":" + client->getNickname() + " JOIN " + _channelName + "\r\n";
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
-		sendMsg(client, messageToClient, 0);
+		Msg::sendMsg(client, messageToClient, 0);
 		if (_hasKey)
 			server.join(client, _channelName, _channelKey);
 		else

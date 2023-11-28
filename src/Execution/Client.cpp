@@ -14,9 +14,11 @@ Client::Client()
     this->_nickName = std::string();
     this->_userName = std::string();
     this->_msg = "";
-    this->_msgQueue = std::string();
+    this->_msgSendQueue = std::string();
+    this->_msgRecvQueue = std::string();
     this->_address = "";
     this->_port = "";
+    this->_remove = false;
     this->_kickedChannels = vector<Channel *>();
     this->_channels = Map<string, Channel *>();
     this->_realName = "";
@@ -65,6 +67,15 @@ void Client::setIsRegistered()
     _isRegistered = true;
 }
 
+void Client::setRemove(bool remove)
+{
+    _remove = remove;
+}
+bool Client::shouldBeRemoved() const
+{
+    return _remove;
+}
+
 string Client::getHost() const
 {
     return _host;
@@ -100,9 +111,14 @@ string &Client::getMsg()
     return _msg;
 }
 
-string &Client::getMsgQueue()
+string &Client::getMsgSendQueue()
 {
-    return _msgQueue;
+    return _msgSendQueue;
+}
+
+string &Client::getMsgRecvQueue()
+{
+    return _msgRecvQueue;
 }
 
 Map<string, Channel *> &Client::getChannels()
@@ -115,14 +131,39 @@ vector<Channel *> &Client::getKickedChannels()
     return _kickedChannels;
 }
 
+long Client::getLastActivity()
+{
+    return _lastActivityTime;
+}
+
+void Client::setLastActivity(long lastActivityTime)
+{
+    _lastActivityTime = lastActivityTime;
+}
+
+void Client::setSocketIndex(int socketIndex)
+{
+    _socketIndex = socketIndex;
+}
+
+int Client::getSocketIndex() const
+{
+    return _socketIndex;
+}
+
 void Client::setMsg(string msg)
 {
     _msg = msg;
 }
 
-void Client::setMsgQueue(string msg)
+void Client::setMsgSendQueue(string msg)
 {
-    _msgQueue = msg;
+    _msgSendQueue = msg;
+}
+
+void Client::setMsgRecvQueue(string msg)
+{
+    _msgRecvQueue = msg;
 }
 
 void Client::setPort(string port)
@@ -202,7 +243,7 @@ bool Client::isBannned() const
     return this->_isBanned;
 }
 
-bool Client::isAuthenticated() const
+bool Client::isValidUserInfo() const
 {
     return (_pass != "" && _nickName != "" && _nickName != "guest" && _userName != "");
 }
@@ -212,7 +253,7 @@ bool Client::passIsEmpty() const
     return _pass == "";
 }
 
-bool Client::isGoingToGetBanned()
+bool Client::hasReachMaxReq()
 {
     if (this->_numRequests >= MAX_REQ_BEFORE_BAN)
     {
