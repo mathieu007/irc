@@ -16,11 +16,11 @@ bool Topic::isValidCommand(std::vector<std::string> &tokens, Client *client, Ser
 
 	if (tokens.size() < 2)
 		_errorMessage = "461 " + client->getNickname() + " TOPIC :Not enought parameters\r\n";
-	if (!server.channelExist(_channelName))
+	else if (!server.channelExist(_channelName))
 		_errorMessage = "403 " + client->getNickname() + " " + _channelName + " :No such channel\r\n";
-	if (!server.isInChannel(client, _channelName))
+	else if (!server.isInChannel(client, _channelName))
 		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
-	if (!server.isModerator(client, _channelName))
+	else if (!server.isModerator(client, _channelName))
 		_errorMessage = "482 " + client->getNickname() + " " + _channelName + " :You're not channel operator\r\n";
 
 	return _errorMessage.empty() ? true : false;
@@ -49,3 +49,5 @@ bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &ser
 }
 
 Topic::~Topic() {}
+
+///join topic mssg
