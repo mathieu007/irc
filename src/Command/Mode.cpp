@@ -61,9 +61,9 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 	else if (tokens[2][0] != '-' && tokens[2][0] != '+')
 		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
 	else if (!server.isModerator(client, channelName))
-		_errorMessage = "482 " + client->getNickname() + channelName + " :You're not channel operator\r\n";
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " :You're not channel operator\r\n";
 	else if (!server.channelExist(channelName))
-		_errorMessage = "403 " + client->getNickname() + channelName + " :No such channel\r\n";
+		_errorMessage = "403 " + client->getNickname() + " " + channelName + " :No such channel\r\n";
 	// else if (tokens[2][0] == '+' && channel->topicsetablebyoperator() )
 	// 	_errorMessage = "666 " + client->getHost() + _channelName + " :Is already settable only by operator\r\n";
 	// else if (tokens[2][0] == '-' && !channel->topicsetablebyoperator())

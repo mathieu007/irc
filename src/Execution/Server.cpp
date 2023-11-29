@@ -72,23 +72,21 @@ void Server::CleanServer()
     while (it != _clients.end())
     {
         std::vector<Client *>::iterator todelete = it;
-        it++;
         // cout << "todelete: " << (*todelete)->getNickname() << " socket :" << (*todelete)->getSocket() << std::endl;
-        if (!(*todelete))
-            continue;
-        string ip = (*todelete)->getHost();
-        if (_bannedClients.hasKey(ip))
-            _bannedClients.remove(ip);
-        delete (*todelete);
-        *todelete = nullptr;
+        if (*todelete)
+            removeClient(*todelete);
+        else
+            it++;
     }
 
     std::map<string, Channel *>::iterator itChan = _channels.begin();
     while (itChan != _channels.end())
     {
         std::map<std::string, Channel *>::iterator toDelete = itChan;
-        ++itChan;
-        delete toDelete->second;
+        if ((*toDelete).second)
+            delete toDelete->second;
+        else
+            ++itChan;
         _channels.erase(toDelete);
     }
 }
@@ -629,8 +627,6 @@ bool Server::isModerator(Client *client, const string &channelName)
     if (!channel)
         return false;
     vector<Client *> moderators = channel->getModerators();
-    size_t size = moderators.size();
-    (void)size;
     string username = client->getUsername();
     if (Vector::isIn(moderators, &Client::getUsername, username))
         return true;
@@ -713,9 +709,10 @@ bool Server::removeClient(Client *client)
     {
         if (*it)
             removeClientFromChannel(client, (*it)->getName());
-        it++;
+        else
+            it++;
     }
-    if (!_bannedClients.hasKey(client->getUsername()))
+    if (client && !_bannedClients.hasKey(client->getUsername()))
     {
         delete client;
         _clients.erase(_clients.begin() + socketIndex);

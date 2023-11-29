@@ -24,3 +24,9 @@ select() error: Interrupted system call
 select() error: Interrupted system call
 select() error: Interrupted system call
 select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Bad file descriptor
+select() error: Interrupted system call
+select() error: Bad file descriptor
+select() error: Interrupted system call

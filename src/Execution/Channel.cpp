@@ -76,6 +76,11 @@ const string &Channel::getKey() const
     return this->_key;
 }
 
+void Channel::setKey(string &key)
+{
+    _key = key;
+}
+
 const string &Channel::getName() const
 {
     return this->_name;
@@ -129,4 +134,14 @@ bool Channel::deleteModerator(Client *client, Client *moderatorToDelete)
     if (canDeleteModerator(client, moderatorToDelete))
         return Vector::removeWhere(_moderators, &Client::getUsername, username);
     return false;
+}
+
+bool Channel::isTopicPublic()
+{
+    return _topicPublic;
+}
+
+void Channel::setTopicPublic(bool topicAsPublic)
+{
+    _topicPublic = topicAsPublic;
 }

@@ -2,7 +2,8 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-void Pass::setVariableToZero(){
+void Pass::setVariableToZero()
+{
 	_errorMessage = "";
 	_password = "";
 }
@@ -27,12 +28,14 @@ bool Pass::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	if (tokens.size() > 1)
 		_password = tokens[1];
 	server.setClientPassword(client, _password);
-	if (!isValidCommand(tokens, client, server)) {
+	if (!isValidCommand(tokens, client, server))
+	{
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 		_password = "";
 	}
-	else {
+	else
+	{
 		std::cout << GREEN << "Executing PASS command" << RESET << std::endl;
 	}
 	return _errorMessage.empty() ? true : false;
