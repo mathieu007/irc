@@ -15,6 +15,8 @@ bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "1002 " + client->getHost() + " USER :Too much parameters\r\n";
 	else if (server.isAuthenticated(client))
 		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
+	else if (server.userNameExist(_newUserName))
+		_errorMessage = "462 " + client->getHost() + " :Username already exist\r\n";		
 	return _errorMessage.empty() ? true : false;
 }
 

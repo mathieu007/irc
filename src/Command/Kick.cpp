@@ -22,7 +22,7 @@ bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	if (tokens.size() < 3 || tokens.size() > 4)
 		_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
 	else if (server.channelExist(_channelName))
-		_errorMessage = "403 " +  client->getHost() + _channelName + " No such channel\r\n";
+		_errorMessage = "403 " +  client->getHost() + " " + _channelName + " No such channel\r\n";
 	else if (server.isModerator(client, _channelName))
 		_errorMessage = "482 " + client->getHost() + _channelName + " :You're not channel operator\r\n";
 	else if (server.isInChannel(_clientToKick, _channelName))

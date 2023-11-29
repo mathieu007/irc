@@ -300,7 +300,7 @@ bool Client::isInChannel(Channel *channel)
     return false;
 }
 
-bool Client::isInKickChannel(Channel *channel)
+bool Client::isKickedFromChannel(Channel *channel)
 {
     if (!channel)
         return false;

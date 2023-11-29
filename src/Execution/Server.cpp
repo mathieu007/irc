@@ -74,7 +74,7 @@ void Server::CleanServer()
         std::vector<Client *>::iterator todelete = it;
         it++;
         // cout << "todelete: " << (*todelete)->getNickname() << " socket :" << (*todelete)->getSocket() << std::endl;
-        if (!(*todelete))   
+        if (!(*todelete))
             continue;
         string ip = (*todelete)->getHost();
         if (_bannedClients.hasKey(ip))
@@ -82,6 +82,7 @@ void Server::CleanServer()
         delete (*todelete);
         *todelete = nullptr;
     }
+
     std::map<string, Channel *>::iterator itChan = _channels.begin();
     while (itChan != _channels.end())
     {
@@ -315,12 +316,13 @@ int Server::createClient(int socketClient)
     else
         return -1;
     client->setAddress(clientAddress);
+    client->setHost(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
     client->setNickname("guest");
     client->setLastActivity(static_cast<long>(time(NULL)));
     _clients.insert(_clients.begin() + socketClient, client);
-    cout << "new client, clientAddresd: " << clientAddress << " socketClient: " << socketClient << std::endl;
+    cout << "New client connection, address: " << clientAddress << ", socket: " << socketClient << std::endl;
     // FD_SET(socketClient, &use);
     return 0;
 }
@@ -465,7 +467,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
     return 1;
 }
 
-void Server::_execUnAuthenticatedCmd(string msg, Client *client)
+void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
 {
     if (String::startWith(msg, "CAP"))
     {
@@ -484,7 +486,10 @@ void Server::_execUnAuthenticatedCmd(string msg, Client *client)
     else if (String::startWith(msg, "QUIT"))
         Msg::parseAndExec(client, msg, *this);
     else if (!msg.empty())
+    {
+        msg.clear();
         Msg::sendAuthMessages(client);
+    }
 }
 
 int Server::_selectFdSet()
@@ -586,6 +591,12 @@ void Server::closeFds(void)
             close(i);
 }
 
+bool Server::isChannelFull(string &channelName)
+{
+    Channel *channel = getChannel(channelName);
+    return getClientsInAChannel(channel).size() == MAX_CLIENT_PER_CHANNEL;
+}
+
 bool Server::isAuthenticated(Client *client)
 {
     return client->isValidUserInfo() && this->isValidPassword(client);
@@ -618,6 +629,8 @@ bool Server::isModerator(Client *client, const string &channelName)
     if (!channel)
         return false;
     vector<Client *> moderators = channel->getModerators();
+    size_t size = moderators.size();
+    (void)size;
     string username = client->getUsername();
     if (Vector::isIn(moderators, &Client::getUsername, username))
         return true;
@@ -632,10 +645,10 @@ bool Server::isInChannel(Client *client, string &channelName)
     return false;
 }
 
-bool Server::isInKickChannel(Client *client, std::string &channelName)
+bool Server::isKickedFromChannel(Client *client, std::string &channelName)
 {
     Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && client->isInKickChannel(channel))
+    if (_channels.tryGet(channelName, channel) && channel && client->isKickedFromChannel(channel))
         return true;
     return false;
 }
@@ -694,8 +707,6 @@ bool Server::removeClient(Client *client)
         _clientSockets.erase(_clientSockets.begin() + client->getSocketIndex());
     close(client->getSocket());
     int socketIndex = client->getSocket();
-    _clients.erase(_clients.begin() + socketIndex);
-    _clients[socketIndex] = nullptr;
     vector<Channel *> channels = getClientChannels(client);
     vector<Channel *>::iterator it = channels.begin();
     while (it != channels.end())
@@ -705,7 +716,12 @@ bool Server::removeClient(Client *client)
         it++;
     }
     if (!_bannedClients.hasKey(client->getUsername()))
+    {
         delete client;
+        _clients.erase(_clients.begin() + socketIndex);
+        _clients[socketIndex] = nullptr;
+    }
+
     return true;
 }
 

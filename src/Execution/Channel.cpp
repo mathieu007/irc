@@ -71,7 +71,6 @@ const string &Channel::getId() const
     return this->_id;
 }
 
-
 const string &Channel::getKey() const
 {
     return this->_key;
@@ -97,7 +96,7 @@ vector<Client *> &Channel::getModerators()
     return this->_moderators;
 }
 
-bool Channel::canBejoinOnInvitationOnly() const
+bool Channel::isOnInvitationOnly() const
 {
     return this->_canBeJoinOnInvitationOnly;
 }
