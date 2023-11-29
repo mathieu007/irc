@@ -15,6 +15,8 @@ private:
     string _key;
     string _topic;
     bool _topicPublic;
+    uint _maxNumClients;
+    uint _numClients;
     bool _canBeJoinOnInvitationOnly;
     Client *_superModerator;
     vector<Client *> _moderators;
@@ -29,6 +31,10 @@ public:
     void setKey(string key);
     const string &getId() const;
     const string &getTopic() const;
+    uint getMaxNumClients() const;
+    uint getNumClients() const;
+    void setMaxNumClients(uint maxNumberOfClient);
+    void setNumClients(uint numClients);
     Client *getSuperModerator();
     vector<Client *> &getModerators();
     vector<Client *> &getInvitedClients();
@@ -39,6 +45,7 @@ public:
     void setTopicPublic(bool topicAsPublic);
     bool hasTopic() const;
     bool isOnInvitationOnly() const;
+    // is user in invited list
     bool isAllowedToJoin(Client *client) const;
     bool canDeleteChannel(Client *client) const;
     bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;

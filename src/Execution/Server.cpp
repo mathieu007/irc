@@ -589,6 +589,7 @@ void Server::closeFds(void)
             close(i);
 }
 
+
 bool Server::isChannelFull(string &channelName)
 {
     Channel *channel = getChannel(channelName);
