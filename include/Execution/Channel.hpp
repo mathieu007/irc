@@ -26,7 +26,7 @@ public:
     ~Channel();
     const string &getName() const;
     const string &getKey() const;
-    void setKey(string &key);
+    void setKey(string key);
     const string &getId() const;
     const string &getTopic() const;
     Client *getSuperModerator();

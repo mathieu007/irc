@@ -76,7 +76,7 @@ const string &Channel::getKey() const
     return this->_key;
 }
 
-void Channel::setKey(string &key)
+void Channel::setKey(string key)
 {
     _key = key;
 }

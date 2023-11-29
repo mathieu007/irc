@@ -129,6 +129,6 @@ public:
     Channel *addClientToChannel(Client *client, std::string &channelName);
     Channel *addTopicToChannel(std::string &topic, std::string &channelName);
     Channel *removeTopicFromChannel(std::string &channelName);
-    vector<Client *> removeChannel(std::string &channelName);
+    vector<Client *> removeChannel(std::string channelName);
     Client *getClientByNickname(std::string &nickname);
 };
