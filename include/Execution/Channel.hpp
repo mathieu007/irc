@@ -5,6 +5,7 @@
 #include <vector>
 #include "Client.hpp"
 
+
 using std::string;
 using std::vector;
 class Channel
@@ -26,7 +27,7 @@ public:
     const string &getName() const;
     const string &getKey() const;
     const string &getId() const;
-	const string &getTopic() const;
+    const string &getTopic() const;
     Client *getSuperModerator();
     vector<Client *> &getModerators();
     vector<Client *> &getInvitedClients();
@@ -34,7 +35,7 @@ public:
     bool moderatorAlreadyExist(Client *client) const;
     bool addModerator(Client *moderator);
     bool hasTopic() const;
-    bool canBejoinOnInvitationOnly() const;
+    bool isOnInvitationOnly() const;
     bool isAllowedToJoin(Client *client) const;
     bool canDeleteChannel(Client *client) const;
     bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;

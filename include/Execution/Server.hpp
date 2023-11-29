@@ -1,6 +1,7 @@
 #pragma once
 
 #define MAX_CLIENT_INACTIVITY 60 * 5
+#define MAX_CLIENT_PER_CHANNEL 50
 
 #include <map>
 #include "Map.hpp"
@@ -65,7 +66,7 @@ private:
     void _banClient(Client *client, int clientSocket);
     void _disconnectInnactiveClient(Client *client, int index);
     string _recvClientMsg(Client *client, char *buffer, int clientSocket);
-    void _execUnAuthenticatedCmd(string msg, Client *client);
+    void _execUnAuthenticatedCmd(string &msg, Client *client);
 
 public:
     Server();
@@ -94,6 +95,7 @@ public:
     Channel *isInChannel(Client *client, string &channelName) const;
     Channel *addToChannel(Client *client, string &channelName);
     Channel *addToChannel(Client *client, string &channelName, string &key);
+
     void addChannel(Channel *newChannel);
     string hashPassword(const std::string &password);
     string getChannelId(const string &channelName, const string &channelKey);
@@ -105,12 +107,13 @@ public:
     vector<Channel *> getClientChannels(std::string &username);
     vector<Client *> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
+    bool isChannelFull(string &channelName);
     bool isValidPassword(Client *client);
     bool isAuthenticated(Client *client);
     bool setClientPassword(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);
-    bool isInKickChannel(Client *client, std::string &channelName);
+    bool isKickedFromChannel(Client *client, std::string &channelName);
     bool channelExist(std::string &channel);
     bool hasTopic(std::string &channelName);
     bool removeClient(string &username);

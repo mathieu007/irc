@@ -40,7 +40,7 @@ expect ""
 set repeat_count 10
 for {set i 0} {$i < $repeat_count} {incr i} {
     set commandOutput [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
-    send "PRIVMSG #ddd :$commandOutput|||||"
+    send "PRIVMSG #ddd :$commandOutput --------"
     send "$commandOutput!\x0d\x0a"
     expect ""
 }

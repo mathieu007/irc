@@ -98,5 +98,5 @@ public:
     bool removeFromChannel(Channel *channel);
     bool removeFromKickChannel(Channel *channel);
     bool isInChannel(Channel *channel);
-    bool isInKickChannel(Channel *channel);
+    bool isKickedFromChannel(Channel *channel);
 };
