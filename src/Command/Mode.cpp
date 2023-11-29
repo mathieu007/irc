@@ -48,6 +48,7 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *client, Server &server) {
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
+	(void)channel;
 
 	if (tokens.size() != 3)
 		_errorMessage = "461 " + client->getHost() + " MODE :Bad number of parameters\r\n";
