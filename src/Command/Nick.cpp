@@ -9,6 +9,7 @@ void Nick::setVariableToZero(){
 }
 
 bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+	_newNickName = "allo allo";
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
 	else if (tokens[1].size() > 20)
