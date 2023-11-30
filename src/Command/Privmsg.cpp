@@ -104,3 +104,5 @@ bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &s
 }
 
 Privmsg::~Privmsg() {}
+
+//error handling

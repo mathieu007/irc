@@ -36,3 +36,4 @@ bool Part::execute(Client *client, std::vector<std::string> tokens, Server &serv
 Part::~Part() {}
 
 //leaving reason parsing
+//error

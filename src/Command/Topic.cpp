@@ -49,3 +49,5 @@ bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &ser
 }
 
 Topic::~Topic() {}
+
+///join topic mssg
