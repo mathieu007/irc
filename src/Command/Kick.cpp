@@ -20,15 +20,15 @@ std::string Kick::createMessageToClient(Client *client, std::vector<std::string>
 
 bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	if (tokens.size() < 3 || tokens.size() > 4)
-		_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
-	else if (server.channelExist(_channelName))
-		_errorMessage = "403 " +  client->getHost() + " " + _channelName + " No such channel\r\n";
-	else if (server.isModerator(client, _channelName))
-		_errorMessage = "482 " + client->getHost() + _channelName + " :You're not channel operator\r\n";
-	else if (server.isInChannel(_clientToKick, _channelName))
-		_errorMessage = "441 " + client->getHost() + _channelName + _clientNickToKick + " :They aren't on that channel\r\n";
-	else if (server.isInChannel(client, _channelName))
-		_errorMessage = "442 " + client->getHost() + _channelName + " :You're not on that channel\r\n";
+		_errorMessage = "461 " + client->getNickname() + " KICK :Not enought or too much parameters\r\n";
+	else if (!server.channelExist(_channelName))
+		_errorMessage = "403 " + client->getNickname() + " " + _channelName + " No such channel\r\n";
+	else if (!server.isModerator(client, _channelName))
+		_errorMessage = "482 " + client->getNickname() + " " + _channelName + " :You're not channel operator\r\n";
+	else if (!server.isInChannel(_clientToKick, _channelName))
+		_errorMessage = "441 " + client->getNickname() + " " + _channelName + _clientNickToKick + " :They aren't on that channel\r\n";
+	else if (!server.isInChannel(client, _channelName))
+		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 

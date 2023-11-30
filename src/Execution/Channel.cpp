@@ -66,6 +66,25 @@ bool Channel::addModerator(Client *moderator)
     return false;
 }
 
+uint Channel::getMaxNumClients() const
+{
+    return _maxNumClients;
+}
+
+uint Channel::getNumClients() const
+{
+    return _numClients;
+}
+
+void Channel::setMaxNumClients(uint maxNumberOfClient)
+{
+    _maxNumClients = maxNumberOfClient;
+}
+void Channel::setNumClients(uint numClients)
+{
+    _numClients = numClients;
+}
+
 const string &Channel::getId() const
 {
     return this->_id;

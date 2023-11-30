@@ -71,7 +71,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 	else if (tokens[2][0] != '-' && tokens[2][0] != '+')
 		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
 	else if (!server.isModerator(client, channelName))
-		_errorMessage = "482 " + client->getNickname() + channelName + " :You're not channel operator\r\n";
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " :You're not channel operator\r\n";
 	else if (!server.channelExist(channelName))
 		_errorMessage = "403 " + client->getNickname() + channelName + " :No such channel\r\n";
 	else if (tokens[2][0] == '+' && !channel->isTopicPublic() )
@@ -193,7 +193,49 @@ void Mode::setOperatorForChannel(std::vector<std::string> &tokens, Client *clien
 }
 
 void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *client, Server &server) {
+	std::string channelName = tokens[1];
+	Channel *channel = server.getChannel(channelName);
 
+	if (tokens.size() != 3 && tokens[2][0] == '-')
+		_errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
+	else if (tokens.size() != 4 && tokens[2][0] == '+')
+		_errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
+	else if (tokens[2][0] != '-' && tokens[2][0] != '+')
+		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
+	else if (!server.isModerator(client, channelName))
+		_errorMessage = "482 " + client->getNickname() + channelName + " :You're not channel operator\r\n";
+	else if (!server.channelExist(channelName))
+		_errorMessage = "403 " + client->getNickname() + channelName + " :No such channel\r\n";
+	if (tokens[2][0] == '-') {
+		if (_errorMessage.empty()) {
+			std::cout << GREEN << "Executing MODE -l command" << RESET << std::endl;
+			channel->setKey("");
+			std::string message = channelName + " :Passkey removed\r\n";
+			Msg::sendMsg(client, message, 0);
+			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
+		}
+		else {
+			Msg::sendMsg(client, _errorMessage, 0);
+			std::cout << RED << "Error msg sent to client:"  << _errorMessage << RESET << std::endl;
+		}
+	}
+	else if (tokens[2][0] == '+') {
+		std::string passkey = tokens[3];
+
+		if (passkey.size() > 50)
+			_errorMessage = "666 " + client->getNickname() + " " + passkey + " :Passkey too long\r\n";
+		if (_errorMessage.empty()) {
+			std::cout << GREEN << "Executing MODE +k command" << RESET << std::endl;
+			channel->setKey(passkey);
+			std::string message = channelName + " :Passkey changed to " + passkey + "\r\n";
+			Msg::sendMsg(client, message, 0);
+			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
+		}
+		else {
+			Msg::sendMsg(client, _errorMessage, 0);
+			std::cout << RED << "Error msg sent to client:"  << _errorMessage << RESET << std::endl;
+		}
+	}
 }
 
 bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &server)

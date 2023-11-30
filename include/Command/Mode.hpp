@@ -6,7 +6,7 @@ private:
 	std::string _errorMessage;
 	// std::string _channelName;
 
-	void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *client, Server &server);
+	void setMaxClientForChannel(std::vector<std::string> &tokens, Client *client, Server &server);
 	void setOperatorForChannel(std::vector<std::string> &tokens, Client *client, Server &server);
 	void setKeyForChannel(std::vector<std::string> &tokens, Client *client, Server &server);
 	void setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *client, Server &server);

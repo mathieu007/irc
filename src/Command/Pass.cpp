@@ -12,13 +12,13 @@ bool Pass::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 {
 	(void)server;
 	if (tokens.size() < 2)
-		_errorMessage = "461 " + client->getHost() + " PASS :Not enough parameters\r\n";
+		_errorMessage = "461 " + client->getNickname() + " PASS :Not enough parameters\r\n";
 	else if (tokens.size() > 2)
-		_errorMessage = "1002 " + client->getHost() + " PASS :Too much parameters\r\n";
+		_errorMessage = "1002 " + client->getNickname() + " PASS :Too much parameters\r\n";
 	if (server.isAuthenticated(client))
-		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
+		_errorMessage = "462 " + client->getNickname() + " :You may not reregister\r\n";
 	else if (!server.isValidPassword(client))
-		_errorMessage = "464 " + client->getHost() + " :Password incorrect\r\n";
+		_errorMessage = "464 " + client->getNickname() + " :Password incorrect\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
@@ -31,7 +31,7 @@ bool Pass::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	if (!isValidCommand(tokens, client, server))
 	{
 		Msg::sendMsg(client, _errorMessage, 0);
-		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
+		std::cout << RED << "Error msg sent to client:" << _errorMessage << RESET << std::endl;
 		_password = "";
 	}
 	else

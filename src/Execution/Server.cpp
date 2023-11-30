@@ -589,6 +589,7 @@ void Server::closeFds(void)
             close(i);
 }
 
+
 bool Server::isChannelFull(string &channelName)
 {
     Channel *channel = getChannel(channelName);
@@ -726,7 +727,12 @@ Channel *Server::removeClientFromChannel(Client *client, const std::string &chan
 {
     Channel *channel = nullptr;
     if (_channels.tryGet(channelName, channel) && channel && client->getChannels().remove(channel->getId()))
+    {
+        vector<Client *> clients = getClientsInAChannel(channel);
+        if (clients.size() == 0)
+            removeChannel(channelName);
         return channel;
+    }
     return nullptr;
 }
 
@@ -785,7 +791,7 @@ Channel *Server::removeTopicFromChannel(std::string &channelName)
 /// @brief this will remove the channel but also all users from this channels if they are in...
 /// @param channelName
 /// @return we return the list of client from which they were removed.
-vector<Client *> Server::removeChannel(std::string &channelName)
+vector<Client *> Server::removeChannel(std::string channelName)
 {
     Channel *channel = getChannel(channelName);
     vector<Client *> vec = getClientsInAChannel(channel);

@@ -10,13 +10,13 @@ void User::setVariableToZero(){
 
 bool User::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	if (tokens.size() < 5)
-		_errorMessage = "461 " + client->getHost() + " USER :Not enough parameters\r\n";
+		_errorMessage = "461 " + client->getNickname() + " USER :Not enough parameters\r\n";
 	if (tokens.size() > 5)
-		_errorMessage = "1002 " + client->getHost() + " USER :Too much parameters\r\n";
+		_errorMessage = "1002 " + client->getNickname() + " USER :Too much parameters\r\n";
 	else if (server.isAuthenticated(client))
-		_errorMessage = "462 " + client->getHost() + " :You may not reregister\r\n";
+		_errorMessage = "462 " + client->getNickname() + " :You may not reregister\r\n";
 	else if (server.userNameExist(_newUserName))
-		_errorMessage = "462 " + client->getHost() + " :Username already exist\r\n";		
+		_errorMessage = "462 " + client->getNickname() + " :Username already exist\r\n";		
 	return _errorMessage.empty() ? true : false;
 }
 
