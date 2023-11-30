@@ -6,6 +6,7 @@
                 "${workspaceFolder}/include/",
                 "${workspaceFolder}/include/Command/",
                 "${workspaceFolder}/include/Execution/",
+                // "${workspaceFolder}/include/Db/",
                 "${workspaceFolder}/src/"
             ],
             "defines": [],

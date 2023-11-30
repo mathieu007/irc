@@ -6,11 +6,13 @@
 #include <fcntl.h>
 #include "Server.hpp"
 #include "Message.hpp"
+#include "ClientChannelMapping.hpp"
 
 int main(int argc, char **argv)
 {
     if (argc == 3)
     {
+
         Server server = Server(argv[2], std::stoi(argv[1]), false);
         Msg::_server = &server;
         server.initServer();

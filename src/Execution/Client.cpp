@@ -86,7 +86,7 @@ int Client::getSocket() const
     return _socket;
 }
 
-string Client::getNickname() const
+const string &Client::getNickname() const
 {
     return _nickName;
 }

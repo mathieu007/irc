@@ -7,6 +7,7 @@ SRC =	src/main.cpp 	\
 		src/Execution/Logger.cpp \
 		src/Execution/Message.cpp \
 		src/Execution/Channel.cpp \
+		src/Execution/ClientChannelMapping.cpp \
 		src/Command/Command.cpp \
 		src/Command/CommandFactory.cpp \
 		src/Command/Nick.cpp \
@@ -20,6 +21,7 @@ SRC =	src/main.cpp 	\
 		src/Command/Privmsg.cpp \
 		src/Command/Topic.cpp \
 		src/Command/Mode.cpp \
+		
 
 OBJDIR = ./objs
 OBJ = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))

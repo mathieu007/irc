@@ -53,7 +53,7 @@ public:
     bool operator==(const Client &cmp) const;
     bool operator!=(const Client &cmp) const;
     ~Client();
-    string getNickname() const;
+    const string &getNickname() const;
     const string &getUsername() const;
     const string &getPass() const;
     long getCurTime() const;

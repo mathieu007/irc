@@ -26,6 +26,7 @@
 #include "String.hpp"
 #include "Map.hpp"
 #include "Logger.hpp"
+#include "ClientChannelMapping.hpp"
 #include "Client.hpp"
 
 using std::cout;
@@ -54,6 +55,7 @@ private:
     fd_set _reading;
     vector<int> _clientSockets = vector<int>();
     vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
+    vector<ClientChannelMapping *> _clientChannel = vector<ClientChannelMapping *>(MAX_CLIENTS);
     // banned clients by ip address
     Map<string, Client *> _bannedClients = Map<string, Client *>();
     Map<string, Channel *> _channels = Map<string, Channel *>();
@@ -93,10 +95,11 @@ public:
     bool isAllowedToConnect(string clientAddress);
     bool isAllowedToMakeRequest(Client *client);
     Channel *isInChannel(Client *client, string &channelName) const;
+
     Channel *addToChannel(Client *client, string &channelName);
     Channel *addToChannel(Client *client, string &channelName, string &key);
-
     void addChannel(Channel *newChannel);
+
     string hashPassword(const std::string &password);
     string getChannelId(const string &channelName, const string &channelKey);
     const std::vector<Channel *> getChannels() const;
