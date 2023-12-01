@@ -593,7 +593,7 @@ void Server::closeFds(void)
 bool Server::isChannelFull(string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    return getClientsInAChannel(channel).size() == MAX_CLIENT_PER_CHANNEL;
+    return getClientsInAChannel(channel).size() >= channel->getMaxNumClients();
 }
 
 bool Server::isAuthenticated(Client *client)

@@ -3,12 +3,28 @@
 #include "Message.hpp"
 #include "Channel.hpp"
 
+
 void Kick::setVariableToZero(){
 	_errorMessage = "";
 	_kickReasson = "";
 	_channelName = "";
 	_clientNickToKick = "";
 	_clientToKick = nullptr;
+}
+
+std::string Kick::createReasonMessage(std::vector<std::string> tokens) {
+	std::string message;
+
+	for (std::size_t i = 2; i < tokens.size(); ++i) {
+		message += tokens[i];
+		if (i < tokens.size() - 1)
+		{
+			message += " ";
+		}
+	}
+	message = message.substr(1);
+	std::cout << "message [" << message << "]" << std::endl;
+	return message;
 }
 
 std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens) {
@@ -41,7 +57,7 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		_clientToKick = server.getClientByNickname(_clientNickToKick);
 	}
 	if (tokens.size() > 3)
-		_kickReasson = tokens[3];
+		_kickReasson = createReasonMessage(tokens);
 
 	if (!isValidCommand(tokens, client, server)) {
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
@@ -60,4 +76,3 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 
 Kick::~Kick() {}
 
-//reason to kick

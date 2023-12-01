@@ -4,23 +4,47 @@
 
 void Part::setVariableToZero(){
 	_errorMessage = "";
+	_channelName = "";
+	_reasonToLeave = "";
 }
 
-bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
-	(void)tokens;
-	(void)client;
+std::string Part::createReasonMessage(std::vector<std::string> tokens) {
+	std::string message;
+
+	for (std::size_t i = 2; i < tokens.size(); ++i) {
+		message += tokens[i];
+		if (i < tokens.size() - 1)
+		{
+			message += " ";
+		}
+	}
+	message = message.substr(1);
+	std::cout << "message [" << message << "]" << std::endl;
+	return message;
+}
+
+bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {;
 	(void)server;
-	// if (tokens.size() != 2)
-	// 	_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
+	if (tokens.size() > 1)
+		_channelName = tokens[1];
+	if (tokens.size() > 2)
+		_reasonToLeave = createReasonMessage(tokens);
+	if (tokens.size() < 2)
+		_errorMessage = "461 " + client->getHost() + " PART :Not enought or too much parameters\r\n";
+	else if (!server.channelExist(_channelName))
+		_errorMessage = "403 " + client->getNickname() + " " + _channelName + " No such channel\r\n";
+	else if (!server.isInChannel(client, _channelName))
+		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
 std::string Part::createPartMessage(Client *client, const std::vector<std::string> &tokens) {
-	return ":" + client->getNickname() + " PART " + tokens[1] + " " + tokens[2] + "\r\n";
+	return ":" + client->getNickname() + " PART " + tokens[1] + " " + _reasonToLeave + "\r\n";
 }
 
 bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server) {
 	setVariableToZero();
+
 	if (!isValidCommand(tokens, client, server)) {
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << RED << "Error sent to client:" << _errorMessage << RESET << std::endl;
@@ -34,6 +58,3 @@ bool Part::execute(Client *client, std::vector<std::string> tokens, Server &serv
 }
 
 Part::~Part() {}
-
-//leaving reason parsing
-//error

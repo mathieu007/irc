@@ -57,20 +57,14 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		else
 			server.join(client, _channelName);
 		// send channel topic
-		if (server.hasTopic(_channelName))
-		{
+		if (server.hasTopic(_channelName)) {
 			std::string topic = server.getChannel(_channelName)->getTopic();
 			messageToClient = "332 " + client->getNickname() + " " + _channelName + " :" + topic + "\r\n";
 			std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 			Msg::sendMsg(client, messageToClient, 0);
 		}
-		// else
-		// 	messageToClient = client->getHost() + " " + _channelName + " :No topic is set\r\n";
 	}
 	return _errorMessage.empty() ? true : false;
 }
 
 Join::~Join() {}
-
-/// to many channel?
-/// to many in channel?

@@ -4,23 +4,11 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 
-void Mode::setVariableToZero()
-{
+void Mode::setVariableToZero() {
 	_errorMessage = "";
-	// _channelName = "";
 }
 
-// bool Mode::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
-// {
-// 	(void)server;
-// 	if (tokens.size() < 3)
-// 		_errorMessage = "461 " + client->getNickname() + " MODE :Not enough parameters\r\n";
-
-// 	return _errorMessage.empty() ? true : false;
-// }
-
-void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Server &server)
-{
+void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Server &server) {
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
 
@@ -36,9 +24,7 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 		_errorMessage = "666 " + client->getNickname() + " " + channelName + " :Is already on invite only\r\n";
 	else if (tokens[2][0] == '-' && !channel->isOnInvitationOnly())
 		_errorMessage = "666 " + client->getNickname() + " " + channelName + " :Is already not on invite only\r\n";
-	if (_errorMessage.empty())
-	{
-		// std::cout << GREEN << "Executing MODE i command" << RESET << std::endl;
+	if (_errorMessage.empty()) {
 		if (tokens[2][0] == '-'){
 			channel->setJoinOnInvitationOnly(0);
 			std::cout << GREEN << "Executing MODE -i command" << RESET << std::endl;
@@ -54,15 +40,13 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
 		}
 	}
-	else
-	{
+	else {
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << RED << "Error msg sent to client:" << _errorMessage << RESET << std::endl;
 	}
 }
 
-void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *client, Server &server)
-{
+void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *client, Server &server) {
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
 
@@ -100,7 +84,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 	}
 }
 
-void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Server &server){
+void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Server &server) {
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
 
@@ -189,7 +173,6 @@ void Mode::setOperatorForChannel(std::vector<std::string> &tokens, Client *clien
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << RED << "Error msg sent to client:"  << _errorMessage << RESET << std::endl;
 	}
-
 }
 
 void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *client, Server &server) {
@@ -209,8 +192,8 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 	if (tokens[2][0] == '-') {
 		if (_errorMessage.empty()) {
 			std::cout << GREEN << "Executing MODE -l command" << RESET << std::endl;
-			channel->setKey("");
-			std::string message = channelName + " :Passkey removed\r\n";
+			channel->setMaxNumClients(50);
+			std::string message = channelName + " :Max client per channel set to 50\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
 		}
@@ -220,49 +203,49 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 		}
 	}
 	else if (tokens[2][0] == '+') {
-		std::string passkey = tokens[3];
-
-		if (passkey.size() > 50)
-			_errorMessage = "666 " + client->getNickname() + " " + passkey + " :Passkey too long\r\n";
-		if (_errorMessage.empty()) {
-			std::cout << GREEN << "Executing MODE +k command" << RESET << std::endl;
-			channel->setKey(passkey);
-			std::string message = channelName + " :Passkey changed to " + passkey + "\r\n";
-			Msg::sendMsg(client, message, 0);
-			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
-		}
-		else {
+		std::string maxUser = tokens[3];
+	
+		try {
+            int maxUserInt = std::stoi(tokens[3]);
+			if (maxUserInt > 50)
+				_errorMessage = "666 " + client->getNickname() + " :Can't set max user more than 50\r\n";
+			else if (maxUserInt < 1)
+				_errorMessage = "666 " + client->getNickname() + " :Can't set max user less than 1\r\n";
+			if (_errorMessage.empty()) {
+				std::cout << GREEN << "Executing MODE +l command" << RESET << std::endl;
+				channel->setMaxNumClients(maxUserInt);
+				std::string message = channelName + " :Max user set to " + maxUser + "\r\n";
+				Msg::sendMsg(client, message, 0);
+				std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
+			}
+        }
+		catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+			_errorMessage = "666 " + client->getNickname() + " Bad argument for Max user. Must be between 1 - 50\r\n";
+        }
+		if (!_errorMessage.empty()) {
 			Msg::sendMsg(client, _errorMessage, 0);
 			std::cout << RED << "Error msg sent to client:"  << _errorMessage << RESET << std::endl;
 		}
 	}
 }
 
-bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &server)
-{
+bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &server) {
 	setVariableToZero();
 
-	if (tokens.size() > 1)
-	{
+	if (tokens.size() > 1) {
 		if (tokens[2].size() == 2 && tokens[2][1] == 'i')
 			setInviteOnly(tokens, client, server);
-		if (tokens[2].size() == 2 && tokens[2][1] == 't')
+		else if (tokens[2].size() == 2 && tokens[2][1] == 't')
 			setTopicByOperatorOnly(tokens, client, server);
-		if (tokens[2].size() == 2 && tokens[2][1] == 'k')
+		else if (tokens[2].size() == 2 && tokens[2][1] == 'k')
 			setKeyForChannel(tokens, client, server);
-		if (tokens[2].size() == 2 && tokens[2][1] == 'o')
+		else if (tokens[2].size() == 2 && tokens[2][1] == 'o')
 			setOperatorForChannel(tokens, client, server);
-		if (tokens[2].size() == 2 && tokens[2][1] == 'l')
+		else if (tokens[2].size() == 2 && tokens[2][1] == 'l')
 			setMaxClientForChannel(tokens, client, server);
 	}
 
-	// if (!isValidCommand(tokens, client, server)) {
-	// 	Msg::sendMsg(client, _errorMessage, 0);
-	// 	std::cout << RED << "Error msg sent to client:"  << _errorMessage << RESET << std::endl;
-	// }
-	// else {
-	// 	std::cout << GREEN << "Executing MODE command" << RESET << std::endl;
-	// }
 	return _errorMessage.empty() ? true : false;
 }
 

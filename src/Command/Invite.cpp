@@ -11,6 +11,14 @@ void Invite::setVariableToZero(){
 }
 
 bool Invite::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+	if (tokens.size() > 1){
+		_channelName = tokens[1];
+		_channel = server.getChannel(_channelName);
+	}
+	if (tokens.size() > 2) {
+		_clientNickToInvite = tokens[2];
+		_clientToInvite = server.getClientByNickname(_clientNickToInvite);
+	}
 	if (tokens.size() != 3)
 		_errorMessage = "461 " + client->getNickname() + " KICK :Not enought or too much parameters\r\n";
 	else if (!server.channelExist(_channelName))
@@ -26,22 +34,17 @@ bool Invite::isValidCommand(std::vector<std::string> &tokens, Client *client, Se
 
 bool Invite::execute(Client *client, std::vector<std::string> tokens, Server &server) {
 	setVariableToZero();
-	if (tokens.size() > 1)
-		_channelName = tokens[1];
-	if (tokens.size() > 2) {
-		_clientNickToInvite = tokens[2];
-		_clientToInvite = server.getClientByNickname(_clientNickToInvite);
-	}
+
 	if (!isValidCommand(tokens, client, server)) {
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
 		Msg::sendMsg(client, _errorMessage, 0);
 	}
 	else {
 		std::cout << GREEN << "Executing Invite command" << RESET << std::endl;
+		// channel
 		std::string messageToClient = createMessageToClient(client, tokens);
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 		Msg::sendMsg(client, messageToClient, 0);
-		// server.lacomandekilajob();
 	}
 
 	return _errorMessage.empty() ? true : false;
