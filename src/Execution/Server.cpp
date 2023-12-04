@@ -69,12 +69,6 @@ void Server::CleanServer()
     _clients.removeAll(true);
     _channels.removeAll(true);
     _clientschannelsMapping->removeAll(true);
-    std::map<string, Client *>::iterator it = _bannedClients.begin();
-    while (it != _bannedClients.end())
-    {
-        delete (*it).second;
-        it++;
-    }
 }
 
 Server &Server::operator=(const Server &serv)
@@ -245,15 +239,15 @@ void setSignal(void)
 
 bool Server::isAllowedToConnect(string clientAddress)
 {
-    Client *client;
     long curTime = static_cast<long>(time(NULL));
     long lastConnection = 0;
     if (_connectionsLog.tryGet(clientAddress, lastConnection) && lastConnection + MAX_CLIENT_CONNECTION_RETRY_TIME < curTime)
         return false;
     _connectionsLog.addOrReplace(clientAddress, curTime);
-    if (_bannedClients.tryGet(clientAddress, client))
+    long bannedTime = 0;
+    if (_bannedClients.tryGet(clientAddress, bannedTime))
     {
-        if (!client->canConnect())
+        if (bannedTime < time(NULL))
             return false;
         return true;
     }
@@ -277,23 +271,20 @@ int Server::createClient(int socketClient)
     }
     if (!isAllowedToConnect(clientAddress))
         return -1;
-    Client *client = nullptr;
-    if (!_bannedClients.tryGet(clientAddress, client))
+    long nextConnection = 0;
+    if (_bannedClients.tryGet(clientAddress, nextConnection))
     {
-        if (_clients[socketClient] != nullptr)
-            removeClient(client);
-    }
-    else
+        _bannedClients.add(clientAddress, time(NULL) + NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN);
         return -1;
-    if (client == nullptr)
-        client = new Client(_clientschannelsMapping);
+    }
+    Client *client = new Client(_clientschannelsMapping);
     client->setAddress(clientAddress);
     client->setHost(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
     client->setNickname("guest");
     client->setLastActivity(static_cast<long>(time(NULL)));
-    _clients.insert(_clients.begin() + socketClient, client);
+    _clients[socketClient] = client;
     cout << "New client connection, address: " << clientAddress << ", socket: " << socketClient << std::endl;
     // FD_SET(socketClient, &use);
     return 0;
@@ -347,42 +338,28 @@ int Server::checkIncomingClientConnection()
     return socketClient;
 }
 
-string Server::_recvClientMsg(Client *client, char *buffer, int index)
+bool Server::_recvClientMsg(Client *client, char *buffer, int index)
 {
-    string msg;
-    bool success;
     int clientSocket = _clientSockets[index];
-    size_t size = _clientSockets.size();
-    (void)size;
-    msg = Msg::recvMsg(clientSocket, buffer, success);
+    string msg = Msg::recvMsg(clientSocket, buffer);
     if (msg.size() > 0)
     {
         client->getMsgRecvQueue().append(msg);
         client->setLastActivity(static_cast<long>(time(NULL)));
         if (client->getMsgRecvQueue().size() >= MAX_BUFFER_SIZE)
         {
-            _banClient(client);
             client->setMsgRecvQueue("");
-            return "";
+            return false;
         }
     }
-    return msg;
+    return true;
 }
 void Server::_banClient(Client *client)
 {
     std::cerr << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
     std::cout << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
     string key = client->getHost();
-    Client *existingClient = nullptr;
-    if (_bannedClients.tryGet(key, existingClient) && existingClient && existingClient != client)
-    {
-        _bannedClients.remove(key);
-        std::cout << "Banned Clients exist: " + existingClient->getNickname() << std::endl;
-        removeClient(existingClient);
-        delete existingClient;
-    }
-    _bannedClients.add(key, client);
-    client->setNextAllowedConnectionTime(NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN);
+    _bannedClients.add(key, time(NULL) + NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN);
     string warning = string("QUIT :You are now banned from our irc server, you have been warnned several time!\r\n");
     Msg::sendMsg(client, warning, 0);
     removeClient(client);
@@ -415,7 +392,13 @@ int Server::fdSetClientMsgLoop(char *buffer)
         {
             canMakeRequest = client->canMakeRequest();
             if (canMakeRequest)
-                _recvClientMsg(client, buffer, i);
+            {
+                if (!_recvClientMsg(client, buffer, i))
+                {
+                    _banClient(client);
+                    break;
+                }
+            }
             else if (client->hasReachMaxReq())
             {
                 _banClient(client);
@@ -675,18 +658,8 @@ bool Server::removeClient(Client *client)
     _channels.removeWhere(&Channel::getNumClients, (uint)0, true);
     // Set client to be removed on next loop...
     client->setRemove(false);
-    if (!_bannedClients.hasKey(client->getHost()))
-    {
-        // if is not in banned list we remove the client completely from the list, but also the client ptr..
-        cout << "Client have been totally removed: " << client->getNickname() << std::endl;
-        _clients.remove(client, true);
-    }
-    else
-    {
-        // we only remove the client from the list but not the client ptr, because we need to keep it in the banned map!
-        _clients.remove(client, false);
-        cout << "Client have been partially removed: " << client->getNickname() << std::endl;
-    }
+    delete _clients[socketFd];
+    _clients[socketFd] = nullptr;
     close(socketFd);
     return true;
 }
@@ -714,19 +687,6 @@ Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
     client->addToKickedChannel(channel);
     channel->setNumClients(channel->getNumClients() - 1);
     return channel;
-}
-
-bool Server::banClient(Client *client)
-{
-    if (_bannedClients.hasKey(client->getHost()))
-        return false;
-    _bannedClients.add(client->getHost(), client);
-    if (_clients.size() < (size_t)client->getSocket())
-        return true;
-    _clients[client->getSocket()] = nullptr;
-    if (_clients.size() != 0)
-        _clients.erase(_clients.begin() + client->getSocket());
-    return true;
 }
 
 Channel *Server::addClientToChannel(Client *client, std::string &channelName)

@@ -58,7 +58,7 @@ private:
     vector<int> _clientSockets = vector<int>();
 
     // banned clients by ip address + port number, but in real application i would banned based on ip address only, but it's not really usefful while testing...
-    Map<string, Client *> _bannedClients = Map<string, Client *>();
+    Map<string, long> _bannedClients = Map<string, long>();
     Map<string, long> _connectionsLog = Map<string, long>();
     // I choose to centralizing the data, it's a bit slower but much more manageable...
     // for faster operation i would have created a mapping table for clients and channels, this would make read operations faster,
@@ -74,7 +74,7 @@ private:
     int _selectFdSet();
     void _banClient(Client *client);
     void _disconnectInnactiveClient(Client *client);
-    string _recvClientMsg(Client *client, char *buffer, int clientSocket);
+    bool _recvClientMsg(Client *client, char *buffer, int clientSocket);
     void _execUnAuthenticatedCmd(string &msg, Client *client);
 
 public:
@@ -127,7 +127,6 @@ public:
     bool removeClient(string &username);
     bool removeClient(Client *client);
 
-    bool banClient(Client *client);
     bool nickNameExist(string &ncikName);
     bool userNameExist(string &userName);
     string getChannelKey(std::string &channelName);

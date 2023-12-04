@@ -153,9 +153,8 @@ ssize_t Msg::sendMsgToRecipient(Client *sender, Client *recipient, string &msg, 
 	return byteToSend;
 }
 
-string Msg::recvMsg(int sockfd, char *buffer, bool &success)
+string Msg::recvMsg(int sockfd, char *buffer)
 {
-	success = true;
 	std::string msg = std::string();
 	ssize_t bytesRead = 0;
 	while (true)
@@ -185,7 +184,6 @@ string Msg::recvMsg(int sockfd, char *buffer, bool &success)
 				Client *client = clients[sockfd];
 				if (client)
 					client->setRemove(true);
-				success = false;
 				break;
 			}
 			else
@@ -196,7 +194,6 @@ string Msg::recvMsg(int sockfd, char *buffer, bool &success)
 				if (client)
 					client->setRemove(true);
 				perror("recv interupted by peer");
-				success = false;
 				break;
 			}
 		}
