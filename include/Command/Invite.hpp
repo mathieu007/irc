@@ -1,6 +1,7 @@
 #pragma once
 #include "Command.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 class Invite : public Command {
 private:
@@ -8,6 +9,7 @@ private:
 	std::string _channelName;
 	std::string _clientNickToInvite;
 	Client *_clientToInvite;
+	Channel *_channel;
 
 	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
 	std::string createMessageToClient(Client *client, std::vector<std::string> tokens);

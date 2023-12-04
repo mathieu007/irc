@@ -9,6 +9,7 @@ private:
 	std::string _channelName;
 	Channel *_channel;
 
+	std::string createTopicMessage(std::vector<std::string> tokens);
 	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
 	void setVariableToZero();
 

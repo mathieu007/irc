@@ -10,6 +10,7 @@ private:
 	std::string _clientNickToKick;
 	Client *_clientToKick;
 
+	std::string createReasonMessage(std::vector<std::string> tokens);
 	bool isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server);
 	std::string createMessageToClient(Client *client, std::vector<std::string> tokens);
 	void setVariableToZero();

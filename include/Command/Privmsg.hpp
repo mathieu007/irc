@@ -7,6 +7,7 @@ class Privmsg : public Command
 private:
 	std::string _errorMessage;
 
+	void setVariableToZero();
 	std::string createMessage(std::vector<std::string> tokens);
 	bool messageToChannel(Client *client, std::vector<std::string> tokens, Server &server);
 	bool messageToClient(Client *client, std::vector<std::string> tokens, Server &server);

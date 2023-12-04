@@ -2,19 +2,31 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-void Topic::setVariableToZero()
-{
+void Topic::setVariableToZero() {
 	_errorMessage = "";
 	_channelTopic = "";
 	_channelName = "";
 	_channel = nullptr;
 }
 
-bool Topic::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
-{
+std::string Topic::createTopicMessage(std::vector<std::string> tokens) {
+	std::string message;
+
+	for (std::size_t i = 2; i < tokens.size(); ++i) {
+		message += tokens[i];
+		if (i < tokens.size() - 1) {
+			message += " ";
+		}
+	}
+	message = message.substr(1);
+	std::cout << "message [" << message << "]" << std::endl;
+	return message;
+}
+
+bool Topic::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
 	_errorMessage = "";
 
-	if (tokens.size() < 2)
+	if (tokens.size() < 3)
 		_errorMessage = "461 " + client->getNickname() + " TOPIC :Not enought parameters\r\n";
 	else if (!server.channelExist(_channelName))
 		_errorMessage = "403 " + client->getNickname() + " " + _channelName + " :No such channel\r\n";
@@ -26,13 +38,12 @@ bool Topic::isValidCommand(std::vector<std::string> &tokens, Client *client, Ser
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &server)
-{
+bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &server) {
 	setVariableToZero();
 	if (tokens.size() > 1)
 		_channelName = tokens[1];
 	if (tokens.size() > 2)
-		_channelTopic = tokens[2].substr(1);
+		_channelTopic = createTopicMessage(tokens);
 
 	if (!isValidCommand(tokens, client, server))
 	{
@@ -49,5 +60,3 @@ bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &ser
 }
 
 Topic::~Topic() {}
-
-///join topic mssg
