@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 
-using std::vector;
 using std::string;
+using std::vector;
 
 class Client;
 class Channel;
@@ -15,26 +15,27 @@ private:
     Client *_client;
     Channel *_channel;
     bool _isModerator;
-    bool _isSuperModerator;
     bool _isInvited;
+    bool _isBanned;
 
 public:
     ClientChannelMapping(Client *client, Channel *channel);
-    bool operator==(const ClientChannelMapping &cmp) const;
-    bool operator!=(const ClientChannelMapping &cmp) const;
+    bool operator==(ClientChannelMapping &cmp);
+    bool operator!=(ClientChannelMapping &cmp);
     ~ClientChannelMapping();
 
-    Channel *getChannel() const;
-    Client *getClient() const;
+    Channel *getChannel();
+    Client *getClient();
 
     const string &getChannelName() const;
     const string &getClientUsername() const;
+    uint getChannelClientCount() const;
 
     bool getIsModerator() const;
-    bool getIsSuperModerator() const;
     bool getIsInvited() const;
+    bool getIsBanned() const;
 
     void setIsModerator(bool moderator);
-    void setIsSuperModerator(bool moderator);
     void setIsInvited(bool moderator);
+    void setIsBanned(bool moderator);
 };

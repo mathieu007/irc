@@ -149,7 +149,7 @@ public:
     }
 
     template <typename T, typename TPropValue>
-    static bool isIn(const vector<T *> &values, T &instance, TPropValue (T::*getter)() const)
+    static bool isIn(const vector<T *> &values, TPropValue *instance, TPropValue *(T::*getter)() const)
     {
         if (values.empty())
             return false;

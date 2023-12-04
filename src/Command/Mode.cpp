@@ -40,14 +40,14 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 	{
 		// std::cout << GREEN << "Executing MODE i command" << RESET << std::endl;
 		if (tokens[2][0] == '-'){
-			channel->setJoinOnInvitationOnly(0);
+			channel->setJoinOnInvitation(0);
 			std::cout << GREEN << "Executing MODE -i command" << RESET << std::endl;
 			std::string message = channelName + " :Set open to public\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:"  << _errorMessage << RESET << std::endl;
 		}
 		else if (tokens[2][0] == '+'){
-			channel->setJoinOnInvitationOnly(1);
+			channel->setJoinOnInvitation(1);
 			std::cout << GREEN << "Executing MODE +i command" << RESET << std::endl;
 			std::string message = channelName + " :Set to join on invite only \r\n";
 			Msg::sendMsg(client, message, 0);

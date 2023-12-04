@@ -22,7 +22,7 @@ bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "471 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+l)\r\n";
 	else if (_channelKey != "" && server.channelExist(_channelName) && !server.channelKeyExist(_channelName, _channelKey))
 		_errorMessage = "475 " + client->getNickname() + " " + _channelName + " :Bad Channel Key\r\n";
-	else if (server.isKickedFromChannel(client, _channelName))
+	else if (client->isKickedFromChannel(channel))
 		_errorMessage = "474 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+b)\r\n";
 	else if (channel && channel->isOnInvitationOnly() && !channel->isAllowedToJoin(client))
 		_errorMessage = "473 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+i)\r\n";

@@ -1,15 +1,14 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Vector.hpp"
+#include "ClientChannelMapping.hpp"
 
-Client::Client()
+Client::Client(Vec<ClientChannelMapping> *mapping)
 {
-    this->_isRegistered = false;
     this->_lastRequestTime = time(nullptr);
     this->_nextAllowedConnectionTime = 0;
     this->_numRequests = 0;
     this->_reqSize = 0;
-    this->_isBanned = false;
     this->_pass = std::string();
     this->_nickName = std::string();
     this->_userName = std::string();
@@ -19,8 +18,7 @@ Client::Client()
     this->_address = "";
     this->_port = "";
     this->_remove = false;
-    this->_kickedChannels = vector<Channel *>();
-    this->_channels = Map<string, Channel *>();
+    this->_clientChannelsMapping = mapping;
     this->_realName = "";
     this->_socket = 0;
 }
@@ -35,6 +33,12 @@ bool Client::operator==(const Client &cmp) const
 bool Client::operator!=(const Client &cmp) const
 {
     return this->getUsername() != cmp.getUsername();
+}
+
+Vec<ClientChannelMapping> Client::getMapping()
+{
+    Vec<ClientChannelMapping> map = _clientChannelsMapping->where(&ClientChannelMapping::getClientUsername, this->getUsername());
+    return map;
 }
 
 void Client::setHost(string host)
@@ -62,11 +66,6 @@ void Client::setRealname(std::string realName)
     _realName = realName;
 }
 
-void Client::setIsRegistered()
-{
-    _isRegistered = true;
-}
-
 void Client::setRemove(bool remove)
 {
     _remove = remove;
@@ -79,6 +78,11 @@ bool Client::shouldBeRemoved() const
 string Client::getHost() const
 {
     return _host;
+}
+
+string Client::getPort() const
+{
+    return _port;
 }
 
 int Client::getSocket() const
@@ -101,11 +105,6 @@ const string &Client::getPass() const
     return _pass;
 }
 
-bool Client::isRegistered() const
-{
-    return _isRegistered && !_isBanned;
-}
-
 string &Client::getMsg()
 {
     return _msg;
@@ -121,14 +120,16 @@ string &Client::getMsgRecvQueue()
     return _msgRecvQueue;
 }
 
-Map<string, Channel *> &Client::getChannels()
+Vec<Channel> Client::getChannels()
 {
-    return _channels;
+    Vec<Channel> vec = _clientChannelsMapping->select(&ClientChannelMapping::getChannel);
+    return vec;
 }
 
-vector<Channel *> &Client::getKickedChannels()
+Vec<Channel> Client::getBannedChannels()
 {
-    return _kickedChannels;
+    Vec<Channel> vec = _clientChannelsMapping->where(&ClientChannelMapping::getIsBanned, true).select(&ClientChannelMapping::getChannel);
+    return vec;
 }
 
 long Client::getLastActivity()
@@ -139,16 +140,6 @@ long Client::getLastActivity()
 void Client::setLastActivity(long lastActivityTime)
 {
     _lastActivityTime = lastActivityTime;
-}
-
-void Client::setSocketIndex(int socketIndex)
-{
-    _socketIndex = socketIndex;
-}
-
-int Client::getSocketIndex() const
-{
-    return _socketIndex;
 }
 
 void Client::setMsg(string msg)
@@ -203,7 +194,7 @@ void Client::incrementReqSize(long reqSize)
 long Client::getCurTime() const
 {
     // Get the current time in seconds since the epoch
-    time_t currentTime = std::time(nullptr);
+    time_t currentTime = std::time(NULL);
 
     // Convert time_t to long
     long seconds = static_cast<long>(currentTime);
@@ -215,18 +206,25 @@ bool Client::canMakeRequest()
 {
     _numRequests++;
     long curTime = getCurTime();
+    long prevRequest = _lastRequestTime;
+    _lastRequestTime = curTime;
     if (_lastRequestTime == 0)
     {
         _lastRequestTime = curTime;
+        prevRequest = _lastRequestTime;
         return true;
     }
-    long diff = curTime - _lastRequestTime;
+    long diff = curTime - prevRequest;
     if (diff == 0)
-        diff = 1;
+    {
+        if (_numRequests >= MAX_REQ_PER_SEC)
+            return false;
+        return true;
+    }
+
     if (_numRequests / diff >= MAX_REQ_PER_SEC)
         return false;
     _numRequests = 1;
-    _lastRequestTime = curTime;
     return true;
 }
 
@@ -238,9 +236,10 @@ bool Client::canConnect() const
     return false;
 }
 
-bool Client::isBannned() const
+void Client::setNextAllowedConnectionTime(long time)
 {
-    return this->_isBanned;
+    long cur = getCurTime();
+    _nextAllowedConnectionTime = cur + time;
 }
 
 bool Client::isValidUserInfo() const
@@ -256,37 +255,30 @@ bool Client::passIsEmpty() const
 bool Client::hasReachMaxReq()
 {
     if (this->_numRequests >= MAX_REQ_BEFORE_BAN)
-    {
-        _isBanned = true;
         return true;
-    }
     return false;
 }
 
-bool Client::addToChannel(Channel *channel)
+bool Client::addChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    string id = channel->getId();
-    // if is in kicked channel then cannot add to channel;
-    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map != nullptr)
         return false;
-    if (_channels.hasKey(id))
-        return channel;
-    if (_channels.addIfNotExist(id, channel))
-        return channel;
+    map = new ClientChannelMapping(this, channel);
+    _clientChannelsMapping->push_back(map);
     return true;
 }
 
 bool Client::addToKickedChannel(Channel *channel)
 {
-    if (!channel)
+    if (!channel || channel->getSuperModerator() == this)
         return false;
-    string id = channel->getId();
-    // if is in kicked channel then cannot add to channel;
-    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map->getIsBanned() == true)
         return false;
-    _kickedChannels.push_back(channel);
+    map->setIsBanned(true);
     return true;
 }
 
@@ -294,8 +286,8 @@ bool Client::isInChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    string id = channel->getId();
-    if (_channels.hasKey(id))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map && !map->getIsBanned())
         return true;
     return false;
 }
@@ -304,8 +296,8 @@ bool Client::isKickedFromChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    string id = channel->getId();
-    if (Vector::isIn(_kickedChannels, *channel, &Channel::getId))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map && map->getIsBanned())
         return true;
     return false;
 }
@@ -314,9 +306,13 @@ bool Client::removeFromChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    string id = channel->getId();
-    if (_channels.remove(id))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map && !map->getIsBanned())
+    {
+        _clientChannelsMapping->remove(map, true);
+        channel->setNumClients(channel->getNumClients() - 1);
         return true;
+    }
     return false;
 }
 
@@ -324,8 +320,12 @@ bool Client::removeFromKickChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    string id = channel->getId();
-    if (Vector::removeWhere(_kickedChannels, &Channel::getId, id))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (map)
+    {
+        map->setIsBanned(false);
         return true;
+    }
+
     return false;
 }

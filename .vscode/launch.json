@@ -22,6 +22,17 @@
 			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "ft_irc",
 			// "MIMode": "lldb"
+		},
+		{
+			"name": "Windows tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/a.out",
+			"args": [],
+			"environment": [{ "name": "config", "value": "Debug" }],
+			"cwd": "${workspaceFolder}",
+			// "preLaunchTask": "ttest",
+			// "MIMode": "lldb"
 		}
 	]
 }

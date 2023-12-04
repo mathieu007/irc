@@ -31,7 +31,6 @@ Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPasswor
     for (size_t i = 0; i < _clients.size(); i++)
     {
         _clients[i] = nullptr;
-        // i++;
     }
     return;
 }
@@ -51,7 +50,6 @@ Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), 
     for (size_t i = 0; i < _clients.size(); i++)
     {
         _clients[i] = nullptr;
-        // i++;
     }
     return;
 }
@@ -67,27 +65,15 @@ Server::~Server(void)
 
 void Server::CleanServer()
 {
-    cout << "start server cleaning: " << std::endl;
-    std::vector<Client *>::iterator it = _clients.begin();
-    while (it != _clients.end())
+    cout << "Start cleaning server: " << std::endl;
+    _clients.removeAll(true);
+    _channels.removeAll(true);
+    _clientschannelsMapping->removeAll(true);
+    std::map<string, Client *>::iterator it = _bannedClients.begin();
+    while (it != _bannedClients.end())
     {
-        std::vector<Client *>::iterator todelete = it;
-        // cout << "todelete: " << (*todelete)->getNickname() << " socket :" << (*todelete)->getSocket() << std::endl;
-        if (*todelete)
-            removeClient(*todelete);
-        else
-            it++;
-    }
-
-    std::map<string, Channel *>::iterator itChan = _channels.begin();
-    while (itChan != _channels.end())
-    {
-        std::map<std::string, Channel *>::iterator toDelete = itChan;
-        if ((*toDelete).second)
-            delete toDelete->second;
-        else
-            ++itChan;
-        _channels.erase(toDelete);
+        delete (*it).second;
+        it++;
     }
 }
 
@@ -169,18 +155,6 @@ int Server::getServerIp(string &ip)
     }
     freeaddrinfo(res);
     return 0;
-}
-
-const std::vector<Channel *> Server::getChannels() const
-{
-    std::map<string, Channel *>::const_iterator start = _channels.begin();
-    std::map<string, Channel *>::const_iterator end = _channels.end();
-    vector<Channel *> vec = vector<Channel *>();
-    for (std::map<string, Channel *>::const_iterator it = start; it != end; ++it)
-    {
-        vec.push_back(it->second);
-    }
-    return vec;
 }
 
 void Server::_initServerSocket(void)
@@ -272,21 +246,18 @@ void setSignal(void)
 bool Server::isAllowedToConnect(string clientAddress)
 {
     Client *client;
+    long curTime = static_cast<long>(time(NULL));
+    long lastConnection = 0;
+    if (_connectionsLog.tryGet(clientAddress, lastConnection) && lastConnection + MAX_CLIENT_CONNECTION_RETRY_TIME < curTime)
+        return false;
+    _connectionsLog.addOrReplace(clientAddress, curTime);
     if (_bannedClients.tryGet(clientAddress, client))
     {
-        if (client->isBannned() || !client->canConnect())
+        if (!client->canConnect())
             return false;
         return true;
     }
     return true;
-}
-
-Client *Server::createOrGetClient(string clientAddress)
-{
-    Client *client = nullptr;
-    if (!_bannedClients.tryGet(clientAddress, client))
-        client = new Client();
-    return client;
 }
 
 int Server::createClient(int socketClient)
@@ -309,10 +280,13 @@ int Server::createClient(int socketClient)
     Client *client = nullptr;
     if (!_bannedClients.tryGet(clientAddress, client))
     {
-        client = new Client();
+        if (_clients[socketClient] != nullptr)
+            removeClient(client);
     }
     else
         return -1;
+    if (client == nullptr)
+        client = new Client(_clientschannelsMapping);
     client->setAddress(clientAddress);
     client->setHost(clientAddress);
     client->setPort(clientPort);
@@ -359,11 +333,13 @@ int Server::checkIncomingClientConnection()
         if (socketClient < 0)
             return -1;
         if (createClient(socketClient) == -1)
+        {
+            close(socketClient);
             return 0;
+        }
         _setNonBlocking(socketClient);
         _clientSockets.push_back(socketClient);
         Client *client = _clients[socketClient];
-        client->setSocketIndex(_clientSockets.size() - 1);
         string welcomeMsg = getWelcomeMsg(client);
         Msg::sendMsg(client, welcomeMsg, 0);
         cout << "Welcome message sent." << std::endl;
@@ -385,35 +361,38 @@ string Server::_recvClientMsg(Client *client, char *buffer, int index)
         client->setLastActivity(static_cast<long>(time(NULL)));
         if (client->getMsgRecvQueue().size() >= MAX_BUFFER_SIZE)
         {
-            _banClient(client, clientSocket);
+            _banClient(client);
             client->setMsgRecvQueue("");
             return "";
         }
     }
     return msg;
 }
-void Server::_banClient(Client *client, int clientSocket)
+void Server::_banClient(Client *client)
 {
-    std::cerr << "The following client have been banned from our irc server: " << client->getHost() << std::endl;
+    std::cerr << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
+    std::cout << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
     string key = client->getHost();
-    _bannedClients.addOrReplace(key, client);
-    string warning = string("You are now banned from our irc server, you have been warnned several time!\r\n");
+    Client *existingClient = nullptr;
+    if (_bannedClients.tryGet(key, existingClient) && existingClient && existingClient != client)
+    {
+        _bannedClients.remove(key);
+        std::cout << "Banned Clients exist: " + existingClient->getNickname() << std::endl;
+        removeClient(existingClient);
+        delete existingClient;
+    }
+    _bannedClients.add(key, client);
+    client->setNextAllowedConnectionTime(NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN);
+    string warning = string("QUIT :You are now banned from our irc server, you have been warnned several time!\r\n");
     Msg::sendMsg(client, warning, 0);
-    // we do not delete the client we keep it in the banned Map.
-    // delete client;
-    _clients[clientSocket] = nullptr;
+    removeClient(client);
 }
 
-void Server::_disconnectInnactiveClient(Client *client, int index)
+void Server::_disconnectInnactiveClient(Client *client)
 {
-    int clientSocket = client->getSocket();
-    close(clientSocket);
-    if (_clientSockets.size() != 0)
-        _clientSockets.erase(_clientSockets.begin() + index);
-    delete client;
-    _clients[clientSocket] = nullptr;
-    string inactivityMsg = string("You have been diconnected from our server, you've been inactive for too long.\r\n");
+    string inactivityMsg = string("QUIT :You have been diconnected from our server, you've been inactive for too long.\r\n");
     Msg::sendMsg(client, inactivityMsg, 0);
+    client->setRemove(true);
 }
 
 int Server::fdSetClientMsgLoop(char *buffer)
@@ -438,12 +417,18 @@ int Server::fdSetClientMsgLoop(char *buffer)
             if (canMakeRequest)
                 _recvClientMsg(client, buffer, i);
             else if (client->hasReachMaxReq())
-                _banClient(client, clientSocket);
+            {
+                _banClient(client);
+                break;
+            }
         }
         if (!canMakeRequest)
         {
             std::cerr << "A client might be trying to ddos our irc server: " << _clients[clientSocket]->getHost() << std::endl;
-            string warning = string("Trying to flood our server will get you banned forever!\r\n");
+            string warning = string("NOTICE ");
+            warning += _clients[clientSocket]->getNickname();
+            warning += " Request canceled you have reach your maximum request per second!\r\n";
+            warning += "You will be banned from our server if you continue...\r\n";
             Msg::sendMsg(_clients[clientSocket], warning, 0);
             continue;
         }
@@ -459,7 +444,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
             else if (!client->getMsgRecvQueue().empty())
                 _execUnAuthenticatedCmd(client->getMsgRecvQueue(), client);
             if (static_cast<long>(time(NULL)) - client->getLastActivity() >= MAX_CLIENT_INACTIVITY)
-                _disconnectInnactiveClient(client, i);
+                _disconnectInnactiveClient(client);
         }
     }
     return 1;
@@ -568,15 +553,7 @@ void Server::initServer(void)
 
 bool Server::userNameExist(string &userName)
 {
-    vector<Client *>::const_iterator begin = this->_clients.begin();
-    vector<Client *>::const_iterator end = this->_clients.end();
-    while (begin != end)
-    {
-        if (*begin && userName == (*begin)->getUsername())
-            return true;
-        begin++;
-    }
-    return false;
+    return getClient(userName) != nullptr;
 }
 
 void Server::closeFds(void)
@@ -589,11 +566,12 @@ void Server::closeFds(void)
             close(i);
 }
 
-
 bool Server::isChannelFull(string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    return getClientsInAChannel(channel).size() == MAX_CLIENT_PER_CHANNEL;
+    if (!channel)
+        return false;
+    return getClientsInAChannel(channel).size() == channel->getMaxNumClients();
 }
 
 bool Server::isAuthenticated(Client *client)
@@ -625,133 +603,127 @@ vector<int> &Server::getClientSockets()
 bool Server::isModerator(Client *client, const string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    if (!channel)
+    if (!channel || !client)
         return false;
-    vector<Client *> moderators = channel->getModerators();
-    string username = client->getUsername();
-    if (Vector::isIn(moderators, &Client::getUsername, username))
+    if (channel->getSuperModerator() == client)
+        return true;
+    ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (map && map->getIsModerator())
         return true;
     return false;
 }
 
 bool Server::isInChannel(Client *client, string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && client->isInChannel(channel))
-        return true;
-    return false;
+    if (!client)
+        return false;
+    Channel *channel = getChannel(channelName);
+    return (client->isInChannel(channel));
 }
 
-bool Server::isKickedFromChannel(Client *client, std::string &channelName)
+bool Server::channelExist(string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && client->isKickedFromChannel(channel))
-        return true;
-    return false;
-}
-
-bool Server::channelExist(string &channel)
-{
-    return _channels.hasKey(channel);
+    return _channels.exist(&Channel::getName, channelName);
 }
 
 bool Server::hasTopic(string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && channel->hasTopic())
-        return true;
-    return false;
+    Channel *channel = getChannel(channelName);
+    if (!channel)
+        return false;
+    return channel->hasTopic();
 }
 
-vector<Client *> Server::getClientsInAChannel(Channel *channel)
+Vec<Client> Server::getClientsInAChannel(Channel *channel)
 {
-    vector<Client *> clients = vector<Client *>();
-    if (!channel)
-        return clients;
-    vector<Client *>::iterator it = _clients.begin();
-    while (it != _clients.end())
-    {
-        if (*it && (*it)->isInChannel(channel))
-        {
-            clients.push_back(*it);
-        }
-        it++;
-    }
-    return clients;
+    return channel->getMapping().select(&ClientChannelMapping::getClient);
 }
 
 Channel *Server::getChannel(const string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel)
-        return channel;
-    return nullptr;
+    return _channels.first(&Channel::getName, channelName);
 }
 
 bool Server::removeClient(string &username)
 {
     Client *client = getClient(username);
-    if (!removeClient(client))
-        return false;
-    return true;
+    return removeClient(client);
 }
 
 bool Server::removeClient(Client *client)
 {
     if (!client)
         return false;
-    if (client && _clientSockets.size() > (size_t)client->getSocketIndex())
-        _clientSockets.erase(_clientSockets.begin() + client->getSocketIndex());
-    close(client->getSocket());
-    int socketIndex = client->getSocket();
-    vector<Channel *> channels = getClientChannels(client);
-    vector<Channel *>::iterator it = channels.begin();
-    while (it != channels.end())
+    int socketFd = client->getSocket();
+    if (client)
     {
-        if (*it)
-            removeClientFromChannel(client, (*it)->getName());
-        else
-            it++;
+        std::vector<int>::iterator it = std::find(_clientSockets.begin(), _clientSockets.end(), socketFd);
+        if (it != _clientSockets.end())
+            _clientSockets.erase(it);
     }
-    if (client && !_bannedClients.hasKey(client->getUsername()))
+    Vec<ClientChannelMapping> maps = _clientschannelsMapping->where(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (maps.size() > 0)
     {
-        delete client;
-        _clients.erase(_clients.begin() + socketIndex);
-        _clients[socketIndex] = nullptr;
+        for (size_t i = 0; i < maps.size(); i++)
+        {
+            Channel *chan = maps[i]->getChannel();
+            chan->setNumClients(chan->getNumClients() - 1);
+        }
     }
-
+    _clientschannelsMapping->removeWhere(&ClientChannelMapping::getClientUsername, client->getUsername(), true);
+    _clientschannelsMapping->removeWhere(&ClientChannelMapping::getChannelClientCount, (uint)0, true);
+    _channels.removeWhere(&Channel::getNumClients, (uint)0, true);
+    // Set client to be removed on next loop...
+    client->setRemove(false);
+    if (!_bannedClients.hasKey(client->getHost()))
+    {
+        // if is not in banned list we remove the client completely from the list, but also the client ptr..
+        cout << "Client have been totally removed: " << client->getNickname() << std::endl;
+        _clients.remove(client, true);
+    }
+    else
+    {
+        // we only remove the client from the list but not the client ptr, because we need to keep it in the banned map!
+        _clients.remove(client, false);
+        cout << "Client have been partially removed: " << client->getNickname() << std::endl;
+    }
+    close(socketFd);
     return true;
 }
 
 Channel *Server::removeClientFromChannel(Client *client, const std::string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && client->getChannels().remove(channel->getId()))
+    Channel *channel = getChannel(channelName);
+    if (!client || !channel)
+        return nullptr;
+    ClientChannelMapping *map = client->getMapping().first(&ClientChannelMapping::getChannelName, channelName);
+    if (map)
     {
-        vector<Client *> clients = getClientsInAChannel(channel);
-        if (clients.size() == 0)
-            removeChannel(channelName);
-        return channel;
+        _clientschannelsMapping->remove(map, true);
+        channel->setNumClients(channel->getNumClients() - 1);
+        _clientschannelsMapping->removeWhere(&ClientChannelMapping::getChannelClientCount, (uint)0, true);
     }
-    return nullptr;
+    return channel;
 }
 
 Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
 {
-    Channel *channel = nullptr;
-    if (_channels.tryGet(channelName, channel) && channel && client->addToKickedChannel(channel))
-        return channel;
-    return nullptr;
+    Channel *channel = getChannel(channelName);
+    if (!channel || !client)
+        return nullptr;
+    client->addToKickedChannel(channel);
+    channel->setNumClients(channel->getNumClients() - 1);
+    return channel;
 }
 
 bool Server::banClient(Client *client)
 {
-    if (_bannedClients.hasKey(client->getUsername()))
+    if (_bannedClients.hasKey(client->getHost()))
         return false;
-    _bannedClients.add(client->getUsername(), client);
+    _bannedClients.add(client->getHost(), client);
     if (_clients.size() < (size_t)client->getSocket())
         return true;
-    _clients[client->getSocket()] = NULL;
+    _clients[client->getSocket()] = nullptr;
     if (_clients.size() != 0)
         _clients.erase(_clients.begin() + client->getSocket());
     return true;
@@ -760,7 +732,7 @@ bool Server::banClient(Client *client)
 Channel *Server::addClientToChannel(Client *client, std::string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    if (channel && client->addToChannel(channel))
+    if (channel && client->addChannel(channel))
         return channel;
     return nullptr;
 }
@@ -779,7 +751,7 @@ Channel *Server::addTopicToChannel(std::string &topic, std::string &channelName)
 Channel *Server::removeTopicFromChannel(std::string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    if (channel->hasTopic())
+    if (channel && channel->hasTopic())
     {
         string topic = "";
         channel->setTopic(topic);
@@ -791,18 +763,12 @@ Channel *Server::removeTopicFromChannel(std::string &channelName)
 /// @brief this will remove the channel but also all users from this channels if they are in...
 /// @param channelName
 /// @return we return the list of client from which they were removed.
-vector<Client *> Server::removeChannel(std::string channelName)
+void Server::removeChannel(Channel *channel)
 {
-    Channel *channel = getChannel(channelName);
-    vector<Client *> vec = getClientsInAChannel(channel);
-    vector<Client *>::iterator it = vec.begin();
-    while (it != vec.end())
-    {
-        if (*it)
-            (*it)->removeFromChannel(channel);
-        it++;
-    }
-    return vec;
+    if (!channel)
+        return;
+    _clientschannelsMapping->removeWhere(&ClientChannelMapping::getChannelName, channel->getName(), true);
+    _channels.remove(channel, true);
 }
 
 Channel *Server::join(Client *client, std::string &channelName)
@@ -810,11 +776,17 @@ Channel *Server::join(Client *client, std::string &channelName)
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        channel = new Channel(channelName);
+        channel = new Channel(channelName, _clientschannelsMapping);
         channel->setSuperModerator(client);
+        _channels.push_back(channel);
     }
-    _channels.addIfNotExist(channel->getId(), channel);
-    client->addToChannel(channel);
+    ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (channel->isAllowedToJoin(client) && !map && channel->getNumClients() < channel->getMaxNumClients())
+    {
+        ClientChannelMapping *map = new ClientChannelMapping(client, channel);
+        _clientschannelsMapping->push_back(map);
+        channel->setNumClients(channel->getNumClients() + 1);
+    }
     return channel;
 }
 
@@ -823,19 +795,26 @@ Channel *Server::join(Client *client, string &channelName, string &key)
     Channel *channel = getChannel(channelName);
     if (!channel)
     {
-        channel = new Channel(channelName, key);
+        channel = new Channel(channelName, key, _clientschannelsMapping);
         channel->setSuperModerator(client);
+        _channels.push_back(channel);
     }
-    _channels.addIfNotExist(channel->getId(), channel);
-    if (channelName == channel->getName() && channel->getKey() == key)
-        client->addToChannel(channel);
+    ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (channel->isAllowedToJoin(client) && channel->getKey() == key && !map && channel->getNumClients() < channel->getMaxNumClients())
+    {
+        ClientChannelMapping *map = new ClientChannelMapping(client, channel);
+        _clientschannelsMapping->push_back(map);
+        channel->setNumClients(channel->getNumClients() + 1);
+    }
     return channel;
 }
 
-const string &Server::getChannelKey(std::string &channelName)
+string Server::getChannelKey(std::string &channelName)
 {
     Channel *channel = getChannel(channelName);
-    return channel->getKey();
+    if (channel)
+        return channel->getKey();
+    return string();
 }
 
 bool Server::channelKeyExist(std::string &channelName, std::string &key)
@@ -854,79 +833,39 @@ bool Server::disconnect(Client *client)
     return true;
 }
 
-vector<Channel *> Server::getClientChannels(Client *client)
+Vec<Channel> Server::getClientChannels(Client *client)
 {
-    vector<Channel *> vec = vector<Channel *>();
-    Map<string, Channel *> channels = client->getChannels();
-    Map<string, Channel *>::iterator it = channels.begin();
-    while (it != channels.end())
-    {
-        if ((*it).second)
-            vec.push_back((*it).second);
-        it++;
-    }
-    return vec;
+    if (!client)
+        return Vec<Channel>();
+    return client->getMapping().select(&ClientChannelMapping::getChannel);
 }
 
-vector<Channel *> Server::getClientChannels(std::string &username)
+Vec<Channel> Server::getClientChannels(std::string &username)
 {
-    vector<Channel *> vec = vector<Channel *>();
     Client *client = getClient(username);
     if (!client)
-        return vec;
-    Map<string, Channel *> channels = client->getChannels();
-    Map<string, Channel *>::iterator it = channels.begin();
-    while (it != channels.end())
-    {
-        if ((*it).second)
-            vec.push_back((*it).second);
-        it++;
-    }
-    return vec;
+        return Vec<Channel>();
+    return client->getMapping().select(&ClientChannelMapping::getChannel);
 }
 
-vector<Client *> &Server::getClients()
+Vec<Client> &Server::getClients()
 {
     return _clients;
 }
 
 Client *Server::getClient(std::string &username)
 {
-    vector<Client *>::const_iterator begin = this->_clients.begin();
-    vector<Client *>::const_iterator end = this->_clients.end();
-    while (begin != end)
-    {
-        if (*begin && username == (*begin)->getUsername())
-            return (*begin);
-        begin++;
-    }
-    return nullptr;
+    return _clients.first(&Client::getUsername, username);
 }
 
 Client *Server::getClientByNickname(std::string &nickname)
 {
-    vector<Client *>::const_iterator begin = this->_clients.begin();
-    vector<Client *>::const_iterator end = this->_clients.end();
-    while (begin != end)
-    {
-        if (*begin && nickname == (*begin)->getNickname())
-            return (*begin);
-        begin++;
-    }
-    return nullptr;
+    return _clients.first(&Client::getNickname, nickname);
 }
 
 bool Server::nickNameExist(std::string &nickname)
 {
-    vector<Client *>::const_iterator begin = this->_clients.begin();
-    vector<Client *>::const_iterator end = this->_clients.end();
     if (nickname == "guest")
         return true;
-    while (begin != end)
-    {
-        if (*begin && nickname == (*begin)->getNickname())
-            return true;
-        begin++;
-    }
-    return false;
+    return _clients.exist(&Client::getNickname, nickname);
 }

@@ -1,7 +1,8 @@
 #pragma once
 
 #define MAX_CLIENT_INACTIVITY 60 * 5
-#define MAX_CLIENT_PER_CHANNEL 50
+#define MAX_CLIENT_CONNECTION_RETRY_TIME 5
+#define NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN (long)(60 * 10)
 
 #include <map>
 #include "Map.hpp"
@@ -28,6 +29,7 @@
 #include "Logger.hpp"
 #include "ClientChannelMapping.hpp"
 #include "Client.hpp"
+#include "Vec.hpp"
 
 using std::cout;
 using std::string;
@@ -47,26 +49,31 @@ private:
     socklen_t _serv_size;
     socklen_t _client_size;
     int _serverSocket;
-    /// @brief non blocking io, for monitoring both read and write operations.
-    fd_set _use;
+
     /// @brief non blocking io for writing.
     fd_set _writing;
     /// @brief non blocking io for reading.
     fd_set _reading;
+
     vector<int> _clientSockets = vector<int>();
-    vector<Client *> _clients = vector<Client *>(MAX_CLIENTS);
-    vector<ClientChannelMapping *> _clientChannel = vector<ClientChannelMapping *>(MAX_CLIENTS);
-    // banned clients by ip address
+
+    // banned clients by ip address + port number, but in real application i would banned based on ip address only, but it's not really usefful while testing...
     Map<string, Client *> _bannedClients = Map<string, Client *>();
-    Map<string, Channel *> _channels = Map<string, Channel *>();
+    Map<string, long> _connectionsLog = Map<string, long>();
+    // I choose to centralizing the data, it's a bit slower but much more manageable...
+    // for faster operation i would have created a mapping table for clients and channels, this would make read operations faster,
+    // also we coud have used indexes to make query faster, but it's fast enough...
+    Vec<Client> _clients = Vec<Client>(MAX_CLIENTS);
+    Vec<Channel> _channels = Vec<Channel>();
+    Vec<ClientChannelMapping> *_clientschannelsMapping = new Vec<ClientChannelMapping>();
 
     int _setSockAddrStorage();
     string _getHostname() const;
     void _initServerSocket(void);
     void _setNonBlocking(int sockfd);
     int _selectFdSet();
-    void _banClient(Client *client, int clientSocket);
-    void _disconnectInnactiveClient(Client *client, int index);
+    void _banClient(Client *client);
+    void _disconnectInnactiveClient(Client *client);
     string _recvClientMsg(Client *client, char *buffer, int clientSocket);
     void _execUnAuthenticatedCmd(string &msg, Client *client);
 
@@ -89,9 +96,8 @@ public:
     int getAddress(sockaddr_in &sock_addr, socklen_t &size, string &address, string &port);
     int getServerIp(string &ip);
     vector<int> &getClientSockets();
-    vector<Client *> &getClients();
+    Vec<Client> &getClients();
     int checkIncomingClientConnection();
-    Client *createOrGetClient(string clientAddress);
     bool isAllowedToConnect(string clientAddress);
     bool isAllowedToMakeRequest(Client *client);
     Channel *isInChannel(Client *client, string &channelName) const;
@@ -102,13 +108,13 @@ public:
 
     string hashPassword(const std::string &password);
     string getChannelId(const string &channelName, const string &channelKey);
-    const std::vector<Channel *> getChannels() const;
+    const Vec<Channel> getChannels() const;
     Channel *join(Client *client, std::string &channel);
     Channel *join(Client *client, std::string &channel, string &key);
     bool disconnect(Client *client);
-    vector<Channel *> getClientChannels(Client *client);
-    vector<Channel *> getClientChannels(std::string &username);
-    vector<Client *> getClientsInAChannel(Channel *channel);
+    Vec<Channel> getClientChannels(Client *client);
+    Vec<Channel> getClientChannels(std::string &username);
+    Vec<Client> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
     bool isChannelFull(string &channelName);
     bool isValidPassword(Client *client);
@@ -116,15 +122,15 @@ public:
     bool setClientPassword(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
     bool isInChannel(Client *client, std::string &channel);
-    bool isKickedFromChannel(Client *client, std::string &channelName);
     bool channelExist(std::string &channel);
     bool hasTopic(std::string &channelName);
     bool removeClient(string &username);
     bool removeClient(Client *client);
+
     bool banClient(Client *client);
     bool nickNameExist(string &ncikName);
     bool userNameExist(string &userName);
-    const string &getChannelKey(std::string &channelName);
+    string getChannelKey(std::string &channelName);
     bool channelKeyExist(std::string &channelName, std::string &key);
     Channel *getChannel(const string &channelName);
     Channel *removeClientFromChannel(Client *client, const std::string &channelName);
@@ -132,6 +138,6 @@ public:
     Channel *addClientToChannel(Client *client, std::string &channelName);
     Channel *addTopicToChannel(std::string &topic, std::string &channelName);
     Channel *removeTopicFromChannel(std::string &channelName);
-    vector<Client *> removeChannel(std::string channelName);
+    void removeChannel(Channel *channel);
     Client *getClientByNickname(std::string &nickname);
 };

@@ -30,18 +30,18 @@ exec echo "\r\n"
 # stty sane
 # send "\x0d\x0a"
 set stty_init raw
-send "JOIN #ddd\x0d\x0a"
+send "JOIN #Chan1\x0d\x0a"
 sleep 0.2
 
 expect ""
-send "PRIVMSG #ddd :Hi! I will strart writing shit too!\x0d\x0a"
+send "PRIVMSG #Chan1 :Hi! I will strart writing shit too!\x0d\x0a"
 sleep 0.2
 expect ""
 set repeat_count 1000
 for {set i 0} {$i < $repeat_count} {incr i} {
     set commandOutput [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
-    send "PRIVMSG #ddd :$commandOutput --------"
-    send "$commandOutput!\x0d\x0a"
+    send "PRIVMSG #Chan1 :$commandOutput --------"
+    send "$commandOutput!\x0d\x0a"  
     expect ""
 }
 

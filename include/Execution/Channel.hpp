@@ -4,52 +4,55 @@
 #include <iostream>
 #include <vector>
 #include "Client.hpp"
+#include "Vec.hpp"
+#define MAX_CLIENT_PER_CHANNEL 50
 
 using std::string;
 using std::vector;
 class Channel
 {
 private:
-    string _id;
     string _name;
     string _key;
     string _topic;
-    bool _topicPublic;
+    bool _topicIsPublic;
     uint _maxNumClients;
     uint _numClients;
-    bool _canBeJoinOnInvitationOnly;
+    bool _onInvitation;
     Client *_superModerator;
-    vector<Client *> _moderators;
-    vector<Client *> _invitedClients;
+    Vec<ClientChannelMapping> *_clientsChannelMapping;
 
 public:
-    Channel(string &name);
-    Channel(string &name, string &key);
+    Channel(string &name, Vec<ClientChannelMapping> *mapping);
+    Channel(string &name, string &key, Vec<ClientChannelMapping> *mapping);
     ~Channel();
     const string &getName() const;
     const string &getKey() const;
     void setKey(string key);
-    const string &getId() const;
     const string &getTopic() const;
     uint getMaxNumClients() const;
     uint getNumClients() const;
     void setMaxNumClients(uint maxNumberOfClient);
     void setNumClients(uint numClients);
     Client *getSuperModerator();
-    vector<Client *> &getModerators();
-    vector<Client *> &getInvitedClients();
+    Vec<ClientChannelMapping> getMapping();
+    Vec<Client> getModerators();
+    Vec<Client> getInvitedClients();
     bool deleteModerator(Client *client, Client *moderatorToDelete);
-    bool moderatorAlreadyExist(Client *client) const;
+    bool moderatorExist(Client *client);
     bool addModerator(Client *moderator);
     bool isTopicPublic();
     void setTopicPublic(bool topicAsPublic);
     bool hasTopic() const;
     bool isOnInvitationOnly() const;
     // is user in invited list
-    bool isAllowedToJoin(Client *client) const;
+    bool addToInvitation(Client *client);
+    bool isAllowedToJoin(Client *client);
     bool canDeleteChannel(Client *client) const;
     bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;
     void setSuperModerator(Client *moderator);
-    void setJoinOnInvitationOnly(bool onInvite);
+    void setJoinOnInvitation(bool onInvite);
     void setTopic(string &topic);
+    bool removeAllMapping();
+    bool removeMapping(Client *client);
 };

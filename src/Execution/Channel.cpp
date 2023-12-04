@@ -1,26 +1,39 @@
 #include <Channel.hpp>
 #include "Vector.hpp"
+#include "ClientChannelMapping.hpp"
 
 Channel::~Channel() {}
 
-Channel::Channel(string &name)
+Channel::Channel(string &name, Vec<ClientChannelMapping> *mapping)
 {
     _name = name;
-    _id = name;
     _topic = "";
     _key = "";
+    _numClients = 0;
+    _maxNumClients = MAX_CLIENT_PER_CHANNEL;
+    _topicIsPublic = true;
     _superModerator = nullptr;
-    _moderators = vector<Client *>();
+    _clientsChannelMapping = mapping;
+    _onInvitation = false;
 }
 
-Channel::Channel(string &name, string &key)
+Channel::Channel(string &name, string &key, Vec<ClientChannelMapping> *mapping)
 {
     _name = name;
     _key = key;
-    _id = _name;
     _topic = "";
+    _numClients = 0;
+    _maxNumClients = MAX_CLIENT_PER_CHANNEL;
+    _topicIsPublic = true;
     _superModerator = nullptr;
-    _moderators = vector<Client *>();
+    _clientsChannelMapping = mapping;
+    _onInvitation = false;
+}
+
+Vec<ClientChannelMapping> Channel::getMapping()
+{
+    Vec<ClientChannelMapping> map = _clientsChannelMapping->where(&ClientChannelMapping::getChannelName, this->getName());
+    return map;
 }
 
 bool Channel::hasTopic() const
@@ -33,36 +46,36 @@ void Channel::setTopic(string &topic)
     this->_topic = topic;
 }
 
-bool Channel::moderatorAlreadyExist(Client *moderator) const
+bool Channel::moderatorExist(Client *moderator)
 {
     if (!moderator)
         return false;
-    if (Vector::isIn(this->_moderators, *moderator, &Client::getUsername))
-        return true;
-    return false;
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, moderator->getUsername());
+    if (!map)
+        return false;
+    return map->getIsModerator() || moderator == _superModerator;
 }
 
-void Channel::setJoinOnInvitationOnly(bool onInvite)
+void Channel::setJoinOnInvitation(bool onInvite)
 {
-    this->_canBeJoinOnInvitationOnly = onInvite;
+    this->_onInvitation = onInvite;
 }
 
 void Channel::setSuperModerator(Client *moderator)
 {
-    if (this->_superModerator != nullptr)
+    if (this->_superModerator != nullptr || moderator->isKickedFromChannel(this))
         return;
     this->_superModerator = moderator;
-    if (!moderatorAlreadyExist(moderator))
-        _moderators.push_back(moderator);
 }
 
 bool Channel::addModerator(Client *moderator)
 {
-    if (!moderatorAlreadyExist(moderator))
-    {
-        _moderators.push_back(moderator);
-        return true;
-    }
+
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, moderator->getUsername());
+    if (!map)
+        return false;
+    if (map->getIsModerator() == false && !map->getIsBanned())
+        map->setIsModerator(true);
     return false;
 }
 
@@ -80,14 +93,10 @@ void Channel::setMaxNumClients(uint maxNumberOfClient)
 {
     _maxNumClients = maxNumberOfClient;
 }
+
 void Channel::setNumClients(uint numClients)
 {
     _numClients = numClients;
-}
-
-const string &Channel::getId() const
-{
-    return this->_id;
 }
 
 const string &Channel::getKey() const
@@ -115,52 +124,79 @@ Client *Channel::getSuperModerator()
     return this->_superModerator;
 }
 
-vector<Client *> &Channel::getModerators()
+Vec<Client> Channel::getModerators()
 {
-    return this->_moderators;
+    return getMapping().where(&ClientChannelMapping::getIsModerator, true).select(&ClientChannelMapping::getClient);
 }
 
 bool Channel::isOnInvitationOnly() const
 {
-    return this->_canBeJoinOnInvitationOnly;
+    return this->_onInvitation;
 }
 
-bool Channel::isAllowedToJoin(Client *client) const
+bool Channel::addToInvitation(Client *client)
 {
     if (!client)
         return false;
-    if (_canBeJoinOnInvitationOnly && Vector::isIn(_invitedClients, *client, &Client::getUsername))
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (_onInvitation && map->getIsInvited() && !map->getIsBanned())
+        return false;
+    else if (!_onInvitation)
+        return false;
+    map->setIsInvited(true);
+    return true;
+}
+
+// check is allowed to join on invitaion only
+bool Channel::isAllowedToJoin(Client *client)
+{
+    if (!client)
+        return false;
+    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (!_onInvitation && !map)
         return true;
-    else if (!_canBeJoinOnInvitationOnly)
+    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned() && map->getChannel()->getNumClients() < map->getChannel()->getMaxNumClients())
+        return true;
+    else if (!_onInvitation && map && !map->getIsBanned() && map->getChannel()->getNumClients() < map->getChannel()->getMaxNumClients())
         return true;
     return false;
 }
 
 bool Channel::canDeleteModerator(Client *client, Client *moderatorToDelete) const
 {
-    if (!moderatorToDelete || client)
+    if (!moderatorToDelete || !client)
         return false;
-    if (client->getUsername() == moderatorToDelete->getUsername() || moderatorToDelete->getUsername() == _superModerator->getUsername())
+    if (client == moderatorToDelete || moderatorToDelete == _superModerator)
         return false;
     return true;
 }
 
 bool Channel::deleteModerator(Client *client, Client *moderatorToDelete)
 {
-    if (!moderatorToDelete || client)
+    if (!moderatorToDelete || !client)
         return false;
-    string username = moderatorToDelete->getUsername();
+    ClientChannelMapping *mapModerator = getMapping().first(&ClientChannelMapping::getClientUsername, moderatorToDelete->getUsername());
+    ClientChannelMapping *mapClient = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
+    if (!mapClient || !mapModerator)
+        return false;
     if (canDeleteModerator(client, moderatorToDelete))
-        return Vector::removeWhere(_moderators, &Client::getUsername, username);
+        mapModerator->setIsModerator(false);
     return false;
 }
 
 bool Channel::isTopicPublic()
 {
-    return _topicPublic;
+    return _topicIsPublic;
 }
 
 void Channel::setTopicPublic(bool topicAsPublic)
 {
-    _topicPublic = topicAsPublic;
+    _topicIsPublic = topicAsPublic;
+}
+
+bool Channel::removeMapping(Client *client)
+{
+    getMapping().removeWhere(&ClientChannelMapping::getClientUsername, client->getUsername(), true);
+    _clientsChannelMapping->removeNulls();
+    return true;
 }

@@ -21,6 +21,7 @@ SRC =	src/main.cpp 	\
 		src/Command/Privmsg.cpp \
 		src/Command/Topic.cpp \
 		src/Command/Mode.cpp \
+		src/Command/Invite.cpp \
 		
 
 OBJDIR = ./objs

@@ -144,7 +144,7 @@ ssize_t Msg::sendMsgToRecipient(Client *sender, Client *recipient, string &msg, 
 {
 	ssize_t byteToSend = 0;
 
-	if (sender == recipient)
+	if (*sender == *recipient)
 		return Msg::sendMsg(recipient, msg, flags);
 	string msgQueue = recipient->getMsgSendQueue();
 	msgQueue.append(msg);

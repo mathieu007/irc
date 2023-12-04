@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include "ResultSet.hpp"
 
@@ -17,6 +18,7 @@ public:
 
     Client *getByUserName(const string &userName);
     Client *getByNickName(const string &nickName);
+    
     bool removeByUserName(const string &userName);
     bool remove(Client *client);
 
@@ -27,6 +29,7 @@ public:
     ClientResult where(const TPropValue &(Client::*getter)() const, const TPropValue &value);
     template <typename TPropValue>
     ClientResult where(TPropValue (Client::*getter)() const, TPropValue value);
+
     ChannelResult getChannels(Client *client);
     ClientsChannelsResult getClientsChannels(Client *client);
 };

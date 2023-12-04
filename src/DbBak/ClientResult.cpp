@@ -31,7 +31,15 @@ Client *ClientResult::getByNickName(const string &nickName)
 
 bool ClientResult::removeByUserName(const string &userName)
 {
-    return Vector::removeWhere(_data, &Client::getUsername, userName);
+    if (_data.empty())
+        return false;
+    typedef typename vector<T *>::const_iterator Iterator;
+    for (Iterator it = values.begin(); it != values.end(); it++)
+    {
+        if (*it && value == ((*(*it)).*getter)())
+            return *it;
+    }
+    return nullptr;
 }
 
 bool ClientResult::remove(Client *client)

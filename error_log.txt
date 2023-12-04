@@ -1,37 +1,180 @@
-Failed to connect client to socket.
-Failed to connect client to socket.
-Failed to connect client to socket.
 select() error: Interrupted system call
-Error: Couldn't bind socket address.
-
-Error: Couldn't bind socket address.
-
-Error: Couldn't bind socket address.
-
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
+Client clean banned here: <6
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
+Client clean banned here: <6
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
+Client clean banned here: <6
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
-select() error: Bad file descriptor
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
-select() error: Bad file descriptor
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
-<<<<<<< HEAD
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call
-=======
->>>>>>> origin/master
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
+select() error: Interrupted system call
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+A client might be trying to ddos our irc server: 172.31.200.244
+The following client: 172.31.200.244 have been banned from our irc server.
 select() error: Interrupted system call

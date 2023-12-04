@@ -2,11 +2,13 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-void Part::setVariableToZero(){
+void Part::setVariableToZero()
+{
 	_errorMessage = "";
 }
 
-bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	(void)tokens;
 	(void)client;
 	(void)server;
@@ -15,13 +17,26 @@ bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	return _errorMessage.empty() ? true : false;
 }
 
-std::string Part::createPartMessage(Client *client, const std::vector<std::string> &tokens) {
-	return ":" + client->getNickname() + " PART " + tokens[1] + " " + tokens[2] + "\r\n";
+std::string Part::createPartMessage(Client *client, const std::vector<std::string> &tokens)
+{
+	(void)client;
+	size_t size = tokens.size();
+	size_t i = 1;
+	string message = "";
+	while (i < size)
+	{
+		message += tokens[i];
+		message += " ";
+		i++;
+	}
+	return "PART " + message + "\r\n";
 }
 
-bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server)
+{
 	setVariableToZero();
-	if (!isValidCommand(tokens, client, server)) {
+	if (!isValidCommand(tokens, client, server))
+	{
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << RED << "Error sent to client:" << _errorMessage << RESET << std::endl;
 	}
@@ -35,5 +50,5 @@ bool Part::execute(Client *client, std::vector<std::string> tokens, Server &serv
 
 Part::~Part() {}
 
-//leaving reason parsing
-//error
+// leaving reason parsing
+// error

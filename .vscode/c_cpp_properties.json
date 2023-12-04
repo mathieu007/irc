@@ -5,9 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/include/",
                 "${workspaceFolder}/include/Command/",
-                "${workspaceFolder}/include/Execution/",
+                "${workspaceFolder}/include/Execution/"
                 // "${workspaceFolder}/include/Db/",
-                "${workspaceFolder}/src/"
+                // "${workspaceFolder}/src/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
