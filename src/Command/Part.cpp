@@ -12,8 +12,10 @@ bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	(void)tokens;
 	(void)client;
 	(void)server;
-	// if (tokens.size() != 2)
-	// 	_errorMessage = "461 " + client->getHost() + " KICK :Not enought or too much parameters\r\n";
+	if (tokens.size() < 2)
+		_errorMessage = "461 " + client->getHost() + " PART :Not enought or too much parameters\r\n";
+	else if (tokens[1].length() > 0 && tokens[1][0] != '#')
+		_errorMessage = "476 " + client->getNickname() + " " + tokens[1] + " :Bad Channel Mask\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
@@ -21,7 +23,7 @@ std::string Part::createPartMessage(Client *client, const std::vector<std::strin
 {
 	(void)client;
 	size_t size = tokens.size();
-	size_t i = 1;
+	size_t i = 2;
 	string message = "";
 	while (i < size)
 	{
@@ -29,7 +31,7 @@ std::string Part::createPartMessage(Client *client, const std::vector<std::strin
 		message += " ";
 		i++;
 	}
-	return "PART " + message + "\r\n";
+	return ":" + client->getNickname() + " PART " + tokens[1] + " " + message + "\r\n";
 }
 
 bool Part::execute(Client *client, std::vector<std::string> tokens, Server &server)

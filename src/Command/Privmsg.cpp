@@ -25,7 +25,8 @@ bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *c
 	_errorMessage = "";
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
-
+	else if (!server.getClient(tokens[1]))
+		_errorMessage = "401 " + client->getHost() + " :No such nick\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
@@ -61,6 +62,8 @@ bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *
 	_errorMessage = "";
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getHost() + " :No nickname given\r\n";
+	else if (!server.getClient(tokens[1]))
+		_errorMessage = "401 " + client->getHost() + " :No such channel\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
