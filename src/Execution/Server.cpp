@@ -237,13 +237,18 @@ void setSignal(void)
     sigaction(SIGQUIT, &sigAction, NULL); // Ctrl+\..
 }
 
-bool Server::isAllowedToConnect(string clientAddress)
+bool Server::isAllowedToConnect(string clientAddress, int socket)
 {
     long curTime = static_cast<long>(time(NULL));
     long lastConnection = 0;
     if (_connectionsLog.tryGet(clientAddress, lastConnection) && lastConnection + MAX_CLIENT_CONNECTION_RETRY_TIME < curTime)
+    {
+        string notice = "NOTICE :Too many connections attemps.\nPlz try to connect to our server in a few seconds.\r\n";
+        send(socket, notice.c_str(), notice.length(), 0);
         return false;
-    _connectionsLog.addOrReplace(clientAddress, curTime);
+    }
+    std::cout << "Last connection: " << lastConnection << " Current time: " << curTime << std::endl;
+    _connectionsLog.add(clientAddress, curTime);
     long bannedTime = 0;
     if (_bannedClients.tryGet(clientAddress, bannedTime))
     {
@@ -269,7 +274,7 @@ int Server::createClient(int socketClient)
         std::cerr << "Client could not be added at index: " << socketClient << std::endl;
         return -1;
     }
-    if (!isAllowedToConnect(clientAddress))
+    if (!isAllowedToConnect(clientAddress, socketClient))
         return -1;
     long nextConnection = 0;
     if (_bannedClients.tryGet(clientAddress, nextConnection))

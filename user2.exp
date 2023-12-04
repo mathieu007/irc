@@ -41,7 +41,8 @@ set repeat_count 1000
 for {set i 0} {$i < $repeat_count} {incr i} {
     set commandOutput [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
     send "PRIVMSG #Chan1 :$commandOutput --------"
-    send "$commandOutput!\x0d\x0a"  
+    send "$commandOutput!\x0d\x0a"
+    sleep 1
     expect ""
 }
 

@@ -2,6 +2,7 @@
 
 #define MAX_CLIENT_INACTIVITY 60 * 5
 #define MAX_CLIENT_CONNECTION_RETRY_TIME 5
+#define MAX_CLIENT_CONNECTION_RETRY_TIME_STR "5"
 #define NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN (long)(60 * 10)
 
 #include <map>
@@ -98,7 +99,7 @@ public:
     vector<int> &getClientSockets();
     Vec<Client> &getClients();
     int checkIncomingClientConnection();
-    bool isAllowedToConnect(string clientAddress);
+    bool isAllowedToConnect(string clientAddress, int socket);
     bool isAllowedToMakeRequest(Client *client);
     Channel *isInChannel(Client *client, string &channelName) const;
 
