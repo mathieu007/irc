@@ -241,13 +241,14 @@ bool Server::isAllowedToConnect(string clientAddress, int socket)
 {
     long curTime = static_cast<long>(time(NULL));
     long lastConnection = 0;
-    if (_connectionsLog.tryGet(clientAddress, lastConnection) && lastConnection + MAX_CLIENT_CONNECTION_RETRY_TIME < curTime)
+    if (_connectionsLog.tryGet(clientAddress, lastConnection) && lastConnection + MAX_CLIENT_CONNECTION_RETRY_TIME > curTime)
     {
-        string notice = "NOTICE :Too many connections attemps.\nPlz try to connect to our server in a few seconds.\r\n";
+        _connectionsLog.add(clientAddress, curTime);
+        string notice = "NOTICE :Too many connections attemps. Plz try to connect to our server in a few seconds.\r\n";
         send(socket, notice.c_str(), notice.length(), 0);
+        std::cout << "Connection to server cancelled, too many connections attemps from : " << clientAddress << std::endl;
         return false;
     }
-    std::cout << "Last connection: " << lastConnection << " Current time: " << curTime << std::endl;
     _connectionsLog.add(clientAddress, curTime);
     long bannedTime = 0;
     if (_bannedClients.tryGet(clientAddress, bannedTime))
