@@ -10,6 +10,7 @@
 #include "Privmsg.hpp"
 #include "Mode.hpp"
 #include "Topic.hpp"
+#include "Invite.hpp"
 
 CommandFactory::CommandFactory()
 {
@@ -21,6 +22,7 @@ CommandFactory::CommandFactory()
 	_commandMap["PART"] = new Part();
 	_commandMap["PASS"] = new Pass();
 	_commandMap["QUIT"] = new Quit();
+	_commandMap["INVITE"] = new Invite();
 	_commandMap["PRIVMSG"] = new Privmsg();
 	_commandMap["TOPIC"] = new Topic();
 	_commandMap["MODE"] = new Mode();

@@ -89,6 +89,7 @@ public:
     bool isValidUserInfo() const;
     bool passIsEmpty() const;
     bool canConnect() const;
+    bool canJoinChannel(Channel *channel);
     bool canMakeRequest();
     bool hasReachMaxReq();
 

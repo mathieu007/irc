@@ -139,11 +139,14 @@ bool Channel::addToInvitation(Client *client)
     if (!client)
         return false;
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (_onInvitation && map->getIsInvited() && !map->getIsBanned())
+    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned())
         return false;
+    if (_onInvitation && !map)
+        map = new ClientChannelMapping(client, this);
     else if (!_onInvitation)
         return false;
-    map->setIsInvited(true);
+    if (map)
+        map->setIsInvited(true);
     return true;
 }
 

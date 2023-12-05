@@ -257,6 +257,22 @@ bool Client::hasReachMaxReq()
     return false;
 }
 
+bool Client::canJoinChannel(Channel *channel)
+{
+    if (!channel)
+        return false;
+    if (channel->getNumClients() >= channel->getMaxNumClients())
+        return false;
+    ClientChannelMapping *channelMapping = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
+    if (channelMapping && channelMapping->getIsBanned())
+        return false;
+    if (channel->isOnInvitationOnly() && channel->isInIvitationList(this))
+        return true;
+    if (!channel->isOnInvitationOnly())
+        return true;
+    return false;
+}
+
 bool Client::addChannel(Channel *channel)
 {
     if (!channel)

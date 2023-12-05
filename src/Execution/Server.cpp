@@ -756,7 +756,7 @@ Channel *Server::join(Client *client, std::string &channelName)
         _channels.push_back(channel);
     }
     ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (channel->isInIvitationList(client) && !map && channel->getNumClients() < channel->getMaxNumClients())
+    if (!map && client->canJoinChannel(channel))
     {
         ClientChannelMapping *map = new ClientChannelMapping(client, channel);
         _clientschannelsMapping->push_back(map);
@@ -775,7 +775,7 @@ Channel *Server::join(Client *client, string &channelName, string &key)
         _channels.push_back(channel);
     }
     ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (channel->isInIvitationList(client) && channel->getKey() == key && !map && channel->getNumClients() < channel->getMaxNumClients())
+    if (!map && client->canJoinChannel(channel))
     {
         ClientChannelMapping *map = new ClientChannelMapping(client, channel);
         _clientschannelsMapping->push_back(map);
