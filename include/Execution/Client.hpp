@@ -35,6 +35,7 @@ private:
     string _msgSendQueue;
     string _msgRecvQueue;
     int _socket;
+    bool isAuth;
     long _lastRequestTime;
     long _lastActivityTime;
     long _nextAllowedConnectionTime;

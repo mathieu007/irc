@@ -60,6 +60,7 @@ public:
     void setSuperModerator(Client *moderator);
     void setJoinOnInvitation(bool onInvite);
     void setTopic(string &topic);
+    bool removeInvitationList();
     bool removeAllMapping();
     bool removeMapping(Client *client);
 };

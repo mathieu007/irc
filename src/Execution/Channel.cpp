@@ -181,7 +181,7 @@ bool Channel::isModerator(Client *client)
 {
     if (!client)
         return false;
-    if (this->_moderators.exist(&Client::getUsername, client->getUsername()))
+    if (this->_moderators.exist(&Client::getUsername, client->getUsername()) || this->_superModerator == client)
         return true;
     return false;
 }
@@ -231,4 +231,9 @@ bool Channel::removeMapping(Client *client)
     getMapping().removeWhere(&ClientChannelMapping::getClientUsername, client->getUsername(), true);
     _clientsChannelMapping->removeNulls();
     return true;
+}
+
+bool Channel::removeInvitationList()
+{
+    return _invitedClients.removeAll(false);
 }

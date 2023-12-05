@@ -9,6 +9,7 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
     this->_nextAllowedConnectionTime = 0;
     this->_numRequests = 0;
     this->_reqSize = 0;
+    this->isAuth = false;
     this->_pass = std::string();
     this->_nickName = std::string();
     this->_userName = std::string();

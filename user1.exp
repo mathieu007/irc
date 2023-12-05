@@ -9,21 +9,23 @@ spawn nc "172.31.200.244" "6667"
 expect ".*"
 exec echo "\r\n"
 set stty_init raw
+send "NICK Math22\x0d\x0a"
+sleep 0.2
+
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
+send "USER math22 * 0 Mathieu22\x0d\x0a"
+sleep 0.2
+
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
 send "PASS 123"
 sleep 1
 send "456\x0d\x0a"
-
-expect ""
-exec echo "\r\n"
-set stty_init raw
-send "NICK Math\x0d\x0a"
-sleep 0.2
-
-expect ""
-exec echo "\r\n"
-set stty_init raw
-send "USER math * 0 Mathieu\x0d\x0a"
-sleep 0.2
 
 expect ""
 exec echo "\r\n"
@@ -35,16 +37,6 @@ send "JOIN #Chan1\x0d\x0a"
 sleep 10
 expect ""
 
-# set stty_init raw
-# send "PRIVMSG #Chan1 :Hi! I will strart writing shit!\x0d\x0a"
-# sleep 1
-# expect ""
-# set repeat_count 100
-# for {set i 0} {$i < $repeat_count} {incr i} {
-#     set input [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
-#     send "PRIVMSG #Chan1 :$input!\x0d\x0a"
-#     expect ""
-# }
 
 send "QUIT End of script...\x0d\x0a"
 

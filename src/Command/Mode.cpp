@@ -31,6 +31,7 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 		if (tokens[2][0] == '-')
 		{
 			channel->setJoinOnInvitation(0);
+			channel->removeInvitationList();
 			std::cout << GREEN << "Executing MODE -i command" << RESET << std::endl;
 			std::string message = "NOTICE " + client->getNickname() + " :Channel " + channelName + " is now open to public\r\n";
 			Msg::sendMsg(client, message, 0);

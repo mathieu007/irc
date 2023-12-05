@@ -565,12 +565,12 @@ bool Server::isChannelFull(string &channelName)
 
 bool Server::isAuthenticated(Client *client)
 {
-    return client->isValidUserInfo() && this->isValidPassword(client);
+    return client->isValidUserInfo() && client->getPass() == this->_pass;
 }
 
-bool Server::isValidPassword(Client *client)
+bool Server::isValidPassword(string password)
 {
-    return client->getPass() == this->_pass;
+    return hashPassword(password) == this->_pass;
 }
 
 bool Server::setClientPassword(Client *client, const string &rawClientPassword)
@@ -581,6 +581,8 @@ bool Server::setClientPassword(Client *client, const string &rawClientPassword)
         client->setPass(hashedPass);
         return true;
     }
+    else
+        client->setPass("");
     return false;
 }
 

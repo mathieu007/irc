@@ -65,7 +65,7 @@ private:
     // for faster operation i would have created a mapping table for clients and channels, this would make read operations faster,
     // also we coud have used indexes to make query faster, but it's fast enough...
     Vec<Client> _clients = Vec<Client>(MAX_CLIENTS);
-    Vec<Channel> _channels = Vec<Channel>();    
+    Vec<Channel> _channels = Vec<Channel>();
     Vec<ClientChannelMapping> *_clientschannelsMapping = new Vec<ClientChannelMapping>();
 
     int _setSockAddrStorage();
@@ -119,7 +119,7 @@ public:
     Vec<Client> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);
     bool isChannelFull(string &channelName);
-    bool isValidPassword(Client *client);
+    bool isValidPassword(string pass);
     bool isAuthenticated(Client *client);
     bool setClientPassword(Client *client, const string &rawClientPassword);
     bool isModerator(Client *client, const string &channelName);
