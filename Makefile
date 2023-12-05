@@ -54,8 +54,14 @@ $(OBJDIR)/%.o: %.cpp
 
 -include $(OBJDEPS)
 
-run: all
+run:
+	$(MAKE) all
 	./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
+
+
+runv:
+	$(MAKE) all
+	valgrind --leak-check=full --track-origins=yes ./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
 	
 clean:
 	$(RM) -rf $(OBJDIR)
