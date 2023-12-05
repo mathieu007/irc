@@ -29,7 +29,7 @@ Channel::Channel(string &name, string &key, Vec<ClientChannelMapping> *mapping)
     _clientsChannelMapping = mapping;
     _onInvitation = false;
 }
-
+//segfault losque close windows after kick
 Vec<ClientChannelMapping> Channel::getMapping()
 {
     Vec<ClientChannelMapping> map = _clientsChannelMapping->where(&ClientChannelMapping::getChannelName, this->getName());

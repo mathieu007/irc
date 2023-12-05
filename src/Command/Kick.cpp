@@ -69,6 +69,7 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
 		Msg::sendMsg(client, messageToClient, 0);
 		server.kickClientFromChannel(_clientToKick, _channelName);
+		server.removeClientFromChannel(_clientToKick, _channelName);
 	}
 
 	return _errorMessage.empty() ? true : false;

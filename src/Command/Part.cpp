@@ -61,22 +61,10 @@ bool Part::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		std::string userList;
 		Channel *channel = server.getChannel(_channelName);
 		std::vector<Client *> clients = server.getClientsInAChannel(channel);
-		std::string messageToClientList;
-		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i) {
-			userList += clients[i]->getNickname() + " ";
-		}
+		std::string messageToClientList = ":" + client->getNickname() + " PART " + tokens[1] + " " + _reasonToLeave + "\r\n";
 
 		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i){
-			// messageToClientList = "353 = " + _channelName + " :" +  userList + "\r\n";
-			messageToClientList = "353 " +  clients[i]->getNickname() + " = " + _channelName + " :" +  userList + "\r\n";
-			std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
-			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
 			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
-			messageToClientList = "366 " + clients[i]->getNickname() + " " + _channelName + " :End of /NAMES list\r\n";
-			std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
-			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
-			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
-			std::cout << client->getNickname() << " " << clients[i]->getNickname() << std::endl;
 		}
 	return _errorMessage.empty() ? true : false;
 }
