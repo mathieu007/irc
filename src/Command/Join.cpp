@@ -18,8 +18,8 @@ bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "461 " + client->getNickname() + " JOIN :Not enought or too much parameters\r\n";
 	else if (_channelName.length() > 0 && _channelName[0] != '#')
 		_errorMessage = "476 " + client->getNickname() + " " + _channelName + " :Bad Channel Mask\r\n";
-	else if (client->isInChannel(channel))
-		_errorMessage = "443 " + client->getNickname() + " " + _channelName + " :is already on channel\r\n";
+	// else if (client->isInChannel(channel))
+	// 	_errorMessage = "443 " + client->getNickname() + " " + _channelName + " :is already on channel\r\n";
 	else if (server.isChannelFull(_channelName))
 		_errorMessage = "471 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+l)\r\n";
 	else if (_channelKey != "" && server.channelExist(_channelName) && !server.channelKeyExist(_channelName, _channelKey))

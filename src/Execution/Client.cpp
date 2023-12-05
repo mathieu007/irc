@@ -23,7 +23,14 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
     this->_socket = 0;
 }
 
-Client::~Client() {}
+Client::~Client()
+{
+    Vec<ClientChannelMapping> map = getMapping();
+    for (size_t i = 0; i < map.size(); i++)
+    {
+        map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
+    }
+}
 
 bool Client::operator==(const Client &cmp) const
 {
@@ -263,8 +270,7 @@ bool Client::canJoinChannel(Channel *channel)
         return false;
     if (channel->getNumClients() >= channel->getMaxNumClients())
         return false;
-    ClientChannelMapping *channelMapping = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (channelMapping && channelMapping->getIsBanned())
+    if (channel->isBanned(this))
         return false;
     if (channel->isOnInvitationOnly() && channel->isInIvitationList(this))
         return true;
@@ -289,11 +295,7 @@ bool Client::addToKickedChannel(Channel *channel)
 {
     if (!channel || channel->getSuperModerator() == this)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (!map)
-        return false;
-    map->setIsBanned(true);
-    return true;
+    return channel->addBannedClient(this);
 }
 
 bool Client::isInChannel(Channel *channel)
@@ -303,6 +305,8 @@ bool Client::isInChannel(Channel *channel)
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
     if (map && !map->getIsBanned())
         return true;
+    if (channel->isOnInvitationOnly() && channel->isInIvitationList(this))
+        return true;
     return false;
 }
 
@@ -310,8 +314,7 @@ bool Client::isKickedFromChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (map && map->getIsBanned())
+    if (channel->getBannedClients().exist(&Client::getUsername, this->getUsername()))
         return true;
     return false;
 }
@@ -321,7 +324,7 @@ bool Client::removeFromChannel(Channel *channel)
     if (!channel)
         return false;
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (map && !map->getIsBanned())
+    if (map)
     {
         _clientChannelsMapping->remove(map, true);
         channel->setNumClients(channel->getNumClients() - 1);
@@ -334,11 +337,7 @@ bool Client::removeFromKickChannel(Channel *channel)
 {
     if (!channel)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (map)
-    {
-        map->setIsBanned(false);
-        return true;
-    }
+    if (channel->getBannedClients().exist(&Client::getUsername, this->getUsername()))
+        channel->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
     return false;
 }

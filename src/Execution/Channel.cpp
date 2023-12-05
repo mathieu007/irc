@@ -50,10 +50,9 @@ bool Channel::moderatorExist(Client *moderator)
 {
     if (!moderator)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, moderator->getUsername());
-    if (!map)
-        return false;
-    return map->getIsModerator() || moderator == _superModerator;
+    if (this->_moderators.exist(&Client::getUsername, moderator->getUsername()) || moderator == _superModerator)
+        return true;
+    return false;
 }
 
 void Channel::setJoinOnInvitation(bool onInvite)
@@ -70,12 +69,13 @@ void Channel::setSuperModerator(Client *moderator)
 
 bool Channel::addModerator(Client *moderator)
 {
-
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, moderator->getUsername());
-    if (!map)
+    if (!moderator)
         return false;
-    if (map->getIsModerator() == false && !map->getIsBanned())
-        map->setIsModerator(true);
+    if (!this->_moderators.exist(&Client::getUsername, moderator->getUsername()))
+    {
+        _moderators.push_back(moderator);
+        return true;
+    }
     return false;
 }
 
@@ -124,9 +124,19 @@ Client *Channel::getSuperModerator()
     return this->_superModerator;
 }
 
-Vec<Client> Channel::getModerators()
+Vec<Client> &Channel::getModerators()
 {
-    return getMapping().where(&ClientChannelMapping::getIsModerator, true).select(&ClientChannelMapping::getClient);
+    return _moderators;
+}
+
+Vec<Client> &Channel::getBannedClients()
+{
+    return _bannedClients;
+}
+
+Vec<Client> &Channel::getInvitedClients()
+{
+    return _invitedClients;
 }
 
 bool Channel::isOnInvitationOnly() const
@@ -134,20 +144,46 @@ bool Channel::isOnInvitationOnly() const
     return this->_onInvitation;
 }
 
+bool Channel::addBannedClient(Client *client)
+{
+    if (!client)
+        return false;
+    if (!this->_bannedClients.exist(&Client::getUsername, client->getUsername()))
+    {
+        _bannedClients.push_back(client);
+        return true;
+    }
+    return false;
+}
+
 bool Channel::addToInvitation(Client *client)
 {
     if (!client)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned())
+    if (_onInvitation && !this->_invitedClients.exist(&Client::getUsername, client->getUsername()))
+    {
+        _invitedClients.push_back(client);
+        return true;
+    }
+    return false;
+}
+
+bool Channel::isBanned(Client *client)
+{
+    if (!client)
         return false;
-    if (_onInvitation && !map)
-        map = new ClientChannelMapping(client, this);
-    else if (!_onInvitation)
+    if (this->_bannedClients.exist(&Client::getUsername, client->getUsername()))
+        return true;
+    return false;
+}
+
+bool Channel::isModerator(Client *client)
+{
+    if (!client)
         return false;
-    if (map)
-        map->setIsInvited(true);
-    return true;
+    if (this->_moderators.exist(&Client::getUsername, client->getUsername()))
+        return true;
+    return false;
 }
 
 // check is allowed to join on invitaion only
@@ -155,10 +191,9 @@ bool Channel::isInIvitationList(Client *client)
 {
     if (!client)
         return false;
-    ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (!_onInvitation && !map)
+    if (!_onInvitation)
         return false;
-    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned())
+    if (_onInvitation && this->_invitedClients.exist(&Client::getUsername, client->getUsername()))
         return true;
     return false;
 }
@@ -176,12 +211,8 @@ bool Channel::deleteModerator(Client *client, Client *moderatorToDelete)
 {
     if (!moderatorToDelete || !client)
         return false;
-    ClientChannelMapping *mapModerator = getMapping().first(&ClientChannelMapping::getClientUsername, moderatorToDelete->getUsername());
-    ClientChannelMapping *mapClient = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (!mapClient || !mapModerator)
-        return false;
     if (canDeleteModerator(client, moderatorToDelete))
-        mapModerator->setIsModerator(false);
+        _moderators.removeWhere(&Client::getUsername, moderatorToDelete->getUsername(), false);
     return false;
 }
 

@@ -9,6 +9,8 @@
 
 using std::vector;
 
+
+
 ClientsChannelsResult::ClientsChannelsResult() : MappingResultSet()
 {
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <Map.hpp>
 
 using std::string;
 using std::vector;
@@ -14,9 +15,6 @@ class ClientChannelMapping
 private:
     Client *_client;
     Channel *_channel;
-    bool _isModerator;
-    bool _isInvited;
-    bool _isBanned;
 
 public:
     ClientChannelMapping(Client *client, Channel *channel);

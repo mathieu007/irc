@@ -21,6 +21,9 @@ private:
     bool _onInvitation;
     Client *_superModerator;
     Vec<ClientChannelMapping> *_clientsChannelMapping;
+    Vec<Client> _invitedClients = Vec<Client>();
+    Vec<Client> _bannedClients = Vec<Client>();
+    Vec<Client> _moderators = Vec<Client>();
 
 public:
     Channel(string &name, Vec<ClientChannelMapping> *mapping);
@@ -30,14 +33,15 @@ public:
     const string &getKey() const;
     void setKey(string key);
     const string &getTopic() const;
+    Vec<Client> &getInvitedClients();
+    Vec<Client> &getBannedClients();
+    Vec<Client> &getModerators();
     uint getMaxNumClients() const;
     uint getNumClients() const;
     void setMaxNumClients(uint maxNumberOfClient);
     void setNumClients(uint numClients);
     Client *getSuperModerator();
     Vec<ClientChannelMapping> getMapping();
-    Vec<Client> getModerators();
-    Vec<Client> getInvitedClients();
     bool deleteModerator(Client *client, Client *moderatorToDelete);
     bool moderatorExist(Client *client);
     bool addModerator(Client *moderator);
@@ -46,8 +50,11 @@ public:
     bool hasTopic() const;
     bool isOnInvitationOnly() const;
     // is user in invited list
+    bool addBannedClient(Client *client);
     bool addToInvitation(Client *client);
     bool isInIvitationList(Client *client);
+    bool isBanned(Client *client);
+    bool isModerator(Client *client);
     bool canDeleteChannel(Client *client) const;
     bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;
     void setSuperModerator(Client *moderator);

@@ -10,9 +10,6 @@ ClientChannelMapping::ClientChannelMapping(Client *client, Channel *channel)
 {
     _client = client;
     _channel = channel;
-    _isInvited = false;
-    _isModerator = false;
-    _isBanned = false;
 }
 
 bool ClientChannelMapping::operator==(ClientChannelMapping &cmp)
@@ -49,26 +46,45 @@ Client *ClientChannelMapping::getClient()
 }
 bool ClientChannelMapping::getIsModerator() const
 {
-    return _isModerator;
+    return _channel;
 }
 bool ClientChannelMapping::getIsInvited() const
 {
-    return _isInvited;
+    Client *client = _channel->getInvitedClients().first(&Client::getUsername, _client->getUsername());
+    if (!client)
+        return false;
+    return true;
 }
 bool ClientChannelMapping::getIsBanned() const
 {
-    return _isBanned;
+    Client *client = _channel->getBannedClients().first(&Client::getUsername, _client->getUsername());
+    if (!client)
+        return false;
+    return true;
 }
 
 void ClientChannelMapping::setIsModerator(bool moderator)
 {
-    _isModerator = moderator;
+    Client *client = _channel->getModerators().first(&Client::getUsername, _client->getUsername());
+    if (!client && moderator)
+        _channel->getModerators().push_back(_client);
+    if (client && !moderator)
+        _channel->getModerators().removeWhere(&Client::getUsername, _client->getUsername(), false);
 }
 void ClientChannelMapping::setIsInvited(bool invited)
 {
-    _isInvited = invited;
+    Client *client = _channel->getModerators().first(&Client::getUsername, _client->getUsername());
+    if (!client && invited)
+        _channel->getInvitedClients().push_back(_client);
+    if (client && !invited)
+        _channel->getInvitedClients().removeWhere(&Client::getUsername, _client->getUsername(), false);
 }
+
 void ClientChannelMapping::setIsBanned(bool banned)
 {
-    _isBanned = banned;
+    Client *client = _channel->getModerators().first(&Client::getUsername, _client->getUsername());
+    if (!client && banned)
+        _channel->getBannedClients().push_back(_client);
+    if (client && !banned)
+        _channel->getBannedClients().removeWhere(&Client::getUsername, _client->getUsername(), false);
 }
