@@ -3,8 +3,8 @@
 #include "Message.hpp"
 #include "Channel.hpp"
 
-
-void Kick::setVariableToZero(){
+void Kick::setVariableToZero()
+{
 	_errorMessage = "";
 	_kickReasson = "";
 	_channelName = "";
@@ -12,10 +12,12 @@ void Kick::setVariableToZero(){
 	_clientToKick = nullptr;
 }
 
-std::string Kick::createReasonMessage(std::vector<std::string> tokens) {
+std::string Kick::createReasonMessage(std::vector<std::string> tokens)
+{
 	std::string message;
 
-	for (std::size_t i = 2; i < tokens.size(); ++i) {
+	for (std::size_t i = 2; i < tokens.size(); ++i)
+	{
 		message += tokens[i];
 		if (i < tokens.size() - 1)
 		{
@@ -27,14 +29,16 @@ std::string Kick::createReasonMessage(std::vector<std::string> tokens) {
 	return message;
 }
 
-std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens) {
-	std::string message = ":" + client->getNickname() + " KICK " + _channelName + " " + client->getNickname();
+std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens)
+{
+	std::string message = ":" + client->getNickname() + " KICK " + _channelName + " " + tokens[2];
 	if (tokens.size() == 4)
 		message += " " + _kickReasson;
 	return message + "\r\n";
 }
 
-bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	if (tokens.size() < 3 || tokens.size() > 4)
 		_errorMessage = "461 " + client->getNickname() + " KICK :Not enought or too much parameters\r\n";
 	else if (!server.channelExist(_channelName))
@@ -48,22 +52,26 @@ bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &server)
+{
 	setVariableToZero();
 	if (tokens.size() > 1)
 		_channelName = tokens[1];
-	if (tokens.size() > 2) {
+	if (tokens.size() > 2)
+	{
 		_clientNickToKick = tokens[2];
 		_clientToKick = server.getClientByNickname(_clientNickToKick);
 	}
 	if (tokens.size() > 3)
 		_kickReasson = createReasonMessage(tokens);
 
-	if (!isValidCommand(tokens, client, server)) {
+	if (!isValidCommand(tokens, client, server))
+	{
 		std::cout << RED << "Error sent to client: " << _errorMessage << RESET << std::endl;
 		Msg::sendMsg(client, _errorMessage, 0);
 	}
-	else {
+	else
+	{
 		std::cout << GREEN << "Executing KICK command" << RESET << std::endl;
 		std::string messageToClient = createMessageToClient(client, tokens);
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
@@ -75,4 +83,3 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 }
 
 Kick::~Kick() {}
-

@@ -34,7 +34,6 @@ bool Topic::isValidCommand(std::vector<std::string> &tokens, Client *client, Ser
 		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
 	else if (!server.isModerator(client, _channelName))
 		_errorMessage = "482 " + client->getNickname() + " " + _channelName + " :You're not channel operator\r\n";
-
 	return _errorMessage.empty() ? true : false;
 }
 

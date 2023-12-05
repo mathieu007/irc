@@ -61,7 +61,6 @@ bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, S
 bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *client, Server &server)
 {
 	std::string channelName = tokens[1];
-	
 
 	if (tokens.size() < 3)
 		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
@@ -108,6 +107,7 @@ bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, 
 
 bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &server)
 {
+	setVariableToZero();
 	if (tokens.size() < 2)
 		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
 	else if (tokens[1][0] != '#')

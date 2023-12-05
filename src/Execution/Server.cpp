@@ -596,10 +596,7 @@ bool Server::isModerator(Client *client, const string &channelName)
     Channel *channel = getChannel(channelName);
     if (!channel || !client)
         return false;
-    if (channel->getSuperModerator() == client)
-        return true;
-    ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (map && map->getIsModerator())
+    if (channel->isModerator(client))
         return true;
     return false;
 }
@@ -702,6 +699,7 @@ Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
     if (!channel || !client)
         return nullptr;
     client->addToKickedChannel(channel);
+    removeClientFromChannel(client, channelName);
     channel->setNumClients(channel->getNumClients() - 1);
     return channel;
 }
