@@ -120,15 +120,21 @@ string &Client::getMsgRecvQueue()
     return _msgRecvQueue;
 }
 
+Vec<Channel> Client::getInviteList()
+{
+    Vec<Channel> vec = getMapping().where(&ClientChannelMapping::getIsInvited, true).select(&ClientChannelMapping::getChannel);
+    return vec;
+}
+
 Vec<Channel> Client::getChannels()
 {
-    Vec<Channel> vec = _clientChannelsMapping->select(&ClientChannelMapping::getChannel);
+    Vec<Channel> vec = getMapping().select(&ClientChannelMapping::getChannel);
     return vec;
 }
 
 Vec<Channel> Client::getBannedChannels()
 {
-    Vec<Channel> vec = _clientChannelsMapping->where(&ClientChannelMapping::getIsBanned, true).select(&ClientChannelMapping::getChannel);
+    Vec<Channel> vec = getMapping().where(&ClientChannelMapping::getIsBanned, true).select(&ClientChannelMapping::getChannel);
     return vec;
 }
 
@@ -228,14 +234,6 @@ bool Client::canMakeRequest()
     return true;
 }
 
-bool Client::canConnect() const
-{
-    long time = getCurTime();
-    if (time >= this->_nextAllowedConnectionTime || _nextAllowedConnectionTime == 0)
-        return true;
-    return false;
-}
-
 void Client::setNextAllowedConnectionTime(long time)
 {
     long cur = getCurTime();
@@ -276,7 +274,7 @@ bool Client::addToKickedChannel(Channel *channel)
     if (!channel || channel->getSuperModerator() == this)
         return false;
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
-    if (map->getIsBanned() == true)
+    if (!map)
         return false;
     map->setIsBanned(true);
     return true;
@@ -326,6 +324,5 @@ bool Client::removeFromKickChannel(Channel *channel)
         map->setIsBanned(false);
         return true;
     }
-
     return false;
 }

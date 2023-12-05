@@ -47,7 +47,7 @@ public:
     bool isOnInvitationOnly() const;
     // is user in invited list
     bool addToInvitation(Client *client);
-    bool isAllowedToJoin(Client *client);
+    bool isInIvitationList(Client *client);
     bool canDeleteChannel(Client *client) const;
     bool canDeleteModerator(Client *client, Client *moderatorToDelete) const;
     void setSuperModerator(Client *moderator);

@@ -114,6 +114,7 @@ public:
     Channel *join(Client *client, std::string &channel, string &key);
     bool disconnect(Client *client);
     Vec<Channel> getClientChannels(Client *client);
+    Vec<Channel> getClientInviteList(Client *client);
     Vec<Channel> getClientChannels(std::string &username);
     Vec<Client> getClientsInAChannel(Channel *channel);
     Client *getClient(std::string &username);

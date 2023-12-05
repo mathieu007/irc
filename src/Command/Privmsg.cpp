@@ -2,16 +2,20 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-void Privmsg::setVariableToZero() {
+void Privmsg::setVariableToZero()
+{
 	_errorMessage = "";
 }
 
-std::string Privmsg::createMessage(std::vector<std::string> tokens) {
+std::string Privmsg::createMessage(std::vector<std::string> tokens)
+{
 	std::string message;
 
-	for (std::size_t i = 2; i < tokens.size(); ++i) {
+	for (std::size_t i = 2; i < tokens.size(); ++i)
+	{
 		message += tokens[i];
-		if (i < tokens.size() - 1) {
+		if (i < tokens.size() - 1)
+		{
 			message += " ";
 		}
 	}
@@ -20,17 +24,19 @@ std::string Privmsg::createMessage(std::vector<std::string> tokens) {
 	return message;
 }
 
-bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	std::string reciverNick = tokens[1];
 
 	if (tokens.size() < 3)
-		_errorMessage = "461 " + client->getHost() + " PART :Not enought or too much parameters\r\n";
+		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
 	if (server.getClientByNickname(reciverNick) != nullptr)
 		_errorMessage = "401 " + client->getHost() + " " + reciverNick + " :No such nick/channel\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, Server &server)
+{
 
 	std::string senderNick = client->getNickname();
 	std::string receiverNick = tokens[1];
@@ -41,22 +47,24 @@ bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, S
 		Msg::sendMsg(client, _errorMessage, 0);
 		std::cout << "Error msg sent to client:" << RED << _errorMessage << RESET << std::endl;
 	}
-	else {
+	else
+	{
 		Client *recipient = server.getClientByNickname(receiverNick);
 		std::cout << GREEN << "Executing PRIVMSG to user command" << RESET << std::endl;
-		std::string messageToClient = ":" + senderNick + " Privmsg " + receiverNick + " " + message + "\r\n";
+		std::string messageToClient = ":" + senderNick + " PRIVMSG " + receiverNick + " " + message + "\r\n";
 		std::cout << YELLOW << "message sent to client:" << messageToClient << RESET << std::endl;
 		Msg::sendMsgToRecipient(client, recipient, messageToClient, 0);
 	}
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	std::string channelName = tokens[1];
 
 	if (tokens.size() < 3)
-		_errorMessage = "461 " + client->getHost() + " PART :Not enought or too much parameters\r\n";
-	else if (server.channelExist(channelName))
+		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
+	else if (!server.getChannel(channelName))
 		_errorMessage = "403 " + client->getNickname() + " " + channelName + " No such channel\r\n";
 	else if (!server.isInChannel(client, channelName))
 		_errorMessage = "442 " + client->getNickname() + " " + channelName + " :You're not on that channel\r\n";
@@ -97,9 +105,10 @@ bool Privmsg::messageToChannel(Client *client, std::vector<std::string> tokens, 
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Privmsg::execute(Client *client, std::vector<std::string> tokens, Server &server)
+{
 	if (tokens.size() < 2)
-		_errorMessage = "461 " + client->getHost() + " PART :Not enought or too much parameters\r\n";
+		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
 	else if (tokens[1][0] != '#')
 		messageToClient(client, tokens, server);
 	else

@@ -24,7 +24,7 @@ bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "475 " + client->getNickname() + " " + _channelName + " :Bad Channel Key\r\n";
 	else if (client->isKickedFromChannel(channel))
 		_errorMessage = "474 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+b)\r\n";
-	else if (channel && channel->isOnInvitationOnly() && !channel->isAllowedToJoin(client))
+	else if (channel && channel->isOnInvitationOnly() && !channel->isInIvitationList(client))
 		_errorMessage = "473 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+i)\r\n";
 	return _errorMessage.empty() ? true : false;
 }
@@ -57,7 +57,8 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		else
 			server.join(client, _channelName);
 		// send channel topic
-		if (server.hasTopic(_channelName)) {
+		if (server.hasTopic(_channelName))
+		{
 			std::string topic = server.getChannel(_channelName)->getTopic();
 			messageToClient = "332 " + client->getNickname() + " " + _channelName + " :" + topic + "\r\n";
 			std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;

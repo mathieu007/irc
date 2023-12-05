@@ -148,16 +148,14 @@ bool Channel::addToInvitation(Client *client)
 }
 
 // check is allowed to join on invitaion only
-bool Channel::isAllowedToJoin(Client *client)
+bool Channel::isInIvitationList(Client *client)
 {
     if (!client)
         return false;
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
     if (!_onInvitation && !map)
-        return true;
-    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned() && map->getChannel()->getNumClients() < map->getChannel()->getMaxNumClients())
-        return true;
-    else if (!_onInvitation && map && !map->getIsBanned() && map->getChannel()->getNumClients() < map->getChannel()->getMaxNumClients())
+        return false;
+    if (_onInvitation && map && map->getIsInvited() && !map->getIsBanned())
         return true;
     return false;
 }

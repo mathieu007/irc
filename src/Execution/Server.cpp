@@ -560,7 +560,7 @@ bool Server::isChannelFull(string &channelName)
     Channel *channel = getChannel(channelName);
     if (!channel)
         return false;
-    return getClientsInAChannel(channel).size() == channel->getMaxNumClients();
+    return channel->getNumClients() == channel->getMaxNumClients();
 }
 
 bool Server::isAuthenticated(Client *client)
@@ -623,6 +623,13 @@ bool Server::hasTopic(string &channelName)
     return channel->hasTopic();
 }
 
+Vec<Channel> Server::getClientInviteList(Client *client)
+{
+    if (!client)
+        return Vec<Channel>();
+    return client->getInviteList();
+}
+
 Vec<Client> Server::getClientsInAChannel(Channel *channel)
 {
     return channel->getMapping().select(&ClientChannelMapping::getClient);
@@ -682,6 +689,8 @@ Channel *Server::removeClientFromChannel(Client *client, const std::string &chan
         channel->setNumClients(channel->getNumClients() - 1);
         _clientschannelsMapping->removeWhere(&ClientChannelMapping::getChannelClientCount, (uint)0, true);
     }
+    if (channel->getNumClients() == 0)
+        _channels.remove(channel, true);
     return channel;
 }
 
@@ -747,7 +756,7 @@ Channel *Server::join(Client *client, std::string &channelName)
         _channels.push_back(channel);
     }
     ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (channel->isAllowedToJoin(client) && !map && channel->getNumClients() < channel->getMaxNumClients())
+    if (channel->isInIvitationList(client) && !map && channel->getNumClients() < channel->getMaxNumClients())
     {
         ClientChannelMapping *map = new ClientChannelMapping(client, channel);
         _clientschannelsMapping->push_back(map);
@@ -766,7 +775,7 @@ Channel *Server::join(Client *client, string &channelName, string &key)
         _channels.push_back(channel);
     }
     ClientChannelMapping *map = channel->getMapping().first(&ClientChannelMapping::getClientUsername, client->getUsername());
-    if (channel->isAllowedToJoin(client) && channel->getKey() == key && !map && channel->getNumClients() < channel->getMaxNumClients())
+    if (channel->isInIvitationList(client) && channel->getKey() == key && !map && channel->getNumClients() < channel->getMaxNumClients())
     {
         ClientChannelMapping *map = new ClientChannelMapping(client, channel);
         _clientschannelsMapping->push_back(map);

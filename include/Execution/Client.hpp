@@ -65,6 +65,7 @@ public:
     long getLastActivity();
     Vec<ClientChannelMapping> getMapping();
     Vec<Channel> getChannels();
+    Vec<Channel> getInviteList();
     Vec<Channel> getBannedChannels();
     void setHost(string host);
     void setSocket(int socket);

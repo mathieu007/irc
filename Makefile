@@ -33,7 +33,7 @@ RM = rm -f
 CPPFLAGS =  -std=c++11 -I./include -I./include/Interfaces -I./include/Execution -I./include/Command
 CXXFLAGS += -Wall -Wextra -Werror -g
 LDFLAGS += -flto
-MAKEFLAGS  = -j8 -o
+MAKEFLAGS  = -j12 -o
 
 GREEN		=	\e[92;5;118m
 YELLOW		=	\e[93;5;226m
