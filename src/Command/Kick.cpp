@@ -29,8 +29,7 @@ std::string Kick::createReasonMessage(std::vector<std::string> tokens)
 	return message;
 }
 
-std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens)
-{
+std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens) {
 	std::string message = ":" + client->getNickname() + " KICK " + _channelName + " " + tokens[2];
 	if (tokens.size() == 4)
 		message += " " + _kickReasson;

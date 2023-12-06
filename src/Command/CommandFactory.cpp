@@ -61,8 +61,7 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 	// message = "CAP LS 302\r\nNICK user\r\nUSER user 0 * :user\r\n";
 	std::vector<std::string> commands;
 	std::string currentCommand;
-	for (std::string::size_type i = 0; i < message.length(); ++i)
-	{
+	for (std::string::size_type i = 0; i < message.length(); ++i) {
 		if (message[i] == '\r' && i + 1 < message.length() && message[i + 1] == '\n')
 		{
 			commands.push_back(currentCommand);
@@ -77,34 +76,29 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 
 	/////split each command into tokens
 	std::vector<std::vector<std::string>> tokensList;
-	for (std::size_t i = 0; i < commands.size(); ++i)
-	{
+	for (std::size_t i = 0; i < commands.size(); ++i) {
 		std::vector<std::string> tokens;
 		std::istringstream iss(commands[i]);
 		std::string token;
 
-		while (std::getline(iss, token, ' '))
-		{
+		while (std::getline(iss, token, ' ')) {
 			size_t pos = token.find('\r');
-			if (pos != std::string::npos)
-			{
+			if (pos != std::string::npos) {
 				token.erase(pos, 1);
 			}
-
 			pos = token.find('\n');
-			if (pos != std::string::npos)
-			{
+			if (pos != std::string::npos) {
 				token.erase(pos, 1);
 			}
-
-			tokens.push_back(token);
+			else if (!token.empty()) {
+                tokens.push_back(token);
+            }
 		}
 		tokensList.push_back(tokens);
 	}
 
 	/////print all command and tokens
-	for (std::size_t i = 0; i < tokensList.size(); ++i)
-	{
+	for (std::size_t i = 0; i < tokensList.size(); ++i) {
 		std::cout << "Tokens for Command " << i + 1 << ": ";
 		for (std::size_t j = 0; j < tokensList[i].size(); ++j)
 		{
@@ -114,8 +108,7 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 	}
 
 	/////execute all commands
-	for (std::size_t i = 0; i < tokensList.size(); ++i)
-	{
+	for (std::size_t i = 0; i < tokensList.size(); ++i) {
 		if (isValid(tokensList[i].front()))
 			_commandMap[tokensList[i].front()]->execute(client, tokensList[i], server);
 		else
