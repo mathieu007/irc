@@ -196,6 +196,7 @@ void Mode::setOperatorForChannel(std::vector<std::string> &tokens, Client *clien
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
+		Msg::sendUserlist(client, channelName, server);
 	}
 	else
 	{
@@ -227,7 +228,7 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 			channel->setMaxNumClients(50);
 			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Max client per channel set to 50\r\n";
 			Msg::sendMsg(client, message, 0);
-			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
+			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
 		else
 		{
@@ -252,7 +253,7 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 				channel->setMaxNumClients(maxUserInt);
 				std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Max user set to " + maxUser + "\r\n";
 				Msg::sendMsg(client, message, 0);
-				std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
+				std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 			}
 		}
 		catch (const std::exception &e)
@@ -270,23 +271,31 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 
 bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &server)
 {
-	setVariableToZero();
-
-	if (tokens.size() >= 3)
-	{
-		if (tokens[2].size() == 2 && tokens[2][1] == 'i')
-			setInviteOnly(tokens, client, server);
-		else if (tokens[2].size() == 2 && tokens[2][1] == 't')
-			setTopicByOperatorOnly(tokens, client, server);
-		else if (tokens[2].size() == 2 && tokens[2][1] == 'k')
-			setKeyForChannel(tokens, client, server);
-		else if (tokens[2].size() == 2 && tokens[2][1] == 'o')
-			setOperatorForChannel(tokens, client, server);
-		else if (tokens[2].size() == 2 && tokens[2][1] == 'l')
-			setMaxClientForChannel(tokens, client, server);
-	}
-
-	return _errorMessage.empty() ? true : false;
+    setVariableToZero();
+    if (tokens.size() >= 3)
+    {
+        if (tokens[2].size() == 2 && tokens[2][1] == 'i')
+            setInviteOnly(tokens, client, server);
+        else if (tokens[2].size() == 2 && tokens[2][1] == 't')
+            setTopicByOperatorOnly(tokens, client, server);
+        else if (tokens[2].size() == 2 && tokens[2][1] == 'k')
+            setKeyForChannel(tokens, client, server);
+        else if (tokens[2].size() == 2 && tokens[2][1] == 'o')
+            setOperatorForChannel(tokens, client, server);
+        else if (tokens[2].size() == 2 && tokens[2][1] == 'l')
+            setMaxClientForChannel(tokens, client, server);
+        else {
+            _errorMessage = "461 " + client->getNickname() + " MODE :Bad argument\r\n";
+            Msg::sendMsg(client, _errorMessage, 0);
+            std::cout << RED << "msg sent to client:" << _errorMessage << RESET << std::endl;
+        }
+    }
+    else {
+        _errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
+        Msg::sendMsg(client, _errorMessage, 0);
+        std::cout << RED << "msg sent to client:" << _errorMessage << RESET << std::endl;
+    }
+    return _errorMessage.empty() ? true : false;
 }
 
 Mode::~Mode() {}

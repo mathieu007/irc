@@ -15,4 +15,5 @@ public:
     static bool parseAndExec(Client *client, string &msg, Server &server);
     static ssize_t sendQueuedMsg(Client *client, int flags);
     static bool sendAuthMessages(Client *client);
+    static void sendUserlist(Client *client, string &channelname, Server &server);
 };

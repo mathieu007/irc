@@ -2,6 +2,7 @@
 #include "CommandFactory.hpp"
 #include "String.hpp"
 #include "Server.hpp"
+#include "Channel.hpp"
 
 Server *Msg::_server = nullptr;
 /*
@@ -220,4 +221,27 @@ bool Msg::parseAndExec(Client *client, string &msg, Server &server)
 		client->setMsgRecvQueue(msg);
 	}
 	return true;
+}
+
+void Msg::sendUserlist(Client *client, string &channelName, Server &server)
+{
+	std::string userList;
+	std::string messageToClientList;
+	Channel *channel = server.getChannel(channelName);
+	std::vector<Client *> clients = server.getClientsInAChannel(channel);
+	for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
+	{
+		if (channel && channel->isModerator(clients[i]))
+			userList += "@" + clients[i]->getNickname() + " ";
+		else
+			userList += clients[i]->getNickname() + " ";
+	}
+	for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
+	{
+		messageToClientList = "353 " + client->getNickname() + " = " + channelName + " :" + userList + "\r\n";
+		std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
+		Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
+		messageToClientList = "366 " + client->getNickname() + " " + channelName + " :End of /NAMES list\r\n";
+		Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
+	}
 }

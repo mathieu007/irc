@@ -54,8 +54,8 @@ bool User::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		std::string myString = ss.str();
 		string oldUsername = _newUserName;
 		_newUserName = _newUserName + myString;
-		std::string messageToClient = ":" + oldUsername + " USER :Your Username have been changed to: " + _newUserName + "\r\n";
-		Msg::sendMsg(client, messageToClient, 0);
+		// std::string messageToClient = ":" + oldUsername + " NOTICE :Your Username have been changed to: " + _newUserName + "\r\n";
+		// Msg::sendMsg(client, messageToClient, 0);
 	}
 	if (!isValidCommand(tokens, client, server))
 	{

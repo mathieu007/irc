@@ -59,33 +59,7 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 			server.join(client, _channelName, _channelKey);
 		else
 			server.join(client, _channelName);
-		std::string userList;
-		std::string messageToClientList;
-		Channel *channel = server.getChannel(_channelName);
-		std::vector<Client *> clients = server.getClientsInAChannel(channel);
-		if (channel)
-			channel->sendMsgToAll(messageToClient);
-		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
-		{
-			if (channel && channel->isModerator(clients[i]))
-				userList += "@" + clients[i]->getNickname() + " ";
-			else
-				userList += clients[i]->getNickname() + " ";
-		}
-
-		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
-		{
-			messageToClientList = "353 " + client->getNickname() + " = " + _channelName + " :" + userList + "\r\n";
-			std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
-			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
-			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
-			messageToClientList = "366 " + client->getNickname() + " " + _channelName + " :End of /NAMES list\r\n";
-			std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
-			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
-			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
-			std::cout << client->getNickname() << " " << clients[i]->getNickname() << std::endl;
-		}
-
+		Msg::sendUserlist(client, _channelName, server);
 		// send channel topic
 		if (server.hasTopic(_channelName))
 		{
