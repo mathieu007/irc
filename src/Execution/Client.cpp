@@ -9,7 +9,7 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
     this->_nextAllowedConnectionTime = 0;
     this->_numRequests = 0;
     this->_reqSize = 0;
-    this->isAuth = false;
+    this->_isAuth = false;
     this->_pass = std::string();
     this->_nickName = std::string();
     this->_userName = std::string();
@@ -31,6 +31,11 @@ Client::~Client()
     {
         map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
     }
+}
+
+bool Client::setIsAuth(bool isAuth)
+{
+    _isAuth = isAuth;
 }
 
 bool Client::operator==(const Client &cmp) const
@@ -250,7 +255,7 @@ void Client::setNextAllowedConnectionTime(long time)
 
 bool Client::isValidUserInfo() const
 {
-    return (_pass != "" && _nickName != "" && _nickName != "guest" && _userName != "");
+    return (_pass != "" && _nickName != "" && _nickName != "guest" && _userName != "" && _isAuth);
 }
 
 bool Client::passIsEmpty() const

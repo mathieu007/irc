@@ -35,7 +35,7 @@ private:
     string _msgSendQueue;
     string _msgRecvQueue;
     int _socket;
-    bool isAuth;
+    bool _isAuth;
     long _lastRequestTime;
     long _lastActivityTime;
     long _nextAllowedConnectionTime;
@@ -71,6 +71,7 @@ public:
     void setHost(string host);
     void setSocket(int socket);
 
+    bool setIsAuth(bool isAuth);
     void setMsg(string msg);
     void setMsgSendQueue(string msg);
     void setMsgRecvQueue(string msg);

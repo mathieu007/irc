@@ -262,7 +262,7 @@ bool Server::isAllowedToConnect(string clientAddress, int socket)
 
 int Server::createClient(int socketClient)
 {
-    static int inc = 0;
+
     string clientAddress = string();
     string clientPort = string();
     int result = getAddress(_client_adrr, _client_size, clientAddress, clientPort);
@@ -289,12 +289,9 @@ int Server::createClient(int socketClient)
     client->setHost(clientAddress);
     client->setPort(clientPort);
     client->setSocket(socketClient);
-    inc++;
-    std::stringstream ss;
-    ss << inc;
-    std::string myString = ss.str();
+
     client->setNickname("guest");
-    client->setUsername("user" + myString);
+    client->setUsername("");
     client->setLastActivity(static_cast<long>(time(NULL)));
     _clients[socketClient] = client;
     cout << "New client connection, address: " << clientAddress << ", socket: " << socketClient << std::endl;
