@@ -59,6 +59,9 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 			server.join(client, _channelName, _channelKey);
 		else
 			server.join(client, _channelName);
+		Channel *channel = server.getChannel(_channelName);
+		if (channel)
+			channel->sendMsgToAll(messageToClient);
 		Msg::sendUserlist(client, _channelName, server);
 		// send channel topic
 		if (server.hasTopic(_channelName))
