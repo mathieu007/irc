@@ -39,6 +39,8 @@ std::string Kick::createMessageToClient(Client *client, std::vector<std::string>
 
 bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
 {
+	Channel *channel = server.getChannel(_channelName);
+
 	if (tokens.size() < 3 || tokens.size() > 4)
 		_errorMessage = "461 " + client->getNickname() + " KICK :Not enought or too much parameters\r\n";
 	else if (!server.channelExist(_channelName))
@@ -49,6 +51,8 @@ bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "441 " + client->getNickname() + " " + _channelName + " " + _clientNickToKick + " :They aren't on that channel\r\n";
 	else if (_clientToKick == client)
 		_errorMessage = "441 " + client->getNickname() + " :You cannot kick yourself\r\n";
+	else if (channel->getSuperModerator() == _clientToKick)
+		_errorMessage = "441 " + client->getNickname() + " :You cannot kick a super moderator\r\n";
 	else if (!server.isInChannel(client, _channelName))
 		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
 	return _errorMessage.empty() ? true : false;

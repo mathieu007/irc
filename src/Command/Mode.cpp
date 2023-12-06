@@ -166,12 +166,16 @@ void Mode::setOperatorForChannel(std::vector<std::string> &tokens, Client *clien
 
 	if (tokens[2][0] != '-' && tokens[2][0] != '+')
 		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
-	else if (!server.isModerator(client, channelName))
-		_errorMessage = "482 " + client->getNickname() + " " + channelName + " :You're not channel operator\r\n";
 	else if (!server.channelExist(channelName))
 		_errorMessage = "403 " + client->getNickname() + " " + channelName + " :No such channel\r\n";
+	else if (!server.isModerator(client, channelName))
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " :You're not channel operator\r\n";
+	else if (channel->getSuperModerator() == clientToSetOp)
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " " + nickNameToSetOp + " :Is a super moderator, you cannot change his status\r\n";
+	else if (client == clientToSetOp)
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " " + nickNameToSetOp + " :You cannot change your own operator status\r\n";
 	else if (!server.isModerator(clientToSetOp, channelName) && tokens[2][0] == '-')
-		_errorMessage = "482 " + client->getNickname() + " " + channelName + " " + nickNameToSetOp + " :Is alreadynot a operator\r\n";
+		_errorMessage = "482 " + client->getNickname() + " " + channelName + " " + nickNameToSetOp + " :Is already not a operator\r\n";
 	else if (server.isModerator(clientToSetOp, channelName) && tokens[2][0] == '+')
 		_errorMessage = "482 " + client->getNickname() + " " + channelName + " " + nickNameToSetOp + " :Is already operator\r\n";
 	if (_errorMessage.empty())
@@ -180,17 +184,17 @@ void Mode::setOperatorForChannel(std::vector<std::string> &tokens, Client *clien
 		{
 			std::cout << GREEN << "Executing MODE -o command" << RESET << std::endl;
 			channel->deleteModerator(client, clientToSetOp);
-			std::string message = channelName + " " + nickNameToSetOp + " :Is not a moderator anymore\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " " + nickNameToSetOp + " :Is not a moderator anymore\r\n";
 			Msg::sendMsg(client, message, 0);
-			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
+			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
 		else if (tokens[2][0] == '+')
 		{
 			std::cout << GREEN << "Executing MODE +o command" << RESET << std::endl;
-			channel->setTopicPublic(0);
-			std::string message = channelName + " " + nickNameToSetOp + " :Is now a moderator\r\n";
+			channel->addModerator(clientToSetOp);
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " " + nickNameToSetOp + " :Is now a moderator\r\n";
 			Msg::sendMsg(client, message, 0);
-			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
+			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
 	}
 	else
@@ -221,7 +225,7 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 		{
 			std::cout << GREEN << "Executing MODE -l command" << RESET << std::endl;
 			channel->setMaxNumClients(50);
-			std::string message = channelName + " :Max client per channel set to 50\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Max client per channel set to 50\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 		}
@@ -246,7 +250,7 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 			{
 				std::cout << GREEN << "Executing MODE +l command" << RESET << std::endl;
 				channel->setMaxNumClients(maxUserInt);
-				std::string message = channelName + " :Max user set to " + maxUser + "\r\n";
+				std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Max user set to " + maxUser + "\r\n";
 				Msg::sendMsg(client, message, 0);
 				std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 			}
