@@ -33,7 +33,7 @@ Client::~Client()
     }
 }
 
-bool Client::setIsAuth(bool isAuth)
+void Client::setIsAuth(bool isAuth)
 {
     _isAuth = isAuth;
 }

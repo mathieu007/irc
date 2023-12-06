@@ -71,7 +71,7 @@ public:
     void setHost(string host);
     void setSocket(int socket);
 
-    bool setIsAuth(bool isAuth);
+    void setIsAuth(bool isAuth);
     void setMsg(string msg);
     void setMsgSendQueue(string msg);
     void setMsgRecvQueue(string msg);
