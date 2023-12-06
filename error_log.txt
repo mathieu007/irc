@@ -1,0 +1,12 @@
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call

@@ -1,6 +1,7 @@
 #include "Privmsg.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
+#include "Channel.hpp"
 
 void Privmsg::setVariableToZero()
 {
@@ -61,11 +62,14 @@ bool Privmsg::messageToClient(Client *client, std::vector<std::string> tokens, S
 bool Privmsg::isValidCommandToChannel(std::vector<std::string> &tokens, Client *client, Server &server)
 {
 	std::string channelName = tokens[1];
+	Channel *channel = server.getChannel(channelName);
 
 	if (tokens.size() < 3)
 		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
-	else if (!server.getChannel(channelName))
+	else if (!channel)
 		_errorMessage = "403 " + client->getNickname() + " " + channelName + " No such channel\r\n";
+	else if (channel->isBanned(client))
+		_errorMessage = "442 " + client->getNickname() + " " + channelName + " :You've been kicked from channel!\r\n";
 	else if (!server.isInChannel(client, channelName))
 		_errorMessage = "442 " + client->getNickname() + " " + channelName + " :You're not on that channel\r\n";
 	return _errorMessage.empty() ? true : false;

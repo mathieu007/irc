@@ -33,7 +33,7 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 			channel->setJoinOnInvitation(0);
 			channel->removeInvitationList();
 			std::cout << GREEN << "Executing MODE -i command" << RESET << std::endl;
-			std::string message = "NOTICE " + client->getNickname() + " :Channel " + channelName + " is now open to public\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :is now open to public\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
@@ -41,7 +41,7 @@ void Mode::setInviteOnly(std::vector<std::string> &tokens, Client *client, Serve
 		{
 			channel->setJoinOnInvitation(1);
 			std::cout << GREEN << "Executing MODE +i command" << RESET << std::endl;
-			std::string message = "NOTICE " + client->getNickname() + " :Channel " + channelName + " is now in invite mode only\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :is now in invite mode only\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
@@ -58,7 +58,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
 
-	if (tokens.size() != 3)
+	if (tokens.size() != 3 || !channel)
 		_errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
 	else if (tokens[2][0] != '-' && tokens[2][0] != '+')
 		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
@@ -76,7 +76,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 		{
 			channel->setTopicPublic(1);
 			std::cout << GREEN << "Executing MODE -t command" << RESET << std::endl;
-			std::string message = channelName + " :Topic can be change by everyone \r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Topic can be change by everyone \r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 		}
@@ -84,7 +84,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 		{
 			channel->setTopicPublic(0);
 			std::cout << GREEN << "Executing MODE +t command" << RESET << std::endl;
-			std::string message = channelName + " :Topic can be change only by operator\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Topic can be change only by operator\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 		}
@@ -101,7 +101,7 @@ void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Se
 	std::string channelName = tokens[1];
 	Channel *channel = server.getChannel(channelName);
 
-	if (tokens.size() != 3 && tokens[2][0] == '-')
+	if ((tokens.size() != 3 && tokens[2][0] == '-') || !channel)
 		_errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
 	else if (tokens.size() != 4 && tokens[2][0] == '+')
 		_errorMessage = "461 " + client->getNickname() + " MODE :Bad number of parameters\r\n";
@@ -117,7 +117,7 @@ void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Se
 		{
 			std::cout << GREEN << "Executing MODE -k command" << RESET << std::endl;
 			channel->setKey("");
-			std::string message = channelName + " :Passkey removed\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Passkey removed\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 		}
@@ -137,7 +137,7 @@ void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Se
 		{
 			std::cout << GREEN << "Executing MODE +k command" << RESET << std::endl;
 			channel->setKey(passkey);
-			std::string message = channelName + " :Passkey changed to " + passkey + "\r\n";
+			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Passkey changed to " + passkey + "\r\n";
 			Msg::sendMsg(client, message, 0);
 			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
 		}
@@ -268,7 +268,7 @@ bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &serv
 {
 	setVariableToZero();
 
-	if (tokens.size() > 1)
+	if (tokens.size() >= 3)
 	{
 		if (tokens[2].size() == 2 && tokens[2][1] == 'i')
 			setInviteOnly(tokens, client, server);

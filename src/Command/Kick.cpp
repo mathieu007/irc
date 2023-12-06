@@ -29,7 +29,8 @@ std::string Kick::createReasonMessage(std::vector<std::string> tokens)
 	return message;
 }
 
-std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens) {
+std::string Kick::createMessageToClient(Client *client, std::vector<std::string> tokens)
+{
 	std::string message = ":" + client->getNickname() + " KICK " + _channelName + " " + tokens[2];
 	if (tokens.size() == 4)
 		message += " " + _kickReasson;
@@ -45,7 +46,9 @@ bool Kick::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 	else if (!server.isModerator(client, _channelName))
 		_errorMessage = "482 " + client->getNickname() + " " + _channelName + " :You're not channel operator\r\n";
 	else if (!server.isInChannel(_clientToKick, _channelName))
-		_errorMessage = "441 " + client->getNickname() + " " + _channelName + _clientNickToKick + " :They aren't on that channel\r\n";
+		_errorMessage = "441 " + client->getNickname() + " " + _channelName + " " + _clientNickToKick + " :They aren't on that channel\r\n";
+	else if (_clientToKick == client)
+		_errorMessage = "441 " + client->getNickname() + " :You cannot kick yourself\r\n";
 	else if (!server.isInChannel(client, _channelName))
 		_errorMessage = "442 " + client->getNickname() + " " + _channelName + " :You're not on that channel\r\n";
 	return _errorMessage.empty() ? true : false;
@@ -74,7 +77,9 @@ bool Kick::execute(Client *client, std::vector<std::string> tokens, Server &serv
 		std::cout << GREEN << "Executing KICK command" << RESET << std::endl;
 		std::string messageToClient = createMessageToClient(client, tokens);
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
-		Msg::sendMsg(client, messageToClient, 0);
+		Channel *channel = server.getChannel(_channelName);
+		if (channel)
+			channel->sendMsgToAll(messageToClient);
 		server.kickClientFromChannel(_clientToKick, _channelName);
 	}
 

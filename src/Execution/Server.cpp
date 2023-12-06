@@ -631,6 +631,8 @@ Vec<Channel> Server::getClientInviteList(Client *client)
 
 Vec<Client> Server::getClientsInAChannel(Channel *channel)
 {
+    if (!channel)
+        return Vec<Client>();
     return channel->getMapping().select(&ClientChannelMapping::getClient);
 }
 
@@ -700,7 +702,6 @@ Channel *Server::kickClientFromChannel(Client *client, std::string &channelName)
         return nullptr;
     client->addToKickedChannel(channel);
     removeClientFromChannel(client, channelName);
-    channel->setNumClients(channel->getNumClients() - 1);
     return channel;
 }
 

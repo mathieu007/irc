@@ -1,6 +1,7 @@
 #include <Channel.hpp>
 #include "Vector.hpp"
 #include "ClientChannelMapping.hpp"
+#include "Message.hpp"
 
 Channel::~Channel() {}
 
@@ -236,4 +237,14 @@ bool Channel::removeMapping(Client *client)
 bool Channel::removeInvitationList()
 {
     return _invitedClients.removeAll(false);
+}
+
+bool Channel::sendMsgToAll(string &msg)
+{
+    Vec<Client> clients = getMapping().select(&ClientChannelMapping::getClient);
+    for (size_t i = 0; i < clients.size(); i++)
+    {
+        Msg::sendMsg(clients[i], msg, 0);
+    }
+    return true;
 }

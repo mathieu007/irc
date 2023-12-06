@@ -52,6 +52,7 @@ public:
     // is user in invited list
     bool addBannedClient(Client *client);
     bool addToInvitation(Client *client);
+    bool sendMsgToAll(string &msg);
     bool isInIvitationList(Client *client);
     bool isBanned(Client *client);
     bool isModerator(Client *client);

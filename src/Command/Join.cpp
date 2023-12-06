@@ -14,6 +14,7 @@ void Join::setVariableToZero()
 bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
 {
 	Channel *channel = server.getChannel(_channelName);
+
 	if (tokens.size() < 2 || tokens.size() > 3)
 		_errorMessage = "461 " + client->getNickname() + " JOIN :Not enought or too much parameters\r\n";
 	else if (_channelName.length() > 0 && _channelName[0] != '#')
@@ -22,7 +23,7 @@ bool Join::isValidCommand(std::vector<std::string> &tokens, Client *client, Serv
 		_errorMessage = "443 " + client->getNickname() + " " + _channelName + " :is already on channel\r\n";
 	else if (server.isChannelFull(_channelName))
 		_errorMessage = "471 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+l)\r\n";
-	else if (_channelKey != "" && server.channelExist(_channelName) && !server.channelKeyExist(_channelName, _channelKey))
+	else if (channel && channel->getKey() != _channelKey)
 		_errorMessage = "475 " + client->getNickname() + " " + _channelName + " :Bad Channel Key\r\n";
 	else if (client->isKickedFromChannel(channel))
 		_errorMessage = "474 " + client->getNickname() + " " + _channelName + " :Cannot join channel (+b)\r\n";
@@ -50,26 +51,31 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 	}
 	else
 	{
-		std::cout << GREEN << "Executing JOIN command" << RESET << std::endl;
 		std::string messageToClient = ":" + client->getNickname() + " JOIN " + _channelName + "\r\n";
+		std::cout << GREEN << "Executing JOIN command" << RESET << std::endl;
 		std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
-		Msg::sendMsg(client, messageToClient, 0);
+		// Msg::sendMsg(client, messageToClient, 0);
 		if (_hasKey)
 			server.join(client, _channelName, _channelKey);
 		else
 			server.join(client, _channelName);
-		// send user list for dave
-
 		std::string userList;
+		std::string messageToClientList;
 		Channel *channel = server.getChannel(_channelName);
 		std::vector<Client *> clients = server.getClientsInAChannel(channel);
-		std::string messageToClientList;
-		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i) {
-			userList += clients[i]->getNickname() + " ";
+		if (channel)
+			channel->sendMsgToAll(messageToClient);
+		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
+		{
+			if (channel && channel->isModerator(clients[i]))
+				userList += "@" + clients[i]->getNickname() + " ";
+			else
+				userList += clients[i]->getNickname() + " ";
 		}
 
-		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i){
-			messageToClientList = "353 " +  client->getNickname() + " = " + _channelName + " :" +  userList + "\r\n";
+		for (std::vector<Client *>::size_type i = 0; i < clients.size(); ++i)
+		{
+			messageToClientList = "353 " + client->getNickname() + " = " + _channelName + " :" + userList + "\r\n";
 			std::cout << YELLOW << "message sent to client:" << messageToClientList << RESET << std::endl;
 			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
 			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
@@ -78,7 +84,6 @@ bool Join::execute(Client *client, std::vector<std::string> tokens, Server &serv
 			std::cout << "Client " << i << ": " << clients[i]->getNickname() << std::endl;
 			Msg::sendMsgToRecipient(client, clients[i], messageToClientList, 0);
 			std::cout << client->getNickname() << " " << clients[i]->getNickname() << std::endl;
-
 		}
 
 		// send channel topic
