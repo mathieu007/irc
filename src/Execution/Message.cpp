@@ -124,17 +124,17 @@ bool Msg::sendAuthMessages(Client *client)
 	std::string msg;
 	if (client->getPass() == "")
 	{
-		msg = "ERROR :No Password set, configure your irc client, or use PASS <password> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Password set, configure your irc client, or use PASS <password> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	else if (client->getUsername() == "")
 	{
-		msg = "ERROR :No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	else if (client->getNickname() == "")
 	{
-		msg = "ERROR :No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	return true;

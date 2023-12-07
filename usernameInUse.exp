@@ -21,13 +21,19 @@ expect ".*"
 sleep 0.1
 
 send "P\x0a\x0a\x0a\x0a\x0a"
-sleep 2
+sleep 1
 send "A\x0a"
-sleep 2
+sleep 1
 send "S\x0a"
-sleep 2
+sleep 1
 send "S\x0a"
-sleep 2
+sleep 1
+send "\x0a"
+sleep 1
+send "\x0a"
+sleep 1
+send "\x0a\x0d\x0a"
+sleep 1
 send " 123456\x0d\x0a"
 set hasOutput 0
 handleOutput $hasOutput
@@ -51,7 +57,7 @@ handleOutput $hasOutput
 # set hasOutput 0
 # handleOutput $hasOutput
 
+sleep 110
 
-
-expect eof
+interact
 

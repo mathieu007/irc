@@ -520,7 +520,7 @@ void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
         Msg::parseAndExec(client, msg, *this);
     else if (!msg.empty())
     {
-        msg.clear();
+        client->setMsgRecvQueue("");
         Msg::sendAuthMessages(client);
     }
 }
