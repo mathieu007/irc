@@ -29,7 +29,7 @@ bool Invite::isValidCommand(std::vector<std::string> &tokens, Client *client, Se
 	else if (!server.isModerator(client, _channelName))
 		_errorMessage = "482 " + client->getNickname() + " " + _channelName + " :You're not channel operator\r\n";
 	else if (_clientToInvite->isInChannel(_channel) && _channel->isInIvitationList(_clientToInvite))
-		_errorMessage = "441 " + client->getNickname() + " " + _channelName + " " + _clientNickToInvite + " :They already on that channel\r\n";
+		_errorMessage = "441 " + client->getNickname() + " " + _channelName + " " + _clientNickToInvite + " :is already on that channel\r\n";
 	else if (_channel->isOnInvitationOnly() && _channel->isInIvitationList(_clientToInvite))
 		_errorMessage = "443 " + client->getNickname() + " " + _clientNickToInvite + " " + _channelName + " :is already on channel\r\n";
 	else if (!_channel->isOnInvitationOnly())
@@ -49,32 +49,19 @@ bool Invite::execute(Client *client, std::vector<std::string> tokens, Server &se
 		Msg::sendMsg(client, _errorMessage, 0);
 		return false;
 	}
-	// if (tokens.size() == 1)
-	// {
-	// 	Vec<Channel> inviteList = client->getInviteList();
-	// 	for (size_t i = 0; i < inviteList.size(); i++)
-	// 	{
-	// 		string rpl = "336 " + client->getNickname() + " " + _channelName + "\r\n";
-	// 		Msg::sendMsg(client, rpl, 0);
-	// 	}
-	// 	if (inviteList.size() > 0)
-	// 	{
-	// 		string rpl = "337 " + client->getNickname() + " :End of /INVITE list\r\n";
-	// 		Msg::sendMsg(client, rpl, 0);
-	// 	}
-	// }
-	// else
-	// {
 	std::cout << GREEN << "Executing Invite command" << RESET << std::endl;
 	// make it compile....
 	//  channel
+	if (_channel->isBanned(_clientToInvite))
+	{
+		string unbannedMessage = ":" + client->getNickname() + " MODE " + _channelName + " -b :You have been unbanned\r\n";
+		Msg::sendMsg(_clientToInvite, unbannedMessage, 0);
+	}
 	_channel->addToInvitation(_clientToInvite);
-	// std::string messageToClient = ":" + client->getNickname() + " INVITE " + _clientNickToInvite + " " + _channelName + "\r\n";
-	// std::cout << YELLOW << "Message sent to client: " << messageToClient << RESET << std::endl;
-	// Msg::sendMsg(client, messageToClient, 0);
 	string rpl = "341 " + client->getNickname() + " " + _clientNickToInvite + " " + _channelName + "\r\n";
 	Msg::sendMsg(client, rpl, 0);
-	// }
+	string invitemsg = ":" + client->getNickname() + " INVITE " + _clientNickToInvite + " " + _channelName + " :You've been invited\r\n";
+	Msg::sendMsg(_clientToInvite, invitemsg, 0);
 	return _errorMessage.empty() ? true : false;
 }
 

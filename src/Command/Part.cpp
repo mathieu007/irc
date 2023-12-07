@@ -29,7 +29,6 @@ std::string Part::createReasonMessage(std::vector<std::string> tokens)
 
 bool Part::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
 {
-	;
 	(void)server;
 	if (tokens.size() > 1)
 		_channelName = tokens[1];

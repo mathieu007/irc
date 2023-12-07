@@ -164,6 +164,7 @@ bool Channel::addToInvitation(Client *client)
     if (_onInvitation && !this->_invitedClients.exist(&Client::getUsername, client->getUsername()))
     {
         _invitedClients.push_back(client);
+        _bannedClients.removeWhere(&Client::getUsername, client->getUsername(), false);
         return true;
     }
     return false;

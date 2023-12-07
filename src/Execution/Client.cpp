@@ -311,8 +311,8 @@ bool Client::isInChannel(Channel *channel)
     ClientChannelMapping *map = getMapping().first(&ClientChannelMapping::getChannelName, channel->getName());
     if (map && !map->getIsBanned())
         return true;
-    if (channel->isOnInvitationOnly() && channel->isInIvitationList(this))
-        return true;
+    // if (channel->isOnInvitationOnly() && channel->isInIvitationList(this))
+    //     return true;
     return false;
 }
 
