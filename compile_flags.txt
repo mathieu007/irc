@@ -3,4 +3,6 @@
 -Werror
 -Wpedantic
 -std=c++98
--Isrc/includes/
+-Iinclude/
+-Iinclude/Command/
+-Iinclude/Execution/
