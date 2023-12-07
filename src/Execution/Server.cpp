@@ -425,6 +425,12 @@ void Server::_disconnectInnactiveClient(Client *client)
     client->setRemove(true);
 }
 
+// bool endsWithCRLF(const std::string& str) {
+//     // Check if the string ends with "\r\n"
+//     size_t pos = str.rfind("\r\n");
+//     return pos != std::string::npos && pos == str.length() - 2;
+// }
+
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     checkIncomingClientConnection();
