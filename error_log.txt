@@ -1,0 +1,14 @@
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+select() error: Interrupted system call
+Error: Couldn't bind socket address.
+

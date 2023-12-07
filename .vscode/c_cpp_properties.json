@@ -3,12 +3,16 @@
         {
             "name": "ft_irc",
             "includePath": [
-                "${workspaceFolder}/includes/"
+                "${workspaceFolder}/include/",
+                "${workspaceFolder}/include/Command/",
+                "${workspaceFolder}/include/Execution/"
+                // "${workspaceFolder}/include/Db/",
+                // "${workspaceFolder}/src/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
-            "cStandard": "c99",
-            "cppStandard": "c++98",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "intelliSenseMode": "clang-x64"
         }
     ],

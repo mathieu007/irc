@@ -1,0 +1,56 @@
+#!/usr/bin/expect -f
+
+set stty_init raw
+stty $stty_init
+
+set timeout -1
+spawn nc "172.31.200.244" "6667"
+
+expect ".*"
+exec echo "\r\n"
+set stty_init raw
+send "PASS 123456\x0d\x0a"
+sleep 0.2
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
+send "NICK User4\x0d\x0a"
+sleep 0.2
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
+send "USER user4 * 0 User4Fullname\x0d\x0a"
+sleep 0.2
+
+
+
+set repeat_count 5
+for {set i 0} {$i < $repeat_count} {incr i} {
+    spawn nc "172.31.200.244" "6667"
+
+    expect ".*"
+    exec echo "\r\n"
+    set stty_init raw
+    send "PASS 123456\x0d\x0a"
+    sleep 0.2
+    
+    expect ""
+    exec echo "\r\n"
+    set stty_init raw
+    send "NICK User$i\x0d\x0a"
+    sleep 0.2
+    
+    expect ""
+    exec echo "\r\n"
+    set stty_init raw
+    send "USER user$i * 0 User$i.Fullname\x0d\x0a"
+    sleep 3
+}
+
+sleep 10
+expect ""
+send "QUIT End of script...\x0d\x0a"
+sleep 0.2
+interact

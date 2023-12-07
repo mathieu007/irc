@@ -1,0 +1,63 @@
+#!/usr/bin/expect -f
+
+set stty_init raw
+
+# Spawn the process
+proc handleOutput {hasOutput} {
+    if {$hasOutput == 1} {
+        expect ".*\n"        
+    } else {
+        set timeout 1
+        expect {
+            timeout {
+                puts "\n"
+            }
+        }       
+    }
+}
+
+spawn nc "172.31.200.244" "6667"
+expect ".*"
+sleep 0.1
+
+send "JOIN #ddd\x0d\x0a"
+set hasOutput 1
+handleOutput $hasOutput
+
+set cmd "PASS 123456\x0d\x0a"
+send $cmd
+set hasOutput 0
+handleOutput $hasOutput
+
+send "JOIN #ddd\x0d\x0a"
+set hasOutput 0
+handleOutput $hasOutput
+
+
+send "USER math123 * 0 Mathieu\x0d\x0a"
+set hasOutput 0
+handleOutput $hasOutput
+
+
+send "JOIN #ddd\x0d\x0a"
+set hasOutput 0
+handleOutput $hasOutput
+
+
+send "NICK math123\x0d\x0a"
+set hasOutput 1
+handleOutput $hasOutput
+
+
+send "JOIN #ddd\x0d\x0a"
+set hasOutput 1
+handleOutput $hasOutput
+
+
+send "QUIT End nc script...\x0d\x0a"
+set hasOutput 1
+handleOutput $hasOutput
+
+
+interact
+
