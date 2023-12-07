@@ -359,14 +359,15 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
     string msg = Msg::recvMsg(clientSocket, buffer);
 
     string newMsg = "";
-    string extract = String::extractUptoFirstOccurence(msg, "\r\n", true);
-    if (!extract.empty())
+    string extract = String::extractUptoFirstOccurence(msg, "\r\n", false);
+    if (!extract.empty() || extract.size() == 2)
     {
+        extract.erase(extract.end() - 2, extract.end());
         string::iterator start = extract.begin();
         string::iterator it = extract.begin();
         while (it != extract.end())
         {
-            if (*it == '\n' && it != extract.begin())
+            if (*it == '\n')
             {
                 newMsg += msg.substr(start - extract.begin(), it - start);
                 start = it + 1;
@@ -382,7 +383,7 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
         string::iterator it = msg.begin();
         while (it != msg.end())
         {
-            if (*it == '\n' && it != msg.begin())
+            if (*it == '\n')
             {
                 int i = start - msg.begin();
                 int len = it - start;
@@ -397,6 +398,7 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
     }
     if (newMsg.size() > 0)
     {
+
         client->getMsgRecvQueue().append(newMsg);
         client->setLastActivity(static_cast<long>(time(NULL)));
         if (client->getMsgRecvQueue().size() >= MAX_BUFFER_SIZE)
