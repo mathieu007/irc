@@ -13,7 +13,7 @@ std::string User::createFullName(std::vector<std::string> tokens)
 {
 	std::string message;
 
-	for (std::size_t i = 2; i < tokens.size(); ++i)
+	for (std::size_t i = 3; i < tokens.size(); ++i)
 	{
 		message += tokens[i];
 		if (i < tokens.size() - 1)
@@ -21,7 +21,7 @@ std::string User::createFullName(std::vector<std::string> tokens)
 			message += " ";
 		}
 	}
-	message = message.substr(1);
+	message = message.substr(3);
 	std::cout << "message [" << message << "]" << std::endl;
 	return message;
 }

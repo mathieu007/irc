@@ -51,7 +51,14 @@ Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), 
     _serv_addr.sin_addr.s_addr = INADDR_ANY;
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
+	_clientSockets = vector<int>();
+    _bannedClients = Map<string, long>();
+    _connectionsLog = Map<string, long>();
+    _clients = Vec<Client>(MAX_CLIENTS);
+    _channels = Vec<Channel>();
+    _clientschannelsMapping = new Vec<ClientChannelMapping>();
     _max_fd_set = 0;
+
     for (size_t i = 0; i < _clients.size(); i++)
     {
         _clients[i] = nullptr;
