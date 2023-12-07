@@ -1,0 +1,6 @@
+-Wall
+-Wextra
+-Werror
+-Wpedantic
+-std=c++98
+-Isrc/includes/
