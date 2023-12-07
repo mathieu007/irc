@@ -210,7 +210,7 @@ bool Msg::parseAndExec(Client *client, string &msg, Server &server)
 	// if the string is not ending with \r\n then we do not clear the buffer and wait for the rest of the string.
 	while (!msg.empty())
 	{
-		extracted = String::extractUptoFirstOccurence(msg, "\r\n");
+		extracted = String::extractUptoFirstOccurence(msg, "\r\n", false);
 		if (extracted.empty())
 			return true;
 		cmdFactory.tokenMessage(extracted, client, server);

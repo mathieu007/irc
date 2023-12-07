@@ -20,29 +20,36 @@ spawn nc "172.31.200.244" "6667"
 expect ".*"
 sleep 0.1
 
-set cmd "PASS 123456\x0d\x0a"
-send $cmd
-set hasOutput 0
-handleOutput $hasOutput
-
-send "USER math123 * 0 Mathieu\x0d\x0a"
-set hasOutput 0
-handleOutput $hasOutput
-
+send "P\x0a\x0a\x0a\x0a\x0a"
 sleep 2
-
-spawn nc "172.31.200.244" "6667"
-expect ".*"
-sleep 0.1
-
-set cmd "PASS 123456\x0d\x0a"
-send $cmd
+send "A\x0a"
+sleep 2
+send "S\x0a"
+sleep 2
+send "S\x0a"
+sleep 2
+send " 123456\x0d\x0a"
 set hasOutput 0
 handleOutput $hasOutput
 
-send "USER math123 * 0 Mathieu\x0d\x0a"
-set hasOutput 0
-handleOutput $hasOutput
+# send "USER math123 * 0 Mathieu\x0d\x0a"
+# set hasOutput 0
+# handleOutput $hasOutput
+
+# sleep 2
+
+# spawn nc "172.31.200.244" "6667"
+# expect ".*"
+# sleep 0.1
+
+# set cmd "PASS 123456\x0d\x0a"
+# send $cmd
+# set hasOutput 0
+# handleOutput $hasOutput
+
+# send "USER math123 * 0 Mathieu\x0d\x0a"
+# set hasOutput 0
+# handleOutput $hasOutput
 
 
 
