@@ -5,7 +5,6 @@
 #include "Client.hpp"
 #include <csignal>
 #include <iostream>
-#include "Vector.hpp"
 
 // volatile sig_atomic_t flag = 0;
 
@@ -74,7 +73,7 @@ void Server::CleanServer()
     cout << "Start cleaning server: " << std::endl;
     _clients.removeAll(true);
     _channels.removeAll(true);
-    _clientschannelsMapping->removeAll(true);
+    // _clientschannelsMapping->removeAll(true);
 }
 
 string Server::_getHostname() const

@@ -1,6 +1,5 @@
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "Vector.hpp"
 #include "ClientChannelMapping.hpp"
 
 Client::Client(Vec<ClientChannelMapping> *mapping)

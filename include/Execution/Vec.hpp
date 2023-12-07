@@ -100,7 +100,7 @@ public:
         Iterator it = this->begin();
         while (it != this->end())
         {
-            if (deletePtr)
+            if (deletePtr && *it)
             {
                 delete *it;
                 *it = nullptr;
@@ -521,7 +521,7 @@ public:
         {
             if (*it && instance == (*it))
             {
-                if (deletePtr)
+                if (deletePtr )
                 {
                     delete *it;
                     *it = nullptr;
