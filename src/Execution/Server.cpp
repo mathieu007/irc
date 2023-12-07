@@ -58,12 +58,6 @@ Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), 
     _channels = Vec<Channel>();
     _clientschannelsMapping = new Vec<ClientChannelMapping>();
     _max_fd_set = 0;
-    _clientSockets = vector<int>();
-    _bannedClients = Map<string, long>();
-    _connectionsLog = Map<string, long>();
-    _clients = Vec<Client>(MAX_CLIENTS);
-    _channels = Vec<Channel>();
-    _clientschannelsMapping = new Vec<ClientChannelMapping>();
     for (size_t i = 0; i < _clients.size(); i++)
     {
         _clients[i] = nullptr;
@@ -393,6 +387,12 @@ void Server::_disconnectInnactiveClient(Client *client)
     client->setRemove(true);
 }
 
+// bool endsWithCRLF(const std::string& str) {
+//     // Check if the string ends with "\r\n"
+//     size_t pos = str.rfind("\r\n");
+//     return pos != std::string::npos && pos == str.length() - 2;
+// }
+
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     checkIncomingClientConnection();
@@ -445,7 +445,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 else if (!client->getMsgRecvQueue().empty())
                     Msg::parseAndExec(client, client->getMsgRecvQueue(), *this);
             }
-            else if (!client->getMsgRecvQueue().empty())
+            else if (!client->getMsgRecvQueue().empty() /*&& endsWithCRLF(client->getMsgRecvQueue())*/)
                 _execUnAuthenticatedCmd(client->getMsgRecvQueue(), client);
             if (static_cast<long>(time(NULL)) - client->getLastActivity() >= MAX_CLIENT_INACTIVITY)
                 _disconnectInnactiveClient(client);
@@ -456,6 +456,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
 
 void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
 {
+	std::cout << "mesg ->>> " << msg << std::endl;
     if (String::startWith(msg, "CAP"))
     {
         Msg::parseAndExec(client, msg, *this);
