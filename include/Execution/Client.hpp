@@ -2,8 +2,8 @@
 
 #define MAX_CLIENTS FD_SETSIZE
 #define MAX_BUFFER_SIZE 8096
-#define MAX_REQ_PER_SEC 10
-#define MAX_REQ_BEFORE_BAN 30
+#define MAX_REQ_PER_SEC 100
+#define MAX_REQ_BEFORE_BAN 300
 #define MAX_REQ_SIZE_PER_SEC 8096
 
 #include <string>

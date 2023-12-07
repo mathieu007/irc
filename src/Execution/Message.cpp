@@ -124,17 +124,17 @@ bool Msg::sendAuthMessages(Client *client)
 	std::string msg;
 	if (client->getPass() == "")
 	{
-		msg = "ERROR :No Password set, configure your irc client, or use PASS <password> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Password set, configure your irc client, or use PASS <password> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	else if (client->getUsername() == "")
 	{
-		msg = "ERROR :No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	else if (client->getNickname() == "")
 	{
-		msg = "ERROR :No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
+		msg = "ERROR : Cannot execute command, No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
 	return true;
@@ -210,7 +210,7 @@ bool Msg::parseAndExec(Client *client, string &msg, Server &server)
 	// if the string is not ending with \r\n then we do not clear the buffer and wait for the rest of the string.
 	while (!msg.empty())
 	{
-		extracted = String::extractUptoFirstOccurence(msg, "\r\n");
+		extracted = String::extractUptoFirstOccurence(msg, "\r\n", false);
 		if (extracted.empty())
 			return true;
 		cmdFactory.tokenMessage(extracted, client, server);

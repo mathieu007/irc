@@ -51,6 +51,12 @@ Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), 
     _serv_addr.sin_addr.s_addr = INADDR_ANY;
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
+    _clientSockets = vector<int>();
+    _bannedClients = Map<string, long>();
+    _connectionsLog = Map<string, long>();
+    _clients = Vec<Client>(MAX_CLIENTS);
+    _channels = Vec<Channel>();
+    _clientschannelsMapping = new Vec<ClientChannelMapping>();
     _max_fd_set = 0;
     for (size_t i = 0; i < _clients.size(); i++)
     {
@@ -73,7 +79,8 @@ void Server::CleanServer()
     cout << "Start cleaning server: " << std::endl;
     _clients.removeAll(true);
     _channels.removeAll(true);
-    // _clientschannelsMapping->removeAll(true);
+    _clientschannelsMapping->removeAll(true);
+    delete _clientschannelsMapping;
 }
 
 string Server::_getHostname() const
@@ -151,14 +158,20 @@ void Server::_initServerSocket(void)
         throw std::runtime_error("Error: Couldn't open server socket.\n");
     int enable = 1;
     if (setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        close(this->_serverSocket);
         throw std::runtime_error("Error: Couldn't reuse socket address.\n");
+    }
     if (bind(this->_serverSocket, (sockaddr *)&(this->_serv_addr), this->_serv_size) == -1)
     {
         close(this->_serverSocket);
         throw std::runtime_error("Error: Couldn't bind socket address.\n");
     }
     if (listen(this->_serverSocket, SOMAXCONN) == -1)
+    {
+        close(this->_serverSocket);
         throw std::runtime_error("Error: Cannot listen to socket connection.\n");
+    }
 }
 
 int Server::_setSockAddrStorage()
@@ -198,8 +211,8 @@ int Server::acceptClient()
     if (socketClient < 0)
     {
         std::cerr << "Failed to connect client to socket." << std::endl;
-        // close(socketClient);
-        close(_serverSocket);
+        close(socketClient);
+        // close(_serverSocket);
         return (-1);
     }
     return (socketClient);
@@ -344,9 +357,47 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
 {
     int clientSocket = _clientSockets[index];
     string msg = Msg::recvMsg(clientSocket, buffer);
-    if (msg.size() > 0)
+
+    string newMsg = "";
+    string extract = String::extractUptoFirstOccurence(msg, "\r\n", true);
+    if (!extract.empty())
     {
-        client->getMsgRecvQueue().append(msg);
+        string::iterator start = extract.begin();
+        string::iterator it = extract.begin();
+        while (it != extract.end())
+        {
+            if (*it == '\n' && it != extract.begin())
+            {
+                newMsg += msg.substr(start - extract.begin(), it - start);
+                start = it + 1;
+            }
+            it++;
+        }
+        newMsg += msg.substr(start - extract.begin(), extract.end() - start);
+        newMsg += "\r\n";
+    }
+    else
+    {
+        string::iterator start = msg.begin();
+        string::iterator it = msg.begin();
+        while (it != msg.end())
+        {
+            if (*it == '\n' && it != msg.begin())
+            {
+                int i = start - msg.begin();
+                int len = it - start;
+                newMsg += msg.substr(i, len);
+                start = it + 1;
+            }
+            it++;
+        }
+        int i = start - msg.begin();
+        int len = msg.end() - start;
+        newMsg += msg.substr(i, len);
+    }
+    if (newMsg.size() > 0)
+    {
+        client->getMsgRecvQueue().append(newMsg);
         client->setLastActivity(static_cast<long>(time(NULL)));
         if (client->getMsgRecvQueue().size() >= MAX_BUFFER_SIZE)
         {
@@ -374,6 +425,12 @@ void Server::_disconnectInnactiveClient(Client *client)
     client->setRemove(true);
 }
 
+// bool endsWithCRLF(const std::string& str) {
+//     // Check if the string ends with "\r\n"
+//     size_t pos = str.rfind("\r\n");
+//     return pos != std::string::npos && pos == str.length() - 2;
+// }
+
 int Server::fdSetClientMsgLoop(char *buffer)
 {
     checkIncomingClientConnection();
@@ -389,36 +446,36 @@ int Server::fdSetClientMsgLoop(char *buffer)
             removeClient(client);
             continue;
         }
-        bool canMakeRequest = true;
         if (FD_ISSET(clientSocket, &_reading))
         {
-            canMakeRequest = client->canMakeRequest();
-            if (canMakeRequest)
-            {
-                if (!_recvClientMsg(client, buffer, i))
-                {
-                    _banClient(client);
-                    break;
-                }
-            }
-            else if (client->hasReachMaxReq())
+            // canMakeRequest = client->canMakeRequest();
+            // if (canMakeRequest)
+            // {
+            if (!_recvClientMsg(client, buffer, i))
             {
                 _banClient(client);
                 break;
             }
+            // }
+            // else if (client->hasReachMaxReq())
+            // {
+            //     _banClient(client);
+            //     break;
+            // }
         }
-        if (!canMakeRequest)
-        {
-            std::cerr << "A client might be trying to ddos our irc server: " << _clients[clientSocket]->getHost() << std::endl;
-            string warning = string("NOTICE ");
-            warning += _clients[clientSocket]->getNickname();
-            warning += " Request canceled you have reach your maximum request per second!\r\n";
-            warning += "You will be banned from our server if you continue...\r\n";
-            Msg::sendMsg(_clients[clientSocket], warning, 0);
-            continue;
-        }
+        // if (!canMakeRequest)
+        // {
+        //     std::cerr << "A client might be trying to ddos our irc server: " << _clients[clientSocket]->getHost() << std::endl;
+        //     string warning = string("NOTICE ");
+        //     warning += _clients[clientSocket]->getNickname();
+        //     warning += " Request canceled you have reach your maximum request per second!\r\n";
+        //     warning += "You will be banned from our server if you continue...\r\n";
+        //     Msg::sendMsg(_clients[clientSocket], warning, 0);
+        //     continue;
+        // }
         if (FD_ISSET(clientSocket, &_writing) && _clients[clientSocket])
         {
+            string msg = client->getMsgRecvQueue();
             if (this->isAuthenticated(client))
             {
                 if (!client->getMsgSendQueue().empty())
@@ -426,8 +483,10 @@ int Server::fdSetClientMsgLoop(char *buffer)
                 else if (!client->getMsgRecvQueue().empty())
                     Msg::parseAndExec(client, client->getMsgRecvQueue(), *this);
             }
-            else if (!client->getMsgRecvQueue().empty())
-                _execUnAuthenticatedCmd(client->getMsgRecvQueue(), client);
+            else if (!msg.empty())
+            {
+                _execUnAuthenticatedCmd(msg, client);
+            }
             if (static_cast<long>(time(NULL)) - client->getLastActivity() >= MAX_CLIENT_INACTIVITY)
                 _disconnectInnactiveClient(client);
         }
@@ -437,6 +496,12 @@ int Server::fdSetClientMsgLoop(char *buffer)
 
 void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
 {
+    if (!String::endsWith(msg, "\r\n"))
+    {
+        if (msg.length() >= (size_t)MAX_REQ_SIZE_PER_SEC)
+            msg.clear();
+        return;
+    }
     if (String::startWith(msg, "CAP"))
     {
         Msg::parseAndExec(client, msg, *this);
@@ -455,7 +520,7 @@ void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
         Msg::parseAndExec(client, msg, *this);
     else if (!msg.empty())
     {
-        msg.clear();
+        client->setMsgRecvQueue("");
         Msg::sendAuthMessages(client);
     }
 }
