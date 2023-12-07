@@ -25,11 +25,11 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
 
 Client::~Client()
 {
-    Vec<ClientChannelMapping> map = getMapping();
-    for (size_t i = 0; i < map.size(); i++)
-    {
-        map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
-    }
+    // Vec<ClientChannelMapping> map = getMapping();
+    // for (size_t i = 0; i < map.size(); i++)
+    // {
+    //     map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
+    // }
 }
 
 void Client::setIsAuth(bool isAuth)
