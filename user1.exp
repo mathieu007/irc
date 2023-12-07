@@ -1,0 +1,44 @@
+#!/usr/bin/expect -f
+
+set stty_init raw
+stty $stty_init
+
+set timeout -1
+spawn nc "172.31.200.244" "6667"
+
+expect ".*"
+exec echo "\r\n"
+set stty_init raw
+send "NICK Math22\x0d\x0a"
+sleep 0.2
+
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
+send "USER math22 * 0 Mathieu22\x0d\x0a"
+sleep 0.2
+
+
+expect ""
+exec echo "\r\n"
+set stty_init raw
+send "PASS 123"
+sleep 1
+send "456\x0d\x0a"
+
+expect ""
+exec echo "\r\n"
+# stty $stty_init
+# stty sane
+# send "\x0d\x0a"
+set stty_init raw
+send "JOIN #Chan1\x0d\x0a"
+sleep 10
+expect ""
+
+
+send "QUIT End of script...\x0d\x0a"
+
+# Use interact to allow user interaction
+interact
