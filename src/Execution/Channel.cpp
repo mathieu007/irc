@@ -1,5 +1,4 @@
 #include <Channel.hpp>
-#include "Vector.hpp"
 #include "ClientChannelMapping.hpp"
 #include "Message.hpp"
 

@@ -9,7 +9,7 @@ spawn nc "172.31.200.244" "6667"
 expect ".*"
 exec echo "\r\n"
 set stty_init raw
-send "NICK Math22\x0d\x0a"
+send "     NICK Math22\x0d\x0a"
 sleep 0.2
 
 
