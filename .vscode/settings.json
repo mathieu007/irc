@@ -1,5 +1,6 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "string": "cpp",
         "vector": "cpp",
         "map": "cpp",
@@ -53,5 +54,10 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp"
+=======
+        "vector": "cpp",
+        "iosfwd": "cpp",
+        "iterator": "cpp"
+>>>>>>> origin/MAc
     }
 }

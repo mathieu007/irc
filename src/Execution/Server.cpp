@@ -18,8 +18,7 @@ Server::Server() {}
 
 Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPassword(pass)), _port(port)
 {
-    if (fileLog)
-        _logger = Logger();
+    (void)fileLog;
     this->_hostname = _getHostname();
     memset(&_serv_addr, 0, sizeof(_serv_addr));
     _serv_addr.sin_family = AF_INET;
@@ -27,6 +26,12 @@ Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPasswor
     _serv_addr.sin_addr.s_addr = inet_addr(ip);
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
+    _clientSockets = vector<int>();
+    _bannedClients = Map<string, long>();
+    _connectionsLog = Map<string, long>();
+    _clients = Vec<Client>(MAX_CLIENTS);
+    _channels = Vec<Channel>();
+    _clientschannelsMapping = new Vec<ClientChannelMapping>();
     _max_fd_set = 0;
     for (size_t i = 0; i < _clients.size(); i++)
     {
@@ -37,8 +42,9 @@ Server::Server(char *pass, int port, char *ip, bool fileLog) : _pass(hashPasswor
 
 Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), _port(port)
 {
-    if (fileLog)
-        _logger = Logger();
+    (void)fileLog;
+    // if (fileLog)
+    //     _logger = Logger();
     this->_hostname = _getHostname();
     memset(&_serv_addr, 0, sizeof(_serv_addr));
     _serv_addr.sin_family = AF_INET;
@@ -69,18 +75,6 @@ void Server::CleanServer()
     _clients.removeAll(true);
     _channels.removeAll(true);
     _clientschannelsMapping->removeAll(true);
-}
-
-Server &Server::operator=(const Server &serv)
-{
-    this->_pass = serv._pass;
-    this->_port = serv._port;
-    this->_hostname = serv._hostname;
-    this->_serv_addr = serv._serv_addr;
-    this->_serv_size = serv._serv_size;
-    this->_client_size = serv._client_size;
-    this->_client_adrr = serv._client_adrr;
-    return (*this);
 }
 
 string Server::_getHostname() const

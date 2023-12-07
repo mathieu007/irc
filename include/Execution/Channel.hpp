@@ -21,9 +21,9 @@ private:
     bool _onInvitation;
     Client *_superModerator;
     Vec<ClientChannelMapping> *_clientsChannelMapping;
-    Vec<Client> _invitedClients = Vec<Client>();
-    Vec<Client> _bannedClients = Vec<Client>();
-    Vec<Client> _moderators = Vec<Client>();
+    Vec<Client> _invitedClients;
+    Vec<Client> _bannedClients;
+    Vec<Client> _moderators;
 
 public:
     Channel(string &name, Vec<ClientChannelMapping> *mapping);

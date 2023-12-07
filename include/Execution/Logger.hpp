@@ -2,12 +2,12 @@
 #include <iostream>
 #include <fstream>
 
-class Logger
-{
-private:
-    std::ofstream _logFile;
+// class Logger
+// {
+// private:
+//     std::ofstream _logFile;
 
-public:
-    Logger();
-    void close();
-};
+// public:
+//     Logger();
+//     void close();
+// };

@@ -41,7 +41,7 @@ class Server
 private:
     std::string _hostname;
     std::string _hostIp;
-    Logger _logger;
+    // Logger _logger;
     int _max_fd_set;
     std::string _pass;
     int _port;
@@ -56,17 +56,17 @@ private:
     /// @brief non blocking io for reading.
     fd_set _reading;
 
-    vector<int> _clientSockets = vector<int>();
+    vector<int> _clientSockets;
 
     // banned clients by ip address + port number, but in real application i would banned based on ip address only, but it's not really usefful while testing...
-    Map<string, long> _bannedClients = Map<string, long>();
-    Map<string, long> _connectionsLog = Map<string, long>();
+    Map<string, long> _bannedClients;
+    Map<string, long> _connectionsLog;
     // I choose to centralizing the data, it's a bit slower but much more manageable...
     // for faster operation i would have created a mapping table for clients and channels, this would make read operations faster,
     // also we coud have used indexes to make query faster, but it's fast enough...
-    Vec<Client> _clients = Vec<Client>(MAX_CLIENTS);
-    Vec<Channel> _channels = Vec<Channel>();
-    Vec<ClientChannelMapping> *_clientschannelsMapping = new Vec<ClientChannelMapping>();
+    Vec<Client> _clients;
+    Vec<Channel> _channels;
+    Vec<ClientChannelMapping> *_clientschannelsMapping;
 
     int _setSockAddrStorage();
     string _getHostname() const;
@@ -84,7 +84,6 @@ public:
     Server(char *pass, int port, char *ip, bool fileLog);
     ~Server();
     Server(const Server &serv);
-    Server &operator=(const Server &serv);
     int acceptClient();
     void initServer(void);
     void closeFds(void);

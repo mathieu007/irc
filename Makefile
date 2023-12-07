@@ -30,7 +30,7 @@ OBJDEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRC))
 
 CC = c++
 RM = rm -f
-CPPFLAGS =  -std=c++11 -I./include -I./include/Interfaces -I./include/Execution -I./include/Command
+CPPFLAGS =  -std=c++98 -I./include -I./include/Interfaces -I./include/Execution -I./include/Command
 CXXFLAGS += -Wall -Wextra -Werror -g
 LDFLAGS += -flto
 MAKEFLAGS  = -j12 -o

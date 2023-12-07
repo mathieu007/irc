@@ -75,7 +75,7 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 	}
 
 	/////split each command into tokens
-	std::vector<std::vector<std::string>> tokensList;
+	std::vector<std::vector<std::string> > tokensList;
 	for (std::size_t i = 0; i < commands.size(); ++i) {
 		std::vector<std::string> tokens;
 		std::istringstream iss(commands[i]);

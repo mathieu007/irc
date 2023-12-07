@@ -16,6 +16,9 @@ Channel::Channel(string &name, Vec<ClientChannelMapping> *mapping)
     _superModerator = nullptr;
     _clientsChannelMapping = mapping;
     _onInvitation = false;
+    _invitedClients = Vec<Client>();
+    _bannedClients = Vec<Client>();
+    _moderators = Vec<Client>();
 }
 
 Channel::Channel(string &name, string &key, Vec<ClientChannelMapping> *mapping)
