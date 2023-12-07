@@ -52,6 +52,12 @@ Server::Server(char *pass, int port, bool fileLog) : _pass(hashPassword(pass)), 
     _serv_size = sizeof(this->_serv_addr);
     _client_size = _serv_size;
     _max_fd_set = 0;
+    _clientSockets = vector<int>();
+    _bannedClients = Map<string, long>();
+    _connectionsLog = Map<string, long>();
+    _clients = Vec<Client>(MAX_CLIENTS);
+    _channels = Vec<Channel>();
+    _clientschannelsMapping = new Vec<ClientChannelMapping>();
     for (size_t i = 0; i < _clients.size(); i++)
     {
         _clients[i] = nullptr;
@@ -73,7 +79,8 @@ void Server::CleanServer()
     cout << "Start cleaning server: " << std::endl;
     _clients.removeAll(true);
     _channels.removeAll(true);
-    // _clientschannelsMapping->removeAll(true);
+    _clientschannelsMapping->removeAll(true);
+    delete _clientschannelsMapping;
 }
 
 string Server::_getHostname() const
@@ -151,14 +158,20 @@ void Server::_initServerSocket(void)
         throw std::runtime_error("Error: Couldn't open server socket.\n");
     int enable = 1;
     if (setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        close(this->_serverSocket);
         throw std::runtime_error("Error: Couldn't reuse socket address.\n");
+    }
     if (bind(this->_serverSocket, (sockaddr *)&(this->_serv_addr), this->_serv_size) == -1)
     {
         close(this->_serverSocket);
         throw std::runtime_error("Error: Couldn't bind socket address.\n");
     }
     if (listen(this->_serverSocket, SOMAXCONN) == -1)
+    {
+        close(this->_serverSocket);
         throw std::runtime_error("Error: Cannot listen to socket connection.\n");
+    }
 }
 
 int Server::_setSockAddrStorage()
@@ -198,8 +211,8 @@ int Server::acceptClient()
     if (socketClient < 0)
     {
         std::cerr << "Failed to connect client to socket." << std::endl;
-        // close(socketClient);
-        close(_serverSocket);
+        close(socketClient);
+        // close(_serverSocket);
         return (-1);
     }
     return (socketClient);

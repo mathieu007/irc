@@ -233,7 +233,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && (instance.*getter)() == ((*it)->*getter)())
+            if (*it != nullptr && (instance.*getter)() == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -247,7 +247,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && (instance.*getter)() == ((*it)->*getter)())
+            if (*it != nullptr && (instance.*getter)() == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -261,7 +261,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && (instance.*getter)() == ((*it)->*getter)())
+            if (*it != nullptr && (instance.*getter)() == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -275,7 +275,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && (instance.*getter)() == ((*it)->*getter)())
+            if (*it != nullptr && (instance.*getter)() == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -289,7 +289,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && value == ((*it)->*getter)())
+            if (*it != nullptr && value == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -303,7 +303,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && value == ((*it)->*getter)())
+            if (*it != nullptr && value == ((*it)->*getter)())
                 vec.push_back(*it);
         }
         return vec;
@@ -316,7 +316,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && instance == *(*it))
+            if (*it != nullptr && instance == *(*it))
                 vec.push_back(*it);
         }
         return vec;
@@ -329,7 +329,7 @@ public:
         Vec<T> vec = Vec<T>();
         for (Iterator it = this->begin(); it != this->end(); it++)
         {
-            if (*it && instance == (*it))
+            if (*it != nullptr && instance == (*it))
                 vec.push_back(*it);
         }
         return vec;
@@ -521,7 +521,7 @@ public:
         {
             if (*it && instance == (*it))
             {
-                if (deletePtr )
+                if (deletePtr)
                 {
                     delete *it;
                     *it = nullptr;
