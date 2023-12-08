@@ -50,7 +50,7 @@ ssize_t Msg::sendMsg(Client *client, string &data, int flags)
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
 				client->setMsg(ptr);
-				cout << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
+				std::cerr << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
 				return bytesSent;
 			}
 			else if (errno == EINTR)
@@ -88,16 +88,15 @@ ssize_t Msg::sendQueuedMsg(Client *client, int flags)
 		if (result > 0)
 			bytesSent += result;
 		else if (result == 0 && len == bytesSent)
-		{
-			client->setMsgSendQueue("");
 			break;
-		}
 		else
 		{
+			/// in some situation send was returning an error, but not a fatal error
+			/// while EAGAIN or EWOULDBLOCK we should not cancel the client processing...
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
 				client->setMsgSendQueue(ptr);
-				cout << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
+				std::cerr << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
 				return bytesSent;
 			}
 			else if (errno == EINTR)
@@ -132,7 +131,7 @@ bool Msg::sendAuthMessages(Client *client)
 		msg = "ERROR : Cannot execute command, No Username set, configure your irc client, or use USER <username> * 0 <realname> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);
 	}
-	else if (client->getNickname() == "")
+	else if (client->getNickname() == "" || client->getNickname() == "guest")
 	{
 		msg = "ERROR : Cannot execute command, No Nick name set, configure your irc client, or use NICK <username> if using nc.\r\n";
 		Msg::sendMsg(client, msg, 0);

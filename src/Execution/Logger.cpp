@@ -8,6 +8,11 @@
 //     std::cerr.rdbuf(_logFile.rdbuf());
 // }
 
+// Logger::~Logger()
+// {
+//     _logFile.close();
+// }
+
 // void Logger::close()
 // {
 //     _logFile.close();

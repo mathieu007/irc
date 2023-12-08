@@ -24,7 +24,7 @@ std::string Kick::createReasonMessage(std::vector<std::string> tokens)
 			message += " ";
 		}
 	}
-	message = message.substr(1);
+	// message = message.substr(1);
 	std::cout << "message [" << message << "]" << std::endl;
 	return message;
 }

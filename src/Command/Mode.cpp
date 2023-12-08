@@ -64,7 +64,7 @@ void Mode::setTopicByOperatorOnly(std::vector<std::string> &tokens, Client *clie
 		_errorMessage = "501 " + client->getNickname() + " MODE " + tokens[2] + " :Unknown MODE flag\r\n";
 	else if (!server.isModerator(client, channelName))
 		_errorMessage = "482 " + client->getNickname() + " " + channelName + " :You're not channel operator\r\n";
-	else if (!server.channelExist(channelName))
+	else if (!channel)
 		_errorMessage = "403 " + client->getNickname() + " " + channelName + " :No such channel\r\n";
 	else if (tokens[2][0] == '+' && !channel->isTopicPublic())
 		_errorMessage = "666 " + client->getNickname() + " " + channelName + " :Is already settable only by operator\r\n";
@@ -260,7 +260,7 @@ void Mode::setMaxClientForChannel(std::vector<std::string> &tokens, Client *clie
 		}
 		catch (const std::exception &e)
 		{
-			std::cerr << "Error: " << e.what() << "\n";
+			std::cout << "Error: " << e.what() << "\n";
 			_errorMessage = "666 " + client->getNickname() + " Bad argument for Max user. Must be between 1 - 50\r\n";
 		}
 		if (!_errorMessage.empty())

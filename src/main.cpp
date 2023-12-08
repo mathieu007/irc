@@ -12,13 +12,13 @@ int main(int argc, char **argv)
 {
     if (argc == 3)
     {
-        Server server = Server(argv[2], std::stoi(argv[1]), false);
+        Server server = Server(argv[2], std::stoi(argv[1]), true);
         Msg::_server = &server;
         server.initServer();
     }
     else if (argc == 4)
     {
-        Server server = Server(argv[2], std::stoi(argv[1]), argv[3], false);
+        Server server = Server(argv[2], std::stoi(argv[1]), argv[3], true);
         Msg::_server = &server;
         server.initServer();
     }

@@ -60,49 +60,56 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 	/////split if there mutipule commands
 	// message = "CAP LS 302\r\nNICK user\r\nUSER user 0 * :user\r\n";
 	// message = "j\no\ni\nn\r\n";
-	std::vector<std::string> commands;
-	std::string currentCommand;
-	for (std::string::size_type i = 0; i < message.length(); ++i) {
-		if (message[i] == '\r' && i + 1 < message.length() && message[i + 1] == '\n')
-		{
-			commands.push_back(currentCommand);
-			currentCommand.clear();
-			++i;
-		}
-		else
-		{
-			currentCommand += message[i];
-		}
-	}
+	// std::string command;
+	// std::string currentCommand;
+	// for (std::string::size_type i = 0; i < message.length(); ++i)
+	// {
+	// 	if (message[i] == '\r' && i + 1 < message.length() && message[i + 1] == '\n')
+	// 	{
+	// 		commands.push_back(currentCommand);
+	// 		currentCommand.clear();
+	// 		++i;
+	// 	}
+	// 	else
+	// 	{
+	// 		currentCommand += message[i];
+	// 	}
+	// }
 
 	/////split each command into tokens
 
-	std::vector<std::vector<std::string> > tokensList;
-	for (std::size_t i = 0; i < commands.size(); ++i) {
-		std::vector<std::string> tokens;
-		std::string token;
+	// std::vector<std::vector<std::string> > tokensList;
+	// for (std::size_t i = 0; i < commands.size(); ++i) {
+	std::vector<std::string> tokens;
+	std::string token;
 
-		for (std::size_t j = 0; j < commands[i].size(); ++j) {
-			char currentChar = commands[i][j];
-			
-			if (currentChar == ' ' || currentChar == '\r') {
-				if (!token.empty()) {
-					tokens.push_back(token);
-					token.clear();
-				}
-			}
-			else {
-				if (currentChar != '\n')
-					token += currentChar;
+	for (std::size_t j = 0; j < message.size(); ++j)
+	{
+		char currentChar = message[j];
+
+		if (currentChar == ' ' || currentChar == '\r')
+		{
+			if (!token.empty())
+			{
+				tokens.push_back(token);
+				token.clear();
 			}
 		}
-
-		if (!token.empty()) {
-			tokens.push_back(token);
+		else
+		{
+			if (currentChar != '\n')
+				token += currentChar;
 		}
-
-		tokensList.push_back(tokens);
 	}
+
+	if (!token.empty())
+	{
+		tokens.push_back(token);
+	}
+
+	// 	tokensList.push_back(tokens);
+	// }
+
 	// std::vector<std::vector<std::string> > tokensList;
 	// for (std::size_t i = 0; i < commands.size(); ++i) {
 	// 	std::vector<std::string> tokens;
@@ -119,29 +126,36 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 	// 			token.erase(pos, 1);
 	// 		}
 	// 		else if (!token.empty()) {
-    //             tokens.push_back(token);
-    //         }
+	//             tokens.push_back(token);
+	//         }
 	// 	}
 	// 	tokensList.push_back(tokens);
 	// }
 
 	/////print all command and tokens
-	for (std::size_t i = 0; i < tokensList.size(); ++i) {
-		std::cout << "Tokens for Command " << i + 1 << ": ";
-		for (std::size_t j = 0; j < tokensList[i].size(); ++j)
-		{
-			std::cout << "[" << tokensList[i][j] << "] ";
-		}
-		std::cout << std::endl;
+	// for (std::size_t i = 0; i < tokensList.size(); ++i) {
+	// 	std::cout << "Tokens for Command " << i + 1 << ": ";
+	// 	for (std::size_t j = 0; j < tokensList[i].size(); ++j)
+	// 	{
+	// 		std::cout << "[" << tokensList[i][j] << "] ";
+	// 	}
+	// 	std::cout << std::endl;
+	// }
+
+	std::cout << "Tokens for Command: ";
+	for (std::size_t j = 0; j < tokens.size(); ++j)
+	{
+		std::cout << "[" << tokens[j] << "] ";
 	}
+	std::cout << std::endl;
 
 	/////execute all commands
-	for (std::size_t i = 0; i < tokensList.size(); ++i) {
-		if (isValid(tokensList[i].front()))
-			_commandMap[tokensList[i].front()]->execute(client, tokensList[i], server);
-		else
-			std::cout << RED << "Bad command:" << tokensList[i].front() << RESET << std::endl;
-	}
+	// for (std::size_t i = 0; i < tokensList.size(); ++i) {
+	if (isValid(tokens.front()))
+		_commandMap[tokens.front()]->execute(client, tokens, server);
+	else
+		std::cout << RED << "Bad command:" << tokens.front() << RESET << std::endl;
+	// }
 	return 1;
 }
 

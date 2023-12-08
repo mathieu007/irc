@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_CLIENT_INACTIVITY 60 * 5
+#define MAX_CLIENT_INACTIVITY 60 * 15
 #define MAX_CLIENT_CONNECTION_RETRY_TIME 2
 #define MAX_CLIENT_CONNECTION_RETRY_TIME_STR "2"
 #define NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN (long)(60 * 10)
@@ -77,6 +77,9 @@ private:
     void _disconnectInnactiveClient(Client *client);
     bool _recvClientMsg(Client *client, char *buffer, int clientSocket);
     void _execUnAuthenticatedCmd(string &msg, Client *client);
+    bool _processRecvRequest(int clientSocket, Client *client, char *buffer, int i);
+    bool _processSendRequest(int clientSocket, Client *client);
+    string _removeLineFeed(string &msg);
 
 public:
     Server();

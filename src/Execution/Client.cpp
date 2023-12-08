@@ -226,12 +226,8 @@ bool Client::canMakeRequest()
     long curTime = getCurTime();
     long prevRequest = _lastRequestTime;
     _lastRequestTime = curTime;
-    if (_lastRequestTime == 0)
-    {
-        _lastRequestTime = curTime;
-        prevRequest = _lastRequestTime;
+    if (prevRequest == 0)
         return true;
-    }
     long diff = curTime - prevRequest;
     if (diff == 0)
     {
@@ -239,7 +235,6 @@ bool Client::canMakeRequest()
             return false;
         return true;
     }
-
     if (_numRequests / diff >= MAX_REQ_PER_SEC)
         return false;
     _numRequests = 1;

@@ -9,5 +9,6 @@
 
 // public:
 //     Logger();
+//     ~Logger();
 //     void close();
 // };
