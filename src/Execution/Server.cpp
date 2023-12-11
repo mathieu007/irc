@@ -391,7 +391,6 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
     int clientSocket = _clientSockets[index];
     string msg = Msg::recvMsg(clientSocket, buffer);
     string newMsg = _removeLineFeed(msg);
-
     if (newMsg.size() > 0)
     {
         client->getMsgRecvQueue().append(newMsg);
@@ -497,7 +496,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
 
 void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
 {
-    if (!String::endsWith(msg, "\r\n"))
+    if (!String::contains(msg, "\r\n"))
         return;
     if (String::startWith(msg, "CAP"))
     {
