@@ -1,0 +1,171 @@
+Tokens for Command: ] 
+Bad command:
+msg receved from client:
+
+Tokens for Command: 
+==49382== Invalid read of size 1
+==49382==    at 0x100030185: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__is_long() const (string:1420)
+==49382==    by 0x10003012B: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__get_pointer() const (string:1514)
+==49382==    by 0x100030094: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::data() const (string:1242)
+==49382==    by 0x10003002B: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::operator std::__1::basic_string_view<char, std::__1::char_traits<char> >() const (string:875)
+==49382==    by 0x10002FFD3: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::compare(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (string:3714)
+==49382==    by 0x10002FF9C: bool std::__1::operator< <char, std::__1::char_traits<char>, std::__1::allocator<char> >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (string:3939)
+==49382==    by 0x10002FF60: std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >::operator()(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (__functional_base:54)
+==49382==    by 0x10002FF04: std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>::operator()(std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (map:516)
+==49382==    by 0x100030FD9: std::__1::__tree_iterator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, long> std::__1::__tree<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>, std::__1::allocator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> > >::__lower_bound<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, std::__1::__tree_end_node<std::__1::__tree_node_base<void*>*>*) (__tree:2637)
+==49382==    by 0x100030E98: std::__1::__tree_iterator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, long> std::__1::__tree<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>, std::__1::allocator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> > >::find<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (__tree:2566)
+==49382==    by 0x10002DB6C: std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, std::__1::allocator<std::__1::pair<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const, Command*> > >::find(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (map:1378)
+==49382==    by 0x10002DD03: CommandFactory::isValid(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (CommandFactory.cpp:47)
+==49382==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==49382== 
+==49382== 
+==49382== Process terminating with default action of signal 11 (SIGSEGV)
+==49382==  Access not within mapped region at address 0x0
+==49382==    at 0x100030185: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__is_long() const (string:1420)
+==49382==    by 0x10003012B: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__get_pointer() const (string:1514)
+==49382==    by 0x100030094: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::data() const (string:1242)
+==49382==    by 0x10003002B: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::operator std::__1::basic_string_view<char, std::__1::char_traits<char> >() const (string:875)
+==49382==    by 0x10002FFD3: std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::compare(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (string:3714)
+==49382==    by 0x10002FF9C: bool std::__1::operator< <char, std::__1::char_traits<char>, std::__1::allocator<char> >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (string:3939)
+==49382==    by 0x10002FF60: std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >::operator()(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (__functional_base:54)
+==49382==    by 0x10002FF04: std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>::operator()(std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const (map:516)
+==49382==    by 0x100030FD9: std::__1::__tree_iterator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, long> std::__1::__tree<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>, std::__1::allocator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> > >::__lower_bound<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, std::__1::__tree_end_node<std::__1::__tree_node_base<void*>*>*) (__tree:2637)
+==49382==    by 0x100030E98: std::__1::__tree_iterator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, void*>*, long> std::__1::__tree<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::__map_value_compare<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*>, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, true>, std::__1::allocator<std::__1::__value_type<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*> > >::find<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (__tree:2566)
+==49382==    by 0x10002DB6C: std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Command*, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, std::__1::allocator<std::__1::pair<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const, Command*> > >::find(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (map:1378)
+==49382==    by 0x10002DD03: CommandFactory::isValid(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (CommandFactory.cpp:47)
+==49382==  If you believe this happened as a result of a stack
+==49382==  overflow in your program's main thread (unlikely but
+==49382==  possible), you can try to increase the size of the
+==49382==  main thread stack using the --main-stacksize= flag.
+==49382==  The main thread stack size used in this run was 8388608.
+==49382== 
+==49382== HEAP SUMMARY:
+==49382==     in use at exit: 35,416 bytes in 228 blocks
+==49382==   total heap usage: 84,849 allocs, 84,621 frees, 4,111,069 bytes allocated
+==49382== 
+==49382== 56 bytes in 1 blocks are possibly lost in loss record 35 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A3190: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1007A33A0: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x100689871: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 56 bytes in 1 blocks are possibly lost in loss record 36 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A3190: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1007A33A0: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10068988E: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 56 bytes in 1 blocks are possibly lost in loss record 37 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A3190: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1007A33A0: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1006898AB: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 56 bytes in 1 blocks are possibly lost in loss record 38 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A3190: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1007A33A0: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1006898C8: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 112 bytes in 1 blocks are possibly lost in loss record 75 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A33CC: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x100689871: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 112 bytes in 1 blocks are possibly lost in loss record 76 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A33CC: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10068988E: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 112 bytes in 1 blocks are possibly lost in loss record 77 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A33CC: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1006898AB: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== 112 bytes in 1 blocks are possibly lost in loss record 78 of 104
+==49382==    at 0x100248BA0: calloc (in /Users/cperron/.brew/Cellar/valgrind/HEAD-4233f2e/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==49382==    by 0x1007A33CC: _notify_fork_child (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x10079DA6B: notify_register_check (in /usr/lib/system/libsystem_notify.dylib)
+==49382==    by 0x1006898C8: __si_module_static_ds_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1006897A8: si_module_static_ds (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689053: si_module_with_name (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x1006895B4: si_module_config_modules_for_category (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100689324: __si_module_static_search_block_invoke (in /usr/lib/system/libsystem_info.dylib)
+==49382==    by 0x100447657: _dispatch_client_callout (in /usr/lib/system/libdispatch.dylib)
+==49382==    by 0x1004487DD: _dispatch_once_callout (in /usr/lib/system/libdispatch.dylib)
+==49382== 
+==49382== LEAK SUMMARY:
+==49382==    definitely lost: 0 bytes in 0 blocks
+==49382==    indirectly lost: 0 bytes in 0 blocks
+==49382==      possibly lost: 672 bytes in 8 blocks
+==49382==    still reachable: 20,134 bytes in 47 blocks
+==49382==                       of which reachable via heuristic:
+==49382==                         newarray           : 56 bytes in 1 blocks
+==49382==         suppressed: 14,610 bytes in 173 blocks
+==49382== Reachable blocks (those to which a pointer was found) are not shown.
+==49382== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==49382== 
+==49382== For lists of detected and suppressed errors, rerun with: -s
+==49382== ERROR SUMMARY: 9 errors from 9 contexts (suppressed: 11 from 11)
+[1]    49382 segmentation fault  valgrind --leak-check=full ./ircserv 6667 123456

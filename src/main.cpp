@@ -8,25 +8,41 @@
 #include "Message.hpp"
 #include "ClientChannelMapping.hpp"
 
-int main(int argc, char **argv)
-{
-    if (argc == 3)
-    {
-        Server server = Server(argv[2], std::stoi(argv[1]), true);
-        Msg::_server = &server;
-        server.initServer();
+bool isAllDigits(const std::string& str) {
+    for (std::size_t i = 0; i < str.length(); ++i) {
+        if (!isdigit(str[i])) {
+            return false;
+        }
     }
-    else if (argc == 4)
-    {
-        Server server = Server(argv[2], std::stoi(argv[1]), argv[3], true);
-        Msg::_server = &server;
-        server.initServer();
+    return true;
+}
+
+int main(int argc, char** argv) {
+    try {
+        if (argc != 3 && argc != 4) {
+            throw std::invalid_argument("Usage: " + std::string(argv[0]) + " <port> <password> <optional:ip>");
+        }
+
+		int port = atoi(argv[1]);
+		if (port < 0 || port > 65535)
+			throw std::invalid_argument("Port must be bewteen 0 and 65535");
+        if (!isAllDigits(argv[1])) {
+            throw std::invalid_argument("Port must be a number.");
+        }
+		
+        if (argc == 3) {
+            Server server = Server(argv[2], port, false);
+            Msg::_server = &server;
+            server.initServer();
+        } else if (argc == 4) {
+            Server server = Server(argv[2], port, argv[3], false);
+            Msg::_server = &server;
+            server.initServer();
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
-    std::cerr << "Usage: ./" << argv[0]
-              << " <port>"
-              << " <pass>"
-              << " <optional:ip>" << std::endl;
-    exit(1);
+    return 0;
 }
 
 // int main(int argc, char **argv)
