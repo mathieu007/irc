@@ -31,7 +31,7 @@ bool Invite::isValidCommand(std::vector<std::string> &tokens, Client *client, Se
 	else if (_clientToInvite->isInChannel(_channel) && _channel->isInIvitationList(_clientToInvite))
 		_errorMessage = "441 " + client->getNickname() + " " + _channelName + " " + _clientNickToInvite + " :is already on that channel\r\n";
 	else if (_channel->isOnInvitationOnly() && _channel->isInIvitationList(_clientToInvite))
-		_errorMessage = "443 " + client->getNickname() + " " + _clientNickToInvite + " " + _channelName + " :is already on channel\r\n";
+		_errorMessage = "443 " + client->getNickname() + " " + _clientNickToInvite + " " + _channelName + " :is already invited on that channel\r\n";
 	else if (!_channel->isOnInvitationOnly())
 		_errorMessage = "443 " + client->getNickname() + " " + _clientNickToInvite + " " + _channelName + " :cannot add to invitation list, channel is not in invite mode +i\r\n";
 	else if (!client->isInChannel(_channel))

@@ -2,25 +2,28 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-void Nick::setVariableToZero(){
+void Nick::setVariableToZero()
+{
 	_errorMessage = "";
 	_newNickName = "";
 	_oldNickName = "";
 }
 
-bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server) {
+bool Nick::isValidCommand(std::vector<std::string> &tokens, Client *client, Server &server)
+{
 	if (tokens.size() < 2)
 		_errorMessage = "431 " + client->getNickname() + " :No nickname given\r\n";
 	else if (tokens[1].size() > 20)
 		_errorMessage = "1001 " + client->getNickname() + " :Nickname too long\r\n";
-	else if (isdigit(_newNickName[0]) || _newNickName[0] == '#' || _newNickName[0] == ':' || _newNickName.find(" ") != std::string::npos)
+	else if (_newNickName.length() > 0 && isdigit(_newNickName[0]) || _newNickName[0] == '#' || _newNickName[0] == ':' || _newNickName.find(" ") != std::string::npos)
 		_errorMessage = "432 " + client->getNickname() + " " + _newNickName + " :Erroneus nickname\r\n";
 	else if (server.nickNameExist(_newNickName))
 		_errorMessage = "433 " + client->getNickname() + " " + _newNickName + " :Nickname is already in use\r\n";
 	return _errorMessage.empty() ? true : false;
 }
 
-bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server) {
+bool Nick::execute(Client *client, std::vector<std::string> tokens, Server &server)
+{
 	setVariableToZero();
 	if (tokens.size() > 1)
 		_newNickName = tokens[1];

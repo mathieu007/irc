@@ -308,8 +308,7 @@ bool Mode::execute(Client *client, std::vector<std::string> tokens, Server &serv
 			channel->isTopicPublic() ? args += "-t " : args += "+t ";
 			channel->getKey() == "" ? args += "-k " : args += "+k ";
 			channel->getModerators().size() > (size_t)0 ? args += "+o " : args += "-o ";
-			channel->getMaxNumClients() == (uint)50 ? args += "-l " : args += "+l ";
-			
+			channel->getMaxNumClients() == (uint)50 ? args += "-l " : args += "+l ";			
 			std::string msg = "324 " + client->getNickname() + " " + channelName + " " + args + "\r\n";
 			std::cout << YELLOW << "msg sent to client:" << msg << RESET << std::endl;
 			Msg::sendMsg(client, msg, 0);
