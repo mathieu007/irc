@@ -119,7 +119,7 @@ void Mode::setKeyForChannel(std::vector<std::string> &tokens, Client *client, Se
 			channel->setKey("");
 			std::string message = ":" + client->getNickname() + " MODE " + channelName + " :Passkey removed\r\n";
 			Msg::sendMsg(client, message, 0);
-			std::cout << YELLOW << "msg sent to client:" << _errorMessage << RESET << std::endl;
+			std::cout << YELLOW << "msg sent to client:" << message << RESET << std::endl;
 		}
 		else
 		{
