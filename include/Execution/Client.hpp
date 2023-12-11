@@ -36,6 +36,7 @@ private:
     string _msgRecvQueue;
     int _socket;
     bool _isAuth;
+    bool _bannedFromServer;
     long _lastRequestTime;
     long _lastActivityTime;
     long _nextAllowedConnectionTime;
@@ -61,6 +62,8 @@ public:
     string getHost() const;
     string getPort() const;
     string &getMsg();
+    bool getBannedFromServer();
+    void setBannedFromServer(bool banned);
     string &getMsgSendQueue();
     string &getMsgRecvQueue();
     long getLastActivity();
@@ -70,7 +73,6 @@ public:
     Vec<Channel> getBannedChannels();
     void setHost(string host);
     void setSocket(int socket);
-
     void setIsAuth(bool isAuth);
     void setMsg(string msg);
     void setMsgSendQueue(string msg);

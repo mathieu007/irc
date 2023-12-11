@@ -10,7 +10,7 @@ proc handleOutput {hasOutput} {
         set timeout 1
         expect {
             timeout {
-                puts "\n"
+                # puts "\n"
             }
         }       
     }
@@ -32,32 +32,32 @@ send "\x0a"
 sleep 1
 send "\x0a"
 sleep 1
-send "\x0a\x0d\x0a"
-sleep 1
 send " 123456\x0d\x0a"
 set hasOutput 0
 handleOutput $hasOutput
 
-# send "USER math123 * 0 Mathieu\x0d\x0a"
-# set hasOutput 0
-# handleOutput $hasOutput
+send "USER Math2 0 * Mathieu Roy\x0d\x0aNICK Math2\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
 
-# sleep 2
+send "JOIN #ddd\x0d\x0aJOIN #ddd2\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
 
-# spawn nc "172.31.200.244" "6667"
-# expect ".*"
-# sleep 0.1
+expect ""
+set repeat_count 1000
+for {set i 0} {$i < $repeat_count} {incr i} {
+    set hasOutput 0
+    handleOutput $hasOutput
+    sleep 0.1
+}
 
-# set cmd "PASS 123456\x0d\x0a"
-# send $cmd
-# set hasOutput 0
-# handleOutput $hasOutput
+send "QUIT :End of script\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
 
-# send "USER math123 * 0 Mathieu\x0d\x0a"
-# set hasOutput 0
-# handleOutput $hasOutput
-
-sleep 110
-
-interact
+expect eof
 

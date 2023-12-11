@@ -350,38 +350,43 @@ int Server::checkIncomingClientConnection()
 string Server::_removeLineFeed(string &msg)
 {
     string newMsg = "";
-    string extract = String::extractUptoFirstOccurence(msg, "\r\n", false);
-    if (!extract.empty() || extract.size() == 2)
+    while (true)
     {
-        extract.erase(extract.end() - 2, extract.end());
-        string::iterator start = extract.begin();
-        string::iterator it = extract.begin();
-        while (it != extract.end())
+        string extract = String::extractUptoFirstOccurence(msg, "\r\n", false);
+        if (!extract.empty() || extract.size() == 2)
         {
-            if (*it == '\n')
+            extract.erase(extract.end() - 2, extract.end());
+            string::iterator start = extract.begin();
+            string::iterator it = extract.begin();
+            while (it != extract.end())
             {
-                newMsg += msg.substr(start - extract.begin(), it - start);
-                start = it + 1;
+                if (*it == '\n')
+                {
+                    newMsg.append(start, it);
+                    start = it + 1;
+                }
+                it++;
             }
-            it++;
+            newMsg.append(start, it);
+            newMsg += "\r\n";
+            msg = msg.substr(extract.length() + 2);
         }
-        newMsg += msg.substr(start - extract.begin(), extract.end() - start);
-        newMsg += "\r\n";
-    }
-    else
-    {
-        string::iterator start = msg.begin();
-        string::iterator it = msg.begin();
-        while (it != msg.end())
+        else
         {
-            if (*it == '\n')
+            string::iterator start = msg.begin();
+            string::iterator it = msg.begin();
+            while (it != msg.end())
             {
-                newMsg += msg.substr(start - msg.begin(), it - start);
-                start = it + 1;
+                if (*it == '\n')
+                {
+                    newMsg.append(start, it);
+                    start = it + 1;
+                }
+                it++;
             }
-            it++;
+            newMsg.append(start, it);
+            return newMsg;
         }
-        newMsg += msg.substr(start - msg.begin(), msg.end() - start);
     }
     return newMsg;
 }
@@ -390,8 +395,12 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
 {
     int clientSocket = _clientSockets[index];
     string msg = Msg::recvMsg(clientSocket, buffer);
+    if (msg.length() > 0 && !client->canMakeRequest())
+    {
+        client->setBannedFromServer(true);
+        return false;
+    }
     string newMsg = _removeLineFeed(msg);
-
     if (newMsg.size() > 0)
     {
         client->getMsgRecvQueue().append(newMsg);
@@ -407,7 +416,7 @@ bool Server::_recvClientMsg(Client *client, char *buffer, int index)
 void Server::_banClient(Client *client)
 {
     std::cerr << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
-    std::cout << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
+    // std::cout << "The following client: " + client->getHost() + " have been banned from our irc server." << std::endl;
     string key = client->getHost();
     _bannedClients.add(key, time(NULL) + NEXT_ALLOWED_CONNECTION_TIME_ONCE_BAN);
     string warning = string("QUIT :You are now banned from our irc server, you have been warnned several time!\r\n");
@@ -446,15 +455,7 @@ bool Server::_processRecvRequest(int clientSocket, Client *client, char *buffer,
 {
     if (FD_ISSET(clientSocket, &_reading))
     {
-        if (client->canMakeRequest())
-        {
-            if (!_recvClientMsg(client, buffer, i))
-            {
-                _banClient(client);
-                return false;
-            }
-        }
-        else
+        if (!client->getBannedFromServer() && !_recvClientMsg(client, buffer, i))
         {
             _banClient(client);
             return false;

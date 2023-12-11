@@ -1,0 +1,72 @@
+#!/usr/bin/expect -f
+
+set stty_init raw
+
+# Spawn the process
+proc handleOutput {hasOutput} {
+    if {$hasOutput == 1} {
+        expect ".*\n"        
+    } else {
+        set timeout 1
+        expect {
+            timeout {
+                # puts "\n"
+            }
+        }       
+    }
+}
+
+spawn nc "172.31.200.244" "6667"
+expect ".*"
+sleep 0.1
+
+send "P\x0a\x0a\x0a\x0a\x0a"
+sleep 1
+send "A\x0a"
+sleep 1
+send "S\x0a"
+sleep 1
+send "S\x0a"
+sleep 1
+send "\x0a"
+sleep 1
+send "\x0a"
+sleep 1
+send " 123456\x0d\x0a"
+set hasOutput 0
+handleOutput $hasOutput
+
+send "USER Math 0 * Mathieu Roy\x0d\x0aNICK Math\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
+
+send "JOIN #ddd\x0d\x0aJOIN #ddd2\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
+
+send "PRIVMSG #ddd2 how are you?\x0a\x0d\x0aPRIVMSG #ddd Are you a man bro?\x0a\x0a\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
+
+set repeat_count 1000
+for {set i 0} {$i < $repeat_count} {incr i} {
+    set commandOutput [exec sh -c {cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 50}]
+    send "PRIVMSG #ddd :$commandOutput --------\x0a"
+    send "$commandOutput!\x0a\x0a\x0a\x0a\x0d\x0a"
+    sleep 0.1
+    set hasOutput 0
+    handleOutput $hasOutput
+}
+
+send "QUIT :End of script\x0d\x0a"
+sleep 1
+set hasOutput 0
+handleOutput $hasOutput
+
+sleep 1000
+
+expect eof
+

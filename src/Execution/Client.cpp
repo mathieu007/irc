@@ -17,6 +17,7 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
     this->_msgRecvQueue = std::string();
     this->_address = "";
     this->_port = "";
+    this->_bannedFromServer = false;
     this->_remove = false;
     this->_clientChannelsMapping = mapping;
     this->_realName = "";
@@ -25,11 +26,11 @@ Client::Client(Vec<ClientChannelMapping> *mapping)
 
 Client::~Client()
 {
-    Vec<ClientChannelMapping> map = getMapping();
-    for (size_t i = 0; i < map.size(); i++)
-    {
-        map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
-    }
+    // Vec<ClientChannelMapping> map = getMapping();
+    // for (size_t i = 0; i < map.size(); i++)
+    // {
+    //     map[i]->getChannel()->getBannedClients().removeWhere(&Client::getUsername, this->getUsername(), false);
+    // }
 }
 
 void Client::setIsAuth(bool isAuth)
@@ -218,6 +219,16 @@ long Client::getCurTime() const
     long seconds = static_cast<long>(currentTime);
 
     return seconds;
+}
+
+bool Client::getBannedFromServer()
+{
+    return _bannedFromServer;
+}
+
+void Client::setBannedFromServer(bool banned)
+{
+    _bannedFromServer = banned;
 }
 
 bool Client::canMakeRequest()
