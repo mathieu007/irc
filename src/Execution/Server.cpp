@@ -498,7 +498,7 @@ int Server::fdSetClientMsgLoop(char *buffer)
 
 void Server::_execUnAuthenticatedCmd(string &msg, Client *client)
 {
-    if (!String::endsWith(msg, "\r\n"))
+    if (!String::contains(msg, "\r\n"))
         return;
     if (String::startWith(msg, "CAP"))
     {

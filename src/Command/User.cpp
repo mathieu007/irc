@@ -21,7 +21,8 @@ std::string User::createFullName(std::vector<std::string> tokens)
 			message += " ";
 		}
 	}
-	// message = message.substr(4);
+	if (String::startWith(message, ":"))
+		message = message.substr(1);
 	std::cout << "message [" << message << "]" << std::endl;
 	return message;
 }

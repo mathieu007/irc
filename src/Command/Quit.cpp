@@ -16,6 +16,8 @@ std::string Quit::createQuitMessage(Client *client, const std::vector<std::strin
 		message += " ";
 		i++;
 	}
+	if (String::startWith(message, ":"))
+		message = message.substr(1);
 	return "QUIT :" + message + "\r\n";
 }
 

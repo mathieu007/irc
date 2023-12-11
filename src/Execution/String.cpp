@@ -9,6 +9,12 @@ namespace String
             return (fullString.compare(fullString.length() - suffix.length(), suffix.length(), suffix) == 0);
         return false;
     }
+
+    bool contains(const std::string &mainString, const std::string &substring)
+    {
+        return mainString.find(substring) != std::string::npos;
+    }
+
     std::string extractUptoFirstOccurence(const std::string &input, const std::string &substring, bool excludeOcc)
     {
         size_t pos = input.find(substring);
