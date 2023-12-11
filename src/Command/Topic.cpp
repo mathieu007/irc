@@ -64,7 +64,7 @@ bool Topic::execute(Client *client, std::vector<std::string> tokens, Server &ser
 		_channel->setTopic(_channelTopic);
 		string msg = ":" + client->getNickname() + " TOPIC " + _channelName + " :" + _channelTopic + "\r\n";
 		_channel->sendMsgToAll(msg);
-		std::cout << "TOPIC msg sent to clients:" << RED << msg << RESET << std::endl;
+		std::cout << YELLOW << "TOPIC msg sent to clients:"  << msg << RESET << std::endl;
 	}
 	return _errorMessage.empty() ? true : false;
 }
