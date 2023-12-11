@@ -151,10 +151,12 @@ bool CommandFactory::tokenMessage(std::string message, Client *client, Server &s
 
 	/////execute all commands
 	// for (std::size_t i = 0; i < tokensList.size(); ++i) {
-	if (isValid(tokens.front()))
+	if (tokens.size() > 0 && isValid(tokens.front()))
 		_commandMap[tokens.front()]->execute(client, tokens, server);
-	else
+	else if (tokens.size() > 0)
 		std::cout << RED << "Bad command:" << tokens.front() << RESET << std::endl;
+	else
+		std::cout << RED << "Empty command." << RESET << std::endl;
 	// }
 	return 1;
 }
