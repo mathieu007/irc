@@ -58,10 +58,9 @@ run:
 	$(MAKE) all
 	./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
 
-
 runv:
 	$(MAKE) all
-	valgrind --leak-check=full --track-origins=yes ./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
+	valgrind --leak-check=full ./$(NAME) $(filter-out $@,$(MAKECMDGOALS))
 	
 clean:
 	$(RM) -rf $(OBJDIR)
