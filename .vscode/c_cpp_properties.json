@@ -9,9 +9,9 @@
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
-            "cStandard": "c89",
-            "cppStandard": "c++98",
-            "intelliSenseMode": "macos-clang-x64"
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "clang-x64"
         }
     ],
     "version": 4
