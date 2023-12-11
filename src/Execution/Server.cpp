@@ -254,7 +254,7 @@ bool Server::isAllowedToConnect(string clientAddress, int socket)
     long bannedTime = 0;
     if (_bannedClients.tryGet(clientAddress, bannedTime))
     {
-        if (bannedTime < time(NULL))
+        if (bannedTime < static_cast<long>(time(NULL)))
             return false;
         return true;
     }
