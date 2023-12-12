@@ -32,7 +32,7 @@ bool Privmsg::isValidCommandToClient(std::vector<std::string> &tokens, Client *c
 
 	if (tokens.size() < 3)
 		_errorMessage = "461 " + client->getHost() + " PRIVMSG :Not enought or too much parameters\r\n";
-	if (server.getClientByNickname(reciverNick) != nullptr)
+	if (server.getClientByNickname(reciverNick) == nullptr)
 		_errorMessage = "401 " + client->getHost() + " " + reciverNick + " :No such nick/channel\r\n";
 	return _errorMessage.empty() ? true : false;
 }

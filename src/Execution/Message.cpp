@@ -48,13 +48,7 @@ ssize_t Msg::sendMsg(Client *client, string &data, int flags)
 		}
 		else
 		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				client->setMsg(ptr);
-				std::cerr << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
-				return bytesSent;
-			}
-			else if (errno == EINTR)
+			if (errno == EINTR)
 			{
 				// Interrupted by a signal, continue sending ????????????
 				client->setRemove(true);
@@ -95,15 +89,7 @@ ssize_t Msg::sendQueuedMsg(Client *client, int flags)
 		}
 		else
 		{
-			/// in some situation send was returning an error, but not a fatal error
-			/// while EAGAIN or EWOULDBLOCK we should not cancel the client processing...
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				client->setMsgSendQueue(ptr);
-				std::cerr << "send EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
-				return bytesSent;
-			}
-			else if (errno == EINTR)
+			if (errno == EINTR)
 			{
 				// Interrupted by a signal, continue sending ????????????
 				client->setRemove(true);
@@ -181,13 +167,7 @@ string Msg::recvMsg(int sockfd, char *buffer)
 		}
 		else
 		{
-			// iff no data available or the call is blocking we don't wait and send the msg right away...
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				cout << "recv EAGAIN || EWOULDBLOCK error, continue processing..." << std::endl;
-				return msg;
-			}
-			else if (errno == EINTR)
+			if (errno == EINTR)
 			{
 				// should we continue ??????????
 				vector<Client *> clients = Msg::_server->getClients();
