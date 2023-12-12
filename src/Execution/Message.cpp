@@ -147,7 +147,7 @@ bool Msg::sendAuthMessages(Client *client)
 ssize_t Msg::sendMsgToRecipient(Client *sender, Client *recipient, string &msg, int flags)
 {
 	ssize_t byteToSend = 0;
-
+	
 	if (*sender == *recipient)
 		return Msg::sendMsg(recipient, msg, flags);
 	string msgQueue = recipient->getMsgSendQueue();
