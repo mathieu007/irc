@@ -42,6 +42,7 @@ ssize_t Msg::sendMsg(Client *client, string &data, int flags)
 			bytesSent += result;
 		else if (result == 0)
 		{
+			client->setRemove(true);
 			client->setMsg(ptr);
 			break;
 		}
@@ -87,8 +88,11 @@ ssize_t Msg::sendQueuedMsg(Client *client, int flags)
 		// the data is not sent in one swoop we must handle the data per client, we need to save the left over msg data into user msg
 		if (result > 0)
 			bytesSent += result;
-		else if (result == 0 && len == bytesSent)
-			break;
+		else if (result == 0)
+		{
+			client->setRemove(true);
+			return bytesSent;
+		}
 		else
 		{
 			/// in some situation send was returning an error, but not a fatal error
@@ -168,7 +172,13 @@ string Msg::recvMsg(int sockfd, char *buffer)
 		}
 		// Connection closed by the peer
 		else if (bytesRead == 0)
+		{
+			vector<Client *> clients = Msg::_server->getClients();
+			Client *client = clients[sockfd];
+			if (client)
+				client->setRemove(true);
 			return msg;
+		}
 		else
 		{
 			// iff no data available or the call is blocking we don't wait and send the msg right away...
