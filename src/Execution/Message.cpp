@@ -12,16 +12,16 @@ fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
 
 select or poll:
 Even though you checked the readiness with select,
-it's possible that the non-blocking operation may still return EWOULDBLOCK or EAGAIN.
+it's possible that the non-blocking operation may still return EWOULDBLOCK or 
 In such cases, you should handle these errors appropriately and try the operation again later.
 
 send:
 If the socket's send buffer is full, send may return immediately
-with an error (EAGAIN or EWOULDBLOCK) instead of waiting for space in the buffer.
+with an error (EWOULDBLOCK) instead of waiting for space in the buffer.
 
 recv:
 If there is no data available in the socket's receive buffer,
-recv may return immediately with an error (EAGAIN or EWOULDBLOCK) instead of waiting for data to arrive.
+recv may return immediately with an error (EWOULDBLOCK) instead of waiting for data to arrive.
 */
 
 // we need to put the leftover data in a queue so it's processed later.
